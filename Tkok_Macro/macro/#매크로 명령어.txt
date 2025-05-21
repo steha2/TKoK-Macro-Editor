@@ -1,0 +1,32 @@
+﻿변수 할당 
+#hero:warrior# #level:10#
+
+변수 사용 
+%hero% %level% 
+
+--- 정의된 명령어 ---
+#rep:4# 해당 명령줄 4회 반복
+
+#delay:200#
+명령 1회 반복 후 0.2초 대기
+
+#base_delay:100# 
+기본 딜레이를 0.1초로 설정
+
+#wait:1000#
+명령 줄이 끝난후 1초 대기
+sleep | wait, 1000 과 동일
+
+#limit:2#
+2줄 아래 까지만 실행(빈줄, 주석은 건너뜀)
+
+---다른 매크로 실행 및 변수 입력---
+test1.txt
+클릭.txt #x_pos:0.3# #y_pos:0.2#
+
+---함수명으로 실행---
+LoadHero("Warrior") 캐릭터 로드
+SendAptToW3() APt 입력
+ExecW3() 워3 실행
+SwitchW3() 창 전환
+ClipWindow() 마우스 가두기

@@ -1,0 +1,7 @@
+﻿;스텟창.txt #spsi:88# #stat:Q#
+Send, {F1}
+Send, n #delay:500#
+Send, {Numpad5}
+Wait, 200
+Chat, -spsi %spsi%
+Send, %stat%

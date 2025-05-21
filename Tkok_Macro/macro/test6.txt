@@ -1,0 +1,7 @@
+﻿#base_delay:1#
+send, {enter}
+send, b
+send, c
+send, e
+send, f
+send, {enter}

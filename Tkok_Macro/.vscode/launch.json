@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch AutoHotkey Script",
+            "type": "ahk",
+            "request": "launch",
+            "program": "${file}",
+            "runtime": "C:/Program Files/AutoHotkey/AutoHotkey.exe",
+            "stopOnEntry": false
+        }
+    ]
+}

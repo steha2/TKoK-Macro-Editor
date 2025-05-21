@@ -1,0 +1,159 @@
+﻿#NoEnv
+SendMode Input
+SetWorkingDir %A_ScriptDir%
+#SingleInstance Force
+FileEncoding, UTF-8
+SetTitleMatchMode, 2
+
+
+shopPanel := new Panel("shop", 0.440, 0.208, 0.203, 0.4, 9, 6)
+rbPanel := new Panel("rb", 0.773, 0.782, 0.212, 0.21, 3, 4)
+
+^e::
+    ;rb.Toggle()
+
+    KeyWait, Ctrl
+    rbPanel.show()
+    rbPanel.ClickCell(1,1)
+    rbPanel.hide()
+return
+
+^g::
+    shopPanel.Toggle()
+    ;MsgBox, % shopPanel.guiX
+
+return
+
+;~ ^g::
+    ;~ WinGet, hwnd, ID, A
+    ;~ GetClientSize(hwnd, clientW, clientH)
+    ;~ MsgBox, % clientW clientH
+;~ return
+
+
+
+^r::
+Reload
+return
+
+class Panel {
+    __New(name, xRatio, yRatio, wRatio, hRatio, rows, cols) {
+        this.name := name
+        this.xRatio := xRatio
+        this.yRatio := yRatio
+        this.wRatio := wRatio
+        this.hRatio := hRatio
+        this.rows := rows
+        this.cols := cols
+        this.visible := false
+    }
+
+    CalcPos(){
+        WinGet, hwnd, ID, A
+        GetClientPos(hwnd, clientX, clientY, clientW, clientH)
+
+        ;MsgBox, % clientX clientY clientW clientH
+
+        scale := GetDPIScale()
+
+        this.guiX := Round(clientX + this.xRatio * clientW)
+        this.guiY := Round(clientY + this.yRatio * clientH)
+        this.cellW := this.wRatio * clientW / scale / this.cols
+        this.cellH := this.hRatio * clientH / scale / this.rows
+        this.guiW := this.cellW * this.cols
+        this.guiH := this.cellH * this.rows
+    }
+
+    Show() {
+        this.CalcPos()
+        guiX := this.guiX
+        guiY  := this.guiY
+        guiW := this.guiW
+        guiH  := this.guiH
+        cellW := this.cellW
+        cellH := this.cellH
+
+        name := this.name
+        Gui, name: New, +AlwaysOnTop +ToolWindow -Caption
+        Gui, +E0x20  ; WS_EX_TRANSPARENT: 마우스 클릭 통과
+        Gui, name: Color, AEFFDD
+        Gui, name: Margin, 0, 0
+
+        Loop, % this.rows {
+            row := A_Index
+            Loop, % this.cols {
+                col := A_Index
+                x := (col - 1) * cellW
+                y := (row - 1) * cellH
+               Gui, name: Add, Edit, x%x% y%y% w%cellW% h%cellH% +ReadOnly -VScroll -HScroll
+            }
+        }
+
+        Gui, name: +HwndhGui
+
+        ;MsgBox %name% x%guiX% y%guiY% w%guiW% h%guiH%
+
+        Gui, name: Show, x%guiX% y%guiY% w%guiW% h%guiH%
+
+        ;Gui, name2: Show, x200 y200 w318 h414
+
+
+        WinSet, Transparent, 80, ahk_id %hGui%
+
+        this.visible := true
+
+    }
+
+    ClickCell(row, col, button := "L", count := 1, delay := 50) {
+        if (row < 1 || row > this.rows || col < 1 || col > this.cols) {
+            MsgBox, 잘못된 행/열입니다: row=%row% col=%col%
+            return
+        }
+
+        x := this.guiX + (col - 1) * this.cellW + this.cellW // 2
+        y := this.guiY + (row - 1) * this.cellH + this.cellH // 2
+
+        CoordMode, Mouse, Screen
+        Loop, %count%
+        {
+            MouseClick, %button%, %x%, %y%
+            Sleep, delay
+        }
+
+        ;MsgBox, % "nasdasd " this.xRatio x y this.guiX
+    }
+
+
+    Hide() {
+        Gui, name: Destroy
+        this.visible := false
+    }
+
+    Toggle() {
+        if (this.visible)
+            this.Hide()
+        else
+            this.Show()
+    }
+}
+
+GetClientPos(hwnd, ByRef x, ByRef y, ByRef w, ByRef h) {
+    VarSetCapacity(rect, 16, 0)
+    DllCall("GetClientRect", "ptr", hwnd, "ptr", &rect)
+    DllCall("ClientToScreen", "ptr", hwnd, "ptr", &rect)
+    x := NumGet(rect, 0, "Int")
+    y := NumGet(rect, 4, "Int")
+    w := NumGet(rect, 8, "Int")
+    h := NumGet(rect, 12, "Int")
+}
+
+
+GetDPIScale(){
+    ; 기본 DPI = 96, 125%면 120
+    hDC := DllCall("GetDC", "ptr", 0, "ptr")
+    dpi := DllCall("GetDeviceCaps", "ptr", hDC, "int", 88)  ; LOGPIXELSX
+    DllCall("ReleaseDC", "ptr", 0, "ptr", hDC)
+    return dpi / 96.0
+}
+^l::
+Reload
