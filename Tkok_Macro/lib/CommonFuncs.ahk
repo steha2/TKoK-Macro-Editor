@@ -95,7 +95,7 @@ Click2(ratioX, ratioY, delay := 50, btn := "L") {
 }
 
 ; ------------------------------- 화면 함수 ---------------------------------
-ActivateWar3() {
+ActivateW3() {
     hwnd := WinExist(w3Win)
     if(hwnd) {
         WinActivate, ahk_id %hwnd%
@@ -167,7 +167,7 @@ SendKey(key, delay := 0, ignoreSpace := false) {
 
 ShowTip(msg, duration := 1500) {
     Tooltip, %msg%
-    SetTimer, RemoveTooltip, -%duration%
+    SetTimer, RemoveToolTip, -%duration%
     return
 }
 
@@ -339,6 +339,31 @@ ObjectToArray(obj) {
 }
 
 ;----------------------------------------------숫자 함수-----------------------------------------------
+CleanFormat(num) {
+    str := Format("{:0.3f}", num)
+    str := RegExReplace(str, "0+$", "")
+    str := RegExReplace(str, "\.$", "")
+    return  str
+}
+
+FormatDecimal(num, mode) {
+    if (mode = "trim") {
+        return CleanFormat(num)
+    } else if (mode = "fixed") {
+        return Format("{:0.3f}", num)
+    } else if (mode = "round") {
+        return Round(num, 3)
+    } else if (RegExMatch(mode, "^round(-?\d+)$", m)) {
+        return Round(num, m1 + 0)
+    } else if (mode = "floor") {
+        return Floor(num)
+    } else if (mode = "ceil") {
+        return Ceil(num)
+    } else if (mode = "none") {
+        return num
+    }
+    return false
+}
 
 ;a.delay += b
 AddDelay(a, b) {
@@ -364,6 +389,9 @@ isDigit(val) {
 }
 isNatural(n) {
     return RegExMatch(n, "^\d+$") && (n >= 1)
+}
+IsInteger(val) {
+    return val is integer
 }
 
 Eval(x) {                              ; non-recursive PRE/POST PROCESSING: I/O forms, numbers, ops, ";"

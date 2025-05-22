@@ -82,52 +82,118 @@ LogToEdit(line) {
     GuiControl, macro:, LastestMacro2, % line
 }
 
-PackMacro(content) {
+MergeMacro(content) {
     cleanedLines := []
     lastLine := ""
     count := 0
 
-    Loop, Parse, content, `n, `r
+    Loop, Parse, content, `n, `r 
     {
-        line := A_LoopField  ; 빈 줄도 그대로 사용 (Trim 제거)
-        
+        line := Trim(A_LoopField)
         if (line = "") {
-            ; 빈 줄은 바로 푸시 (연속 빈 줄도 그대로 유지)
-            if (count > 0) {
+            if (count > 0)
                 cleanedLines.Push(FormatLine(lastLine, count))
-                count := 0
-                lastLine := ""
-            }
             cleanedLines.Push("")
+            count := 0
+            lastLine := ""
             continue
         }
 
-        line := Trim(line)  ; 빈 줄이 아닐때만 트림
-
-        if (line = lastLine) {
+        if (IsSameMacroLine(line, lastLine)) {
             count++
         } else {
-            if (lastLine != "") {
+            if (lastLine != "")
                 cleanedLines.Push(FormatLine(lastLine, count))
-            }
             lastLine := line
             count := 1
         }
     }
 
-    ; 마지막 줄 처리
-    if (count > 0) {
+    if (count > 0)
         cleanedLines.Push(FormatLine(lastLine, count))
-    }
 
     return StrJoin(cleanedLines, "`n")
 }
 
+
 FormatLine(line, count) {
     if (count > 1) {
-        ; 공백 포함 #rep:숫자 패턴 모두 제거
         line := RegExReplace(line, "\s*#rep:\d+#")
         line .= " #rep:" . count . "#"
     }
     return line
+}
+
+IsSameMacroLine(line1, line2, epsilon := 0.004) {
+    if (StrLen(line1) != StrLen(line2) || InStr(line1, "#") || InStr(line1, ";") || InStr(line1, "%"))
+        return false
+    pattern := "i)^Click:(\w),\s*([\d.]+),\s*([\d.]+)"
+    if (RegExMatch(line1, pattern , am) && RegExMatch(line2, pattern , bm)) {
+        x1 := am2 + 0, y1 := am3 + 0
+        x2 := bm2 + 0, y2 := bm3 + 0
+        ;test(x1,y1,x2,y2)
+        return am1 = bm1 && (Abs(x1 - x2) <= epsilon && Abs(y1 - y2) <= epsilon)
+    } else {
+        return (line1 = line2)
+    }
+}
+
+
+IsMacroModified() {
+    GuiControlGet, currentText,, EditMacro
+    return (currentText != origContent)
+}
+
+
+WriteMacroFile(content := "", macroFilePath := "") {
+    if (macroFilePath  = "") {
+        FormatTime, now,, MMdd_HHmmss
+        macroFilePath := "Macro_" . now . ".txt"
+    }
+
+    ; .txt 확장자 붙이기 (없으면)
+    if (!RegExMatch(macroFilePath, "i)\.txt$"))
+        macroFilePath .= ".txt"
+
+    ; 절대경로인지 검사 (드라이브 문자 or \로 시작)
+    if (SubStr(macroFilePath, 1, 1) = "\" || RegExMatch(macroFilePath, "^[a-zA-Z]:\\")) {
+        fullPath := macroFilePath
+    } else {
+        fullPath := macroDir . "\" . macroFilePath
+    }
+
+    ; 이미 파일 존재하면 메시지 후 리턴
+    if FileExist(fullPath) {
+        MsgBox, 이미 존재하는 파일이 있습니다.`n%fullPath%
+        return
+    }
+    ; ✅ 디렉토리 자동 생성
+    SplitPath, fullPath, , outDir
+    if !FileExist(outDir) {
+        FileCreateDir, %outDir%
+    }
+
+    ; 파일 쓰기
+    FileAppend, %content%, %fullPath%
+    ShowTip("매크로 파일 생성 완료`n" fullPath)
+
+    ; 트리뷰 갱신 (함수에 맞게 인자 조정 필요할 수 있음)
+    ReloadTreeView(fullPath)
+}
+
+DisableShortTime(ctrlName, delay := 500, guiName := "macro") {
+    GuiControl, %guiName%:Disable, %ctrlName%
+    fn := Func("EnableGuiControl").Bind(ctrlName, guiName)
+    SetTimer, % fn, -%delay%
+}
+
+EnableGuiControl(ctrlName, guiName := "macro") {
+    GuiControl, %guiName%:Enable, %ctrlName%
+}
+
+ToggleMacroImpl() {
+    GuiControlGet, content, macro:, EditMacro
+    GuiControlGet, macroName, macro:, MacroList
+    ;MsgBox, runMacron%content%
+    ExecMacro(content, macroName)
 }

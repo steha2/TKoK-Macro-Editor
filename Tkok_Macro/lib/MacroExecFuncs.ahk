@@ -1,8 +1,7 @@
 ExecMacro(scriptText, vars) {
     if (scriptText = "")
         return
-
-    ActivateWar3()
+    ActivateW3()
     UpdateMacroState(+1)
 
     lines := StrSplit(scriptText, ["`r`n", "`n", "`r"])
@@ -14,37 +13,30 @@ ExecMacro(scriptText, vars) {
         line := StripComments(line)
         if (line = "")
             continue
-
         line := ResolveExpr(line, vars)
-
         vars.wait := 0
         vars.rep := 1
-        vars.delay := isDigit(vars.base_delay) ? vars.base_delay : 30
-
+        vars.delay := isDigit(vars.base_delay) ? vars.base_delay : baseDelay
         command := ParseLine(line, vars)
-
-        if isNatural(vars.limit) {
-            limit := vars.limit
+        if isDigit(vars.limit) {
+            limit := Floor(vars.limit)
             vars.limit := ""
         }
-        
         if (limit <= 0)
             break
         ; 실행 성공했으면 반복 횟수 감소
         Loop, % vars.rep {
             ExecSingleCommand(command, vars)
-
-            if(!CheckAbortAndSleep(vars.delay)) {
+            if(!CheckAbortAndSleep(vars.delay)) 
                 break
-            }
         }
         if (!CheckAbortAndSleep(vars.wait)) {
             break
-        }
-        limit--
+        if(command != "")
+            limit--
     }
-
     UpdateMacroState(-1)
+    }
     ;ShowTip("--- Macro End ---`nmacroName:" macroName "`nmacroCount: " runMacroCount)
 }
 
@@ -72,13 +64,15 @@ ResolveExpr(line, vars) {
                 isReplaced := true
             }
         }
-
         if(!isReplaced)
             expr := defaultVal
 
         ; 산술 계산 가능한지 검사
         if RegExMatch(expr, "^[\d+\-*/.() ]+$") && RegExMatch(expr, "\d\s*[\+\-\*/]\s*\d") {
-            result := Round(Eval(expr),3)
+            mode := "trim"
+            if(vars.HasKey("dp_mode"))
+                mode = vars.dp_mode
+            result := FormatDecimal(Eval(expr), mode)
         } else {
             result := expr
         }
@@ -98,14 +92,18 @@ ParseLine(line, vars) {
         fullMatch := m       ; 전체: "# ... #"
         inner := Trim(m1)     ; 내부 내용
 
-        if RegExMatch(inner, "i)^(\w+)\s*:\s*(.+)$", cm) {
+        ; key:val 또는 key: 형식 모두 지원
+        if RegExMatch(inner, "i)^(\w+)\s*:(.*)$", cm) {
             key := cm1
             val := cm2
-            vars[key] := val
-        }
 
+            if (Trim(val) = "") {
+                vars.Delete(key)  ; 값이 비어 있으면 해당 변수 제거
+            } else {
+                vars[key] := Trim(val)
+            }
+        }
         ; 원래 라인에서 제거
-        ;MsgBox, % command "`n" fullMatch
         command := StrReplace(command, fullMatch, "")
         pos := found + StrLen(fullMatch)
     }
@@ -153,13 +151,13 @@ ExecFunc(fnName, argsStr) {
 }
 
 
-ExecMacroFile(macroName, vars := "") {
-    if (!RegExMatch(macroName, "\.txt$") || RegExMatch(macroName, "^#"))
+ExecMacroFile(macroPath, vars := "") {
+    if (!RegExMatch(macroPath, "\.txt$") || RegExMatch(macroPath, "^#"))
         return
 
-    FileRead, scriptText, %macroDir%\%macroName%
+    FileRead, scriptText, %macroDir%\%macroPath%
     if (ErrorLevel) {
-        MsgBox, % "파일을 불러오는 데 실패했습니다: " . macroName
+        MsgBox, % "파일을 불러오는 데 실패했습니다: " . macroPath
         return
     }
     ExecMacro(scriptText, vars)

@@ -14,6 +14,8 @@ if not A_IsAdmin
 
 global W3_LAUNCH_DELAY := 4000 ; 워크래프트3 실행 후 4초간 대기한다
 
+global baseDelay := 50
+
 global w3Win := "Warcraft III"
 global pl1, pl2, la, yMapped
 global configFile := A_ScriptDir . "\config.ini"
@@ -36,7 +38,7 @@ global macroAbortRequested := false
 global macroGuiShown := false
 global macroPath := ""
 global suspendTreeEvents := false
-
+global origContent = ""
 ;---------------------------------------------------
 
 #Include %A_ScriptDir%\lib\InitGui.ahk 

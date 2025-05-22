@@ -83,13 +83,13 @@ btnGap := 80  ; 버튼 간 간격
 buttons := []  ; 빈 배열 생성
 buttons.Push({text: "▶ Run",   g: "ToggleMacro",   v: "ExecBtn"})
 buttons.Push({text: "Record",   g: "ToggleRecord",  v: "RecordBtn"})
-buttons.Push({text: "New",      g: "AddMacro",      v: "AddBtn"})
-buttons.Push({text: "Save",     g: "SaveMacro",     v: "SaveBtn"})
+buttons.Push({text: "✚ New",      g: "AddMacro",      v: "AddBtn"})
+buttons.Push({text: "💾 Save",     g: "SaveMacro",     v: "SaveBtn"})
 buttons.Push({text: "Rename",   g: "RenameMacro",   v: "RenameBtn"})
 buttons.Push({text: "Delete",   g: "DeleteMacro",   v: "DeleteBtn"})
-buttons.Push({text: "Back",     g: "BackMacro",     v: "BackBtn"})
+buttons.Push({text: "🡅 Back",     g: "BackMacro",     v: "BackBtn"})
 buttons.Push({text: "Clear",    g: "ClearMacro",    v: "ClearBtn"})
-buttons.Push({text: "Pack",     g: "PackMacro",     v: "PackBtn"})
+buttons.Push({text: "Merge",     g: "MergeMacro",     v: "MergeBtn"})
 
 ; === 버튼 추가 루프 ===
 for index, btn in buttons {
@@ -97,10 +97,16 @@ for index, btn in buttons {
     Gui, macro:Add, Button, % Format("g{} v{} x{} y{} w{} h{}", btn.g, btn.v, xPos, btnY, btnW, btnH), % btn.text
 }
 
+IniRead, macroWinW, %configFile%, MacroGUI, W
+
 Gui, Font, s14
 Gui, macro:Add, TreeView, x10 y50 w270 h490 vMacroList gOnTreeViewClick
 
-Gui, macro:Add, Edit, x290 y50 w430 h410 -Wrap vEditMacro
+
+if(!macroWinW || macroWinW < 730)
+    macroWinW := 730
+editW := macroWinW - 300
+Gui, macro:Add, Edit, x290 y50 w%editW% h410 -Wrap vEditMacro
 
 Gui, Font, , Segoe UI
 
@@ -111,11 +117,12 @@ Gui, macro:Add, Edit, x290 y470 w430 h30 vMacroPath +ReadOnly
 
 IniRead, macroWinX, %configFile%, MacroGUI, X, Center
 IniRead, macroWinY, %configFile%, MacroGUI, Y, Center
+
 if(macroWinX < 0)
     macroWinX := 0
 if(macroWinY < 0)
     macroWinY := 0
-Gui, macro:Show, Hide x%macroWinX% y%macroWinY% w730 h550, Macro Editor
+Gui, macro:Show, Hide x%macroWinX% y%macroWinY% w%macroWinW% h550, Macro Editor
 IniRead, macroState, %configFile%, MacroGUI, Shown, false
 if((macroState) == "true"){
     gosub, ToggleMacroGui

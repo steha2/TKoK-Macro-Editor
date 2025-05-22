@@ -1,1 +1,11 @@
-﻿
+﻿;스킬,스텟 찍기
+Send, {F1}
+Chat, -tt #delay:300#
+Click:L, 0.343, 0.213
+Click:L, 0.419, 0.215
+Click:L, 0.349, 0.313
+Click:L, 0.412, 0.312
+Click:L, 0.562, 0.407 #rep:2#
+Click:L, 0.640, 0.413 #rep:3#
+Click:L, 0.275, 0.213
+Click:L, 0.493, 0.221 #rep:3#

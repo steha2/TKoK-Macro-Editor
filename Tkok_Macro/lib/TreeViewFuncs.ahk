@@ -23,6 +23,7 @@ ReloadTreeView(path := "") {
     TV_Delete()           ; 트리뷰 항목 초기화
     g_PathMap := {}       ; 경로 맵 초기화
     BuildTreeView(macroDir)  ; 트리 다시 만들기
+
     ; 트리 구축 후 경로 선택
     suspendTreeEvents := false
     sleep, 250
@@ -38,6 +39,7 @@ OnClickTreeItem() {
     if (suspendTreeEvents)
         return  ; 이벤트 무시
     path := g_PathMap[A_EventInfo]
+
     if (!path || !FileExist(path))
         return
     UpdatePathAndEdit(path)
@@ -52,8 +54,8 @@ SelectTreeItemByPath(path) {
         normPath := Trim(RegExReplace(fullPath, "/", "\"), " \t`n`r")
         ; MsgBox, Testing ID: %id%`nPath: %normPath%`nCompare to: %path%
         if (StrCompare(normPath, path)) {
-            TV_Modify(id, "Select Expand")
             UpdatePathAndEdit(path)
+            TV_Modify(id, "Select Expand")
             return id
         }
     }
@@ -65,29 +67,29 @@ SelectTreeItemByPath(path) {
 
 ;path가 "" 없으면 Edit지우기, 있으면 파일로드
 UpdatePathAndEdit(path) {
-    ;ShowTip("path :`n" path)
+    if IsMacroModified() {
+        MsgBox, 4, 저장되지 않음, 변경 내용을 저장하지 않고 진행합니까?
+        IfMsgBox, No
+            return 
+    }
+    macroPath := path
+    content := ""
     if (IsFile(path)) {
         FileRead, content, %path%
-        GuiControl,, EditMacro, %content%
-        GuiControl,, MacroPath, % StrReplace(path, macroDir . "\", "")
-        macroPath := path
-    } else {
-        GuiControl,, EditMacro
-        GuiControl,, MacroPath
-        macroPath := ""
+        StringReplace, content, content, `r,, All  ; CR 제거
     }
+    origContent := content
+    GuiControl,, EditMacro, %content%
+    GuiControl,, MacroPath, % StrReplace(path, macroDir . "\", "")
 }
-
 
 GetSelectedTreePath() {
     Gui, Submit, NoHide
     selectedID := TV_GetSelection()
-        ;MsgBox ,% selectedID,
 
     if (!selectedID)
         return ""  ; 아무 항목도 선택되지 않음
 
-    global g_PathMap
     return g_PathMap[selectedID]
 }
 
