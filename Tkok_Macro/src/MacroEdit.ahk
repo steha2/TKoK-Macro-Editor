@@ -1,20 +1,34 @@
 LogKeyControl(key) {
   k:=InStr(key,"Win") ? key : SubStr(key,2)
-  LogToEdit("Send, {" k " Down}")
+  LogToEdit("Send, {" . k . " Down}")
   Critical, Off
   KeyWait, %key%
   Critical
-  LogToEdit("Send, {" k " Up}")
+  LogToEdit("Send, {" . k . " Up}")
 }
 
 LogMouseClick(key) {
-    global isRecording, w3Win
-    if (!isRecording || !WinActive(w3Win))
+    MouseGetPos,,, hwnd
+    if (!isRecording || IsTargetWindow("Macro Editor", hwnd))
         return
 
-    GetMouseRatio(ratioX,ratioY)
-    btn := SubStr(key,1,1)
-    LogToEdit("Click:" . btn . ", " . ratioX . ", " . ratioY)
+    GuiControlGet, isClient, macro:, ClientBtn
+    GuiControlGet, isRatio, macro:, RatioBtn
+    if (isClient) {
+        CoordMode, Mouse, Client
+    } else {
+        CoordMode, Mouse, Screen
+    }
+    if (isRatio) {
+        if(!GetMouseRatio(xStr,yStr))
+            return
+    } else {
+        MouseGetPos, mx, my
+        xStr := mx
+        yStr := my
+    }
+    btn := SubStr(key, 1, 1)
+    LogToEdit("Click:" . btn . ", " . xStr . ", " . yStr)
 }
 
 LogKey() {
@@ -44,7 +58,7 @@ LogKey() {
        
         lastKey := k
         lastTime := now
-        LogToEdit("Send, "k)
+        LogToEdit("Send, " . k)
     }
 }
 
@@ -77,9 +91,9 @@ LogToEdit(line) {
         current .= "`n"  ; 마지막 줄에 줄바꿈 추가
 
     GuiControl, macro:, EditMacro, % current . line
-    GuiControlGet, l2, macro:, LastestMacro2
-    GuiControl, macro:, LastestMacro1, % l2
-    GuiControl, macro:, LastestMacro2, % line
+    GuiControlGet, l2, macro:, LatestRec2
+    GuiControl, macro:, LatestRec1, % l2
+    GuiControl, macro:, LatestRec2, % line
 }
 
 MergeMacro(content) {
@@ -92,7 +106,7 @@ MergeMacro(content) {
         line := Trim(A_LoopField)
         if (line = "") {
             if (count > 0)
-                cleanedLines.Push(FormatLine(lastLine, count))
+                cleanedLines.Push(MergeLine(lastLine, count))
             cleanedLines.Push("")
             count := 0
             lastLine := ""
@@ -103,20 +117,20 @@ MergeMacro(content) {
             count++
         } else {
             if (lastLine != "")
-                cleanedLines.Push(FormatLine(lastLine, count))
+                cleanedLines.Push(MergeLine(lastLine, count))
             lastLine := line
             count := 1
         }
     }
 
     if (count > 0)
-        cleanedLines.Push(FormatLine(lastLine, count))
+        cleanedLines.Push(MergeLine(lastLine, count))
 
     return StrJoin(cleanedLines, "`n")
 }
 
 
-FormatLine(line, count) {
+MergeLine(line, count) {
     if (count > 1) {
         line := RegExReplace(line, "\s*#rep:\d+#")
         line .= " #rep:" . count . "#"
@@ -124,23 +138,35 @@ FormatLine(line, count) {
     return line
 }
 
-IsSameMacroLine(line1, line2, epsilon := 0.004) {
-    if (StrLen(line1) != StrLen(line2) || InStr(line1, "#") || InStr(line1, ";") || InStr(line1, "%"))
+IsSameMacroLine(line1, line2) {
+    if (InStr(line1, "#") || InStr(line1, ";") || InStr(line1, "%"))
         return false
+
     pattern := "i)^Click:(\w),\s*([\d.]+),\s*([\d.]+)"
     if (RegExMatch(line1, pattern , am) && RegExMatch(line2, pattern , bm)) {
         x1 := am2 + 0, y1 := am3 + 0
         x2 := bm2 + 0, y2 := bm3 + 0
-        ;test(x1,y1,x2,y2)
-        return am1 = bm1 && (Abs(x1 - x2) <= epsilon && Abs(y1 - y2) <= epsilon)
+        dist := Sqrt((x1 - x2)**2 + (y1 - y2)**2)
+
+        ; Check if all coordinates are integers
+        isInt1 := (Mod(x1, 1) = 0) && (Mod(y1, 1) = 0)
+        isInt2 := (Mod(x2, 1) = 0) && (Mod(y2, 1) = 0)
+
+        if (am1 != bm1)
+            return false
+        else if (isInt1 && isInt2)
+            return dist <= epsilonFixed
+        else if (!isInt1 && !isInt2)
+            return dist <= epsilonRatio
+        else
+            return false ; 정수/실수가 혼합된 경우는 다르다고 간주
     } else {
         return (line1 = line2)
     }
 }
 
-
 IsMacroModified() {
-    GuiControlGet, currentText,, EditMacro
+    GuiControlGet, currentText, macro:, EditMacro
     return (currentText != origContent)
 }
 
@@ -159,7 +185,7 @@ WriteMacroFile(content := "", macroFilePath := "") {
     if (SubStr(macroFilePath, 1, 1) = "\" || RegExMatch(macroFilePath, "^[a-zA-Z]:\\")) {
         fullPath := macroFilePath
     } else {
-        fullPath := macroDir . "\" . macroFilePath
+        fullPath := MACRO_DIR . "\" . macroFilePath
     }
 
     ; 이미 파일 존재하면 메시지 후 리턴
@@ -176,24 +202,5 @@ WriteMacroFile(content := "", macroFilePath := "") {
     ; 파일 쓰기
     FileAppend, %content%, %fullPath%
     ShowTip("매크로 파일 생성 완료`n" fullPath)
-
-    ; 트리뷰 갱신 (함수에 맞게 인자 조정 필요할 수 있음)
     ReloadTreeView(fullPath)
-}
-
-DisableShortTime(ctrlName, delay := 500, guiName := "macro") {
-    GuiControl, %guiName%:Disable, %ctrlName%
-    fn := Func("EnableGuiControl").Bind(ctrlName, guiName)
-    SetTimer, % fn, -%delay%
-}
-
-EnableGuiControl(ctrlName, guiName := "macro") {
-    GuiControl, %guiName%:Enable, %ctrlName%
-}
-
-ToggleMacroImpl() {
-    GuiControlGet, content, macro:, EditMacro
-    GuiControlGet, macroName, macro:, MacroList
-    ;MsgBox, runMacron%content%
-    ExecMacro(content, macroName)
 }

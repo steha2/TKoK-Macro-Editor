@@ -85,3 +85,22 @@ GetClientSize(hWnd, ByRef w := "", ByRef h := "")
 	w := NumGet(rect, 8, "int")
 	h := NumGet(rect, 12, "int")
 }
+
+
+; ToggleSpy:
+;     if (WinExist("ahk_id " . miniSpyHwnd))
+;     {
+;         WinClose, ahk_id %miniSpyHwnd%
+;         miniSpyHwnd := ""
+;     }
+;     else
+;     {
+;         Run, *RunAs "%A_ScriptDir%\src\MiniSpy.ahk", , , pid
+;         WinWait, ahk_pid %pid%, , 2
+;         if ErrorLevel {
+;             MsgBox, MiniSpy 실행 실패
+;             return
+;         }
+;         miniSpyHwnd := WinExist("ahk_pid " . pid)
+;     }
+; return

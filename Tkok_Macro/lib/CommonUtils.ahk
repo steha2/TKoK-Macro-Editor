@@ -1,4 +1,5 @@
 ;-------------------------------- 마우스 함수 --------------------------------
+
 ClipWindow(force := false) {
     if (!force && IsMouseClipped()) {
         DllCall("ClipCursor", "Ptr", 0)
@@ -60,51 +61,90 @@ IsMouseClipped() {
         return true
 }
 
-Click1(x, y, delay := 50, btn := "L") {
-    CoordMode, Mouse, Client  ; 작업용 변경
-    MouseMove, %x%, %y%, %speed%
-    ;ShowTip("Click1:" x " " y)
-    Sleep, delay
+Click(x, y, btn := "L", coordMode := "", delay := 10) {
+    isClient := !InStr(coordMode,"screen")
+    isRatio := !InStr(coordMode,"fixed")
 
+    CoordMode, Mouse, % isClient ? "Client" : "Screen"
+    
+    if(isRatio){
+        if(isClient) {
+            GetClientSize("A", w, h)
+        }
+        x := Round(x * w)
+        y := Round(y * h)
+    }
+
+    MouseMove, %x%, %y%
+    Sleep, delay
     ; 우클릭일 경우
     if (btn == "R" || btn == false) {
         ; 우클릭: 0x08 (Down), 0x10 (Up)
         DllCall("mouse_event", "UInt", 0x08, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Down
         Sleep, delay
         DllCall("mouse_event", "UInt", 0x10, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Up
-    }
-    else {
+    } else {
         ; 좌클릭: 0x02 (Down), 0x04 (Up)
         DllCall("mouse_event", "UInt", 0x02, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Down
         Sleep, delay
         DllCall("mouse_event", "UInt", 0x04, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Up
     }
-
     Sleep, delay
-    ;CoordMode, Mouse, Screen  ; 원래 화면 좌표 모드로 복귀
 }
-
-
-Click2(ratioX, ratioY, delay := 50, btn := "L") {
-    GetClientSize("A", w, h)
-    ; 좌표 계산
-    x := Round(ratioX * w)
-    y := Round(ratioY * h)
-
-    Click1(x, y, delay := 50, btn := "L")
-}
-
 ; ------------------------------- 화면 함수 ---------------------------------
-ActivateW3() {
-    hwnd := WinExist(w3Win)
-    if(hwnd) {
-        WinActivate, ahk_id %hwnd%
-        WinWaitActive, ahk_id %hwnd%
-    }
+
+IsAllowedWindow(target) {
+    if (target = "")  
+        return true
+    else if (IsTargetWindow(target))
+        return true
+    else 
+        return ActivateWindow(target) 
 }
 
-GetClientSize(hwnd := "A", ByRef w := "", ByRef h := "")
-{
+IsTargetWindow(target, hwnd := "A") {
+    if (target = "")
+        return false
+
+    hwnd := (hwnd = "A") ? WinExist("A") : hwnd
+    if (!hwnd)
+        return false
+
+    WinGetTitle, title, ahk_id %hwnd%
+    WinGetClass, class, ahk_id %hwnd%
+    WinGet, exe, ProcessName, ahk_id %hwnd%
+
+    return InStr(title, target, false) || InStr(class, target, false) || InStr(exe, target, false)
+}
+
+ActivateWindow(target) {
+    if (target = "")
+        return false
+
+    targetClass := "ahk_class " . target
+    ; 2. ahk_class 로 시도 
+    if WinExist(targetClass) {
+        WinActivate, %targetClass%
+        return WinActive(targetClass)
+    }
+
+    targetExe := "ahk_exe" . target . ".exe"
+    if WinExist(targetExe) {
+        WinActivate, %targetExe%
+        return WinActive(targetExe)
+    }
+
+    ; 4. 마지막으로 title에 포함된 창 찾기
+    if WinExist(target) {
+        WinActivate, %target%
+        return WinActive(target)
+    }
+
+    ShowTip("대상 창을 활성화 할 수 없습니다.`n`nTarget : "  target)
+    return false
+}
+
+GetClientSize(hwnd := "A", ByRef w := "", ByRef h := "") {
     if (!hwnd || hwnd = "A")
         WinGet, hwnd, ID, A
 
@@ -115,8 +155,6 @@ GetClientSize(hwnd := "A", ByRef w := "", ByRef h := "")
 }
 
 GetMouseRatio(ByRef ratioX, ByRef ratioY, hwnd := "A") {
-    CoordMode, Mouse, Client
-
     ; hwnd 생략 시 활성 창 사용
     if (hwnd = "A")
         WinGet, hwnd, ID, A
@@ -127,7 +165,7 @@ GetMouseRatio(ByRef ratioX, ByRef ratioY, hwnd := "A") {
     if (!w || !h || w < 10 || h < 10) {
         ratioX := -1
         ratioY := -1
-        MsgBox, 48, 오류, 클라이언트 영역 크기를 가져오지 못했거나 유효하지 않습니다.`n창 크기: %w%x%h%
+        Showtip("오류, 클라이언트 영역 크기를 가져오지 못했거나 유효하지 않습니다.`n창 크기: width : " w " height : " h)
         return false
     }
 
@@ -176,6 +214,16 @@ RemoveToolTip() {
 }
 
 ; --------------------------- 파일 함수 -----------------------------------
+
+GetIniValue(section, key, default := "") {
+    IniRead, val, % CONFIG_FILE, %section%, %key%, %default%
+    return Trim(val)
+}
+
+SetIniValue(section, key, value) {
+    IniWrite, % value, % CONFIG_FILE, %section%, %key%
+}
+
 ;return latest := {path: "", name: "", time: 0}
 GetLatestFile(folderPath, filePattern := "*", nameRegex := "") {
     latest := {path: "", name: "", time: 0}

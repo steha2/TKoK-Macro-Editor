@@ -1,20 +1,28 @@
-ToggleMacroGui:
-    macroGuiShown := !macroGuiShown
-    ;ShowTip("macro gui : " macroGuiShown)
-    if(macroGuiShown) {
+macroGuiClose:
+    ToggleMacroGui()
+return
+
+ToggleMacroGui(force := 2) {
+    if (force = 0)
+        macroGuiShown := false
+    else if (force = 1)
+        macroGuiShown := true
+    else
+        macroGuiShown := !macroGuiShown
+
+    if (macroGuiShown) {
         Gui, macro:Show
     } else {
-        SaveGuiSettings(false)
-        Gui, macro:Hide
+        SaveMacroEditorSettings()
+        if (isLaunchedByMain)
+            Gui, macro:Hide
+        else
+            ExitApp
     }
-return
+}
 
 OnTreeViewClick:
     OnClickTreeItem()
-return
-
-macroGuiClose:
-    gosub, ToggleMacroGui
 return
 
 BackMacro:
@@ -27,7 +35,7 @@ BackMacro:
     GuiControl, macro:, EditMacro, % TrimLastToken(trimmed, "`n")
     return
 
-    ClearMacro:
+ClearMacro:
     GuiControlGet, curText, macro:, EditMacro
     if (Trim(curText) = "")  ; 이미 비어있으면 무시
         return
@@ -90,7 +98,11 @@ RenameMacro:
         return
     }
 
-    FileMove, %macroPath%, %newPath%
+    if(IsFile(macroPath))
+        FileMove, %macroPath%, %newPath%
+    else
+        FileMoveDir, %macroPath%, %newPath%
+
     ReloadTreeView(newPath)
     ShowTip("이름 변경 완료: " . newName)
 return
@@ -102,10 +114,10 @@ AddMacro:
         SplitPath, macroPath, , outputDir
     
 
-    ; macroDir 기준 상대 경로 계산
-    if (outputDir != "" && InStr(outputDir, macroDir)) {
+    ; MACRO_DIR 기준 상대 경로 계산
+    if (outputDir != "" && InStr(outputDir, MACRO_DIR)) {
         ; +2는 백슬래시 포함한 다음 문자부터
-        macroRelPath := SubStr(outputDir, StrLen(macroDir) + 2)
+        macroRelPath := SubStr(outputDir, StrLen(MACRO_DIR) + 2)
         defaultInput := (macroRelPath != "") ? macroRelPath . "\" : ""
     } else {
         defaultInput := ""
@@ -139,19 +151,22 @@ SaveMacro:
 return
 
 ToggleMacro:
-    ;ShowTip("runcount:       "  runMacroCount)
     DisableShortTime("ExecBtn")
     if (runMacroCount > 0) {
         macroAbortRequested := true
-        runMacroCount = 0
     } else if (runMacroCount < 1) {
-        runMacroCount = 0
         SetTimer, ToggleMacroImpl, -1
     }
 return
 
+ToggleMacroImpl() {
+    GuiControlGet, content, macro:, EditMacro
+    ExecMacro(content, "")
+}
+
+
 MergeMacro:
-    MsgBox, 4, Pack, 반복 명령 합치기를 실행합니까?
+    MsgBox, 4, Merge Macro, 반복 명령 병합를 실행합니까? `n 클릭 오차범위 %EPSILON_RATIO%, %EPSILON_FIXED% 이내라면 합처집니다.
     IfMsgBox, No
         return
         
@@ -169,13 +184,35 @@ ToggleRecord:
 
     if (isRecording) {
         GuiControl, macro:+ReadOnly, EditMacro
-        WinActivate, %w3Win%
+        WinActivate, %DEFAULT_TARGET%
         LastTime := A_TickCount
     } else {
         GuiControl, macro:-ReadOnly, EditMacro
     }
     SetHotkey(isRecording)
 return
+
+DisableShortTime(ctrlName, delay := 500, guiName := "macro") {
+    GuiControl, %guiName%:Disable, %ctrlName%
+    fn := Func("EnableGuiControl").Bind(ctrlName, guiName)
+    SetTimer, % fn, -%delay%
+}
+
+EnableGuiControl(ctrlName, guiName := "macro") {
+    GuiControl, %guiName%:Enable, %ctrlName%
+}
+
+Insert::Gosub, ToggleMacro
+Pause:: Gosub, ToggleRecord
+
+#If IsTargetWindow("Macro Editor")
+^s:: Gosub, SaveMacro
+#If !isLaunchedByMain
+^+R::
+    SaveMacroEditorSettings()
+    reload
+return
+#IF
 
 ;^u:: ; Ctrl + U
 ; {

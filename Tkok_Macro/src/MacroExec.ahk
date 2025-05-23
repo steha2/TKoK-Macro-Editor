@@ -1,28 +1,29 @@
 ExecMacro(scriptText, vars) {
     if (scriptText = "")
         return
-    ActivateW3()
     UpdateMacroState(+1)
-
     lines := StrSplit(scriptText, ["`r`n", "`n", "`r"])
-    limit := 1000
-    if(!vars)
-        vars := {}
-
+    limit := MACRO_LIMIT
+    
+    if !IsObject(vars)
+        vars := { target:DEFAULT_TARGET }
+    
     for index, line in lines {
         line := StripComments(line)
         if (line = "")
             continue
         line := ResolveExpr(line, vars)
-        vars.wait := 0
+        
         vars.rep := 1
-        vars.delay := isDigit(vars.base_delay) ? vars.base_delay : baseDelay
+        vars.wait := 0
+        vars.delay := isDigit(vars.base_delay) ? vars.base_delay : BASE_DELAY
+        
         command := ParseLine(line, vars)
         if isDigit(vars.limit) {
             limit := Floor(vars.limit)
             vars.limit := ""
         }
-        if (limit <= 0)
+        if (limit <= 0 || !IsAllowedWindow(vars.target))
             break
         ; 실행 성공했으면 반복 횟수 감소
         Loop, % vars.rep {
@@ -30,14 +31,15 @@ ExecMacro(scriptText, vars) {
             if(!CheckAbortAndSleep(vars.delay)) 
                 break
         }
-        if (!CheckAbortAndSleep(vars.wait)) {
+        if (!CheckAbortAndSleep(vars.wait))
             break
         if(command != "")
             limit--
     }
     UpdateMacroState(-1)
-    }
-    ;ShowTip("--- Macro End ---`nmacroName:" macroName "`nmacroCount: " runMacroCount)
+    ;test2(command, vars, runMacroCount)
+
+    ;ShowTip("--- Macro End ---`n,runMacroCount: " runMacroCount)
 }
 
 ;명령줄의 %key% 사이의 매크로내의 전역변수 vars 에 key:value로 치환한다
@@ -71,7 +73,7 @@ ResolveExpr(line, vars) {
         if RegExMatch(expr, "^[\d+\-*/.() ]+$") && RegExMatch(expr, "\d\s*[\+\-\*/]\s*\d") {
             mode := "trim"
             if(vars.HasKey("dp_mode"))
-                mode = vars.dp_mode
+                mode := vars.dp_mode
             result := FormatDecimal(Eval(expr), mode)
         } else {
             result := expr
@@ -111,30 +113,44 @@ ParseLine(line, vars) {
 }
 
 ExecSingleCommand(command, vars) {
-    if RegExMatch(command, "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)$", m) {
-        Click2(m2, m3, 10, m1)
+    if RegExMatch(command, "i)^Click:(\w+),\s*(\d+),\s*(\d+)$", m) {
+        Click(m2,m3,m1,"fixed")
+    } else if RegExMatch(command, "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)$", m) {
+        Click(m2,m3,m1)
     } else if RegExMatch(command, "i)^Send\s*,\s*(.*)$", m) {
-        text := Trim(m1)
-        Send, {Blind}%text% 
+        Send, {Blind}%m1% 
     } else if RegExMatch(command, "i)^Chat\s*,\s*(.*)$", m) {
-        Chat(Trim(m1))
+        Chat(m1)
     } else if RegExMatch(command, "i)^(Sleep|Wait)\s*,?\s*(\d*)", m) {
         if(isDigit(m2))
             vars.wait += m2
-    } else if RegExMatch(command, "^(.+\.txt)$", m) {
+    } else if RegExMatch(command, "i)^(.+\.txt)$", m) {
         ExecMacroFile(m1, vars)
+    } else if RegExMatch(command, "i)^(Run|RunAs)\s*,\s*(.*)$", m) {
+        Run_(m1,m2)
     } else if RegExMatch(command, "^([a-zA-Z0-9_]+)\s*\((.*)\)\s*$", m) {
         ExecFunc(m1, m2)
     } else {
         if(command != "")
-            ShowTip("경고, 올바른 명령문이 아님 `nCmd: "command,4000)
+            ShowTip("경고, 올바른 명령문이 아님 `nCmd: "command "`nLen: " StrLen(command), 4000)
+    }
+}
+
+Run_(mode, path) {
+    try {
+        if (StrLen(mode) = 5) {
+            Run *RunAs %path%
+        } else {
+            Run %path%
+        }
+    } catch e {
+        MsgBox, 16, Run Failed, % "Failed to run:`n" path "`n`nError: " e.Message
     }
 }
 
 ExecFunc(fnName, argsStr) {
     ; 함수 객체 가져오기
     fn := Func(fnName)
-    test(fnName,argsStr)
     if !IsObject(fn) {
         MsgBox, Function "%fnName%" not found.
         return
@@ -150,12 +166,11 @@ ExecFunc(fnName, argsStr) {
     return fn.Call(args*)
 }
 
-
 ExecMacroFile(macroPath, vars := "") {
-    if (!RegExMatch(macroPath, "\.txt$") || RegExMatch(macroPath, "^#"))
+    if (!RegExMatch(macroPath, "\.txt$"))
         return
 
-    FileRead, scriptText, %macroDir%\%macroPath%
+    FileRead, scriptText, %MACRO_DIR%\%macroPath%
     if (ErrorLevel) {
         MsgBox, % "파일을 불러오는 데 실패했습니다: " . macroPath
         return

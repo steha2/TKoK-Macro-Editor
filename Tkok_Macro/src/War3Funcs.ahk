@@ -1,4 +1,3 @@
-
 SaveW3Pos() {
     WinGetTitle, winTitle, A
     WinGetPos, x, y, w, h, A
@@ -7,11 +6,11 @@ SaveW3Pos() {
     IfMsgBox, No
         return
     
-    if (winTitle != "") {
-        IniWrite, %x%, %configFile%, W3Window, X
-        IniWrite, %y%, %configFile%, W3Window, Y
-        IniWrite, %w%, %configFile%, W3Window, W
-        IniWrite, %h%, %configFile%, W3Window, H
+    if (winTitle = W3_WINTITLE) {
+        SetIniValue("W3Window","X",x)
+        SetIniValue("W3Window","Y",y)
+        SetIniValue("W3Window","W",w)
+        SetIniValue("W3Window","H",h)
         ShowTip("저장 완료 : X: " x " Y:" y " W:" w " H:" h)
     }
     else
@@ -20,16 +19,16 @@ SaveW3Pos() {
 }
 
 RestoreW3Pos() {
-    IniRead, savedX, %configFile%, W3Window, X
-    IniRead, savedY, %configFile%, W3Window, Y
-    IniRead, savedW, %configFile%, W3Window, W
-    IniRead, savedH, %configFile%, W3Window, H
-
+    savedX := GetIniValue("W3Window","X")
+    savedY := GetIniValue("W3Window","Y")
+    savedW := GetIniValue("W3Window","W")
+    savedH := GetIniValue("W3Window","H")
     mainW3Hwnd := ""
     activeHwnd := WinExist("A")
     if (activeHwnd) {
         WinGetClass, winClass, ahk_id %activeHwnd%
-        if (winClass = w3Win) {
+        test(savedX,winClass,activeHwnd,W3_WINTITLE)
+        if (winClass = W3_WINTITLE) {
             mainW3Hwnd := activeHwnd
             WinMove, ahk_id %mainW3Hwnd%, , %savedX%, %savedY%, %savedW%, %savedH%
             ShowTip("현재 창을 mainW3Hwnd 로 사용`nX:" savedX " Y:" savedY " W:" savedW " H:" savedH)
@@ -39,9 +38,9 @@ RestoreW3Pos() {
 
 ;큰 W3 창으로 이동한다
 SwitchToMainW3() {
-    WinGet, war3List, List, %w3Win%
+    WinGet, war3List, List, %W3_WINTITLE%
     WinGet, prevHwnd, ID, A  ; 현재 활성 창 핸들 얻기
-
+    
     Loop, %war3List%
     {
         hwnd := war3List%A_Index%
@@ -67,18 +66,21 @@ SwitchToMainW3() {
 
 SwitchW3() {
     ; 현재 열린 모든 Warcraft III 창을 가져오기
-    WinGet, idList, List, %w3Win%
+    WinGet, idList, List, %W3_WINTITLE%
     lastHwnd := idList%idList%
     if(lastHwnd){
         WinActivate, ahk_id %lastHwnd%
         ClipWindow()
     }
+    if(switchRunning > 0)
+        switchRunning--
     ;ShowTip("SwitchW3`n" lastHwnd)
 }
 
 TrySwitchW3() {
     if (switchRunning >= 2)  ; 동시에 2개 이상 실행 중이면 무시
         return
+    switchRunning++
     if (switchRunning > 0) {
         SetTimer, SwitchW3, -300
     } else {
@@ -88,15 +90,13 @@ TrySwitchW3() {
 
 ShareUnit() {
     SendKey("{F11}", 500)
-    Click2(0.599,0.204)
+    Click(0.599,0.204)
     SendKey("{Enter}")
 }
 
-
-
 ExecHostW3(){
     ExecW3(W3_LAUNCH_DELAY)
-    IfWinNotActive, %w3Win%
+    IfWinNotActive, %W3_WINTITLE%
     {
         MsgBox, 현재 활성화된 창이 Warcraft III가 아닙니다. 실행을 중단합니다.
         return
@@ -107,9 +107,9 @@ ExecHostW3(){
 
     IniRead, speed, %configFile%, Settings, speed, 2
     if(speed = 0) {
-        Click2(0.053, 0.160)
+        Click(0.053, 0.160)
     } else if (speed = 1) {
-        Click2(0.192, 0.160)
+        Click(0.192, 0.160)
     }
     SendKey("c")
 }
@@ -138,7 +138,7 @@ ExecMultiW3() {
     Loop, %count% {
         ExecW3()
         SendKey("L", 3000)
-        Click2(0.4, 0.3)
+        Click(0.4, 0.3)
         SendKey("J")
     }
 
@@ -148,9 +148,9 @@ ExecMultiW3() {
 }
 
 ExecW3(delay := 3000) {
-    Run, *RunAs %w3lnk%
+    Run, *RunAs %W3_LNK%
 
-    if (w3lnk = "" || !FileExist(w3lnk)) {
+    if (W3_LNK = "" || !FileExist(W3_LNK)) {
         MsgBox, 16, 오류, 실행할 W3_LNK 경로를 찾지 못했습니다.`nconfig.ini 를 수정하세요.
         return false
     }

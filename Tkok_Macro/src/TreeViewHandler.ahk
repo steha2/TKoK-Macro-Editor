@@ -22,7 +22,7 @@ ReloadTreeView(path := "") {
     suspendTreeEvents := true
     TV_Delete()           ; 트리뷰 항목 초기화
     g_PathMap := {}       ; 경로 맵 초기화
-    BuildTreeView(macroDir)  ; 트리 다시 만들기
+    BuildTreeView(MACRO_DIR)  ; 트리 다시 만들기
 
     ; 트리 구축 후 경로 선택
     suspendTreeEvents := false
@@ -80,7 +80,7 @@ UpdatePathAndEdit(path) {
     }
     origContent := content
     GuiControl,, EditMacro, %content%
-    GuiControl,, MacroPath, % StrReplace(path, macroDir . "\", "")
+    GuiControl,, MacroPath, % StrReplace(path, MACRO_DIR . "\", "")
 }
 
 GetSelectedTreePath() {

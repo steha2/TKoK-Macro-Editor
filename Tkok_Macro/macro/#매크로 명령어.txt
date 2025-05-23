@@ -1,4 +1,4 @@
-﻿--- 기본 명령어(대소문자 구분없음) ---
+﻿--- 기본 명령어(대소문자 구분없음) ---                           #limit:0#
 Send, 키 이름 기능키는 {Enter} 처럼 입력
 send, {F1}
 send, {Ctrl}
@@ -31,6 +31,13 @@ wait, 1000
 #limit:2#
 2줄 아래 까지만 실행(빈줄, 주석, 변수 선언만 하는 경우는 건너뜀)
 
+#dp_mode:round3# :ceil :floor
+소수점모드 반올림3자리  올림   버림
+
+#target:notepad#   (기본값 Warcraft III)
+매크로 실행시 notepad 창을 활성화 시키고 못찾으면 매크로 종료
+
+
 --- 변수 할당 및 사용---
 #hero:warrior# #level:10#
 
@@ -46,5 +53,6 @@ skill\ranger.txt #level:23# #stat:R#
 LoadHero("Warrior") 캐릭터 로드
 SendAptToW3() APt 입력
 ExecW3() 워3 실행
+ExecMultiW3() 워3 다중실행
 SwitchW3() 창 전환
 ClipWindow() 마우스 가두기

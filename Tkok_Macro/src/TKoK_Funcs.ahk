@@ -17,7 +17,7 @@ SendAptToW3() {
 
 ; Account 파일 중 가장 최신 것에서 -la 코드 추출
 ReadAptFile() {
-    result := GetLatestFile(saveDir,"Account*.txt")
+    result := GetLatestFile(SAVE_DIR,"Account*.txt")
     
     if (result.path != "") {
         FileRead, content, % result.path
@@ -31,7 +31,16 @@ ReadAptFile() {
         MsgBox, Account*.txt 파일을 찾을수 없습니다.
 }
 
-LoadHero(selectedHero) {
+LoadHero(selectedHero := "") {
+    if(selectedHero = ""){
+        GuiControlGet, squadText, %hMain%:, SquadField
+        StringSplit, squad, squadText, `,
+        selectedHero := squad1
+    }
+    if(selectedHero = ""){
+        ShowTip("선택된 영웅이 없습니다.")
+        return
+    }
     UpdateHeroInfo(selectedHero)
     SendCodeToW3()
 }
@@ -41,9 +50,9 @@ UpdateHeroInfo(selectedHero) {
     pl1 := ""
     pl2 := ""
 
-    heroFolder := saveDir . "\" . selectedHero
+    heroFolder := SAVE_DIR . "\" . selectedHero
     if !FileExist(heroFolder) {
-        GuiControl,, ResultOutput, 해당 클래스 폴더가 존재하지 않습니다.
+        GuiControl, %hMain%:, ResultOutput, 해당 클래스 폴더가 존재하지 않습니다. `n %heroFoldier%
         return
     }
     latest := GetLatestFile(heroFolder, selectedHero . "*.txt")
@@ -73,9 +82,9 @@ UpdateHeroInfo(selectedHero) {
         outputText .= "Star Glass: " . starGlassMatch1 . "`n"
         outputText .= pl1 . "`n" . pl2
 
-        GuiControl,, ResultOutput, %outputText%
+        GuiControl, %hMain%:, ResultOutput, %outputText%
     } else {
-        GuiControl,, ResultOutput, 해당 클래스에 Hero:%selectedHero% 가 포함된 최신 파일이 없습니다.
+        GuiControl, %hMain%:, ResultOutput, 해당 클래스에 Hero:%selectedHero% 가 포함된 최신 파일이 없습니다.
     }
 }
 
@@ -107,10 +116,10 @@ LoadSquad(champ := false) {
         }
             
         if (thisHero = "Shadowblade")
-            Click2(0.906, 0.879, 10, "R")
+            Click(0.906, 0.879, "R")
 
         if (thisHero = "Barbarian")
-            Click2(0.801, 0.953, 10, "R")
+            Click(0.801, 0.953, "R")
  
         if (loopCount > 1)
             SwitchW3()
@@ -133,7 +142,7 @@ LastSaveTimes() {
     Loop, Parse, squad, `,
     {
         heroName := Trim(A_LoopField)
-        heroFolder := saveDir "\" heroName
+        heroFolder := SAVE_DIR "\" heroName
         if !FileExist(heroFolder)
             continue
     
@@ -163,17 +172,17 @@ LastSaveTimes() {
 }
 
 SwapItems() {
-    Click2(0.187, 0.221)
-    Click2(0.155, 0.374)
-    Click2(0.155, 0.263)
-    Click2(0.192, 0.374)
-    Click2(0.289, 0.270)
-    Click2(0.225, 0.379)
+    Click(0.187, 0.221)
+    Click(0.155, 0.374)
+    Click(0.155, 0.263)
+    Click(0.192, 0.374)
+    Click(0.289, 0.270)
+    Click(0.225, 0.379)
 }
 
 
 MoveOldSaves() {
-    Loop, Files, %saveDir%\*, D
+    Loop, Files, %SAVE_DIR%\*, D
     {
         folderName := A_LoopFileName
         if !RegExMatch(folderName, "^[A-Z]")
@@ -199,13 +208,13 @@ MoveOldSaves() {
     }
 
     ; Account 파일 처리
-    latest := GetLatestFile(saveDir, "Account*.txt")
+    latest := GetLatestFile(SAVE_DIR, "Account*.txt")
     if (latest.path != "") {
-        oldAccountDir := saveDir . "\old_Account"
+        oldAccountDir := SAVE_DIR . "\old_Account"
         if !FileExist(oldAccountDir)
             FileCreateDir, %oldAccountDir%
 
-        Loop, Files, %saveDir%\Account*.txt
+        Loop, Files, %SAVE_DIR%\Account*.txt
         {
             if (A_LoopFileFullPath = latest.path)
                 continue

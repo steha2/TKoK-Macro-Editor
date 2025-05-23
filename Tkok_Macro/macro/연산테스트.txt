@@ -1,4 +1,8 @@
-﻿#a:2.5000# #b:1#
+﻿Run, notepad #wait:1000#
+
+#target:notepad#
+
+#a:2.5000# #b:1#
 chat, % a / b %  ; trim: 2.5
 
 #dp_mode:fixed#
@@ -8,11 +12,11 @@ chat, % a / b % ; fixed: 2.500
 chat, % a / b % ; ceil: 3
 
 #a:4.999# #b:1#
-#dp_mode:round#
+#dp_mode:round0#
 chat, % a / b % ; round: 5.000 → 5
 
 #dp_mode:floor#
 chat, % a / b % ; floor: 4
 
 #dp_mode:#
-chat, % a / b % ; trim: 4.999
+chat, % a / b | 10% ; trim: 4.999

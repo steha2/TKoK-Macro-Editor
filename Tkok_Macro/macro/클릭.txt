@@ -1,2 +1,5 @@
 ﻿;클릭.txt #x_pos:0.3# #y_pos:0.2#
-Click:L %x_pos%, %y_pos%
+#x_pos:0.3# #y_pos:0.2#
+Click:L, %x_pos%, %y_pos%
+#x_pos:1144# #y_pos:422#
+Click:L, %x_pos%, %y_pos%

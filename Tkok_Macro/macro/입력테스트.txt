@@ -1,0 +1,6 @@
+﻿;#target:notepad#
+#text1:hello world#
+;send, %text1%
+
+#target:Warcraft III#
+chat, %text1%
