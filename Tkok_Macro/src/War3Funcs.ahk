@@ -27,7 +27,6 @@ RestoreW3Pos() {
     activeHwnd := WinExist("A")
     if (activeHwnd) {
         WinGetClass, winClass, ahk_id %activeHwnd%
-        test(savedX,winClass,activeHwnd,W3_WINTITLE)
         if (winClass = W3_WINTITLE) {
             mainW3Hwnd := activeHwnd
             WinMove, ahk_id %mainW3Hwnd%, , %savedX%, %savedY%, %savedW%, %savedH%
@@ -72,24 +71,19 @@ SwitchW3() {
         WinActivate, ahk_id %lastHwnd%
         ClipWindow()
     }
-    if(switchRunning > 0)
-        switchRunning--
-    ;ShowTip("SwitchW3`n" lastHwnd)
+    switchRunning := 0
 }
 
 TrySwitchW3() {
-    if (switchRunning >= 2)  ; 동시에 2개 이상 실행 중이면 무시
+    if (switchRunning >= 3)
         return
+    SetTimer, SwitchW3, % (-200 * switchRunning) - 1
     switchRunning++
-    if (switchRunning > 0) {
-        SetTimer, SwitchW3, -300
-    } else {
-        SetTimer, SwitchW3, -1
-    }
 }
 
 ShareUnit() {
-    SendKey("{F11}", 500)
+    Sleep, 500
+    SendKey("{F11}", 700)
     Click(0.599,0.204)
     SendKey("{Enter}")
 }
@@ -105,7 +99,7 @@ ExecHostW3(){
     RestoreW3Pos()
     SendKey("c",3000)
 
-    IniRead, speed, %configFile%, Settings, speed, 2
+    IniRead, speed, %CONFIG_FILE%, Settings, speed, 2
     if(speed = 0) {
         Click(0.053, 0.160)
     } else if (speed = 1) {
@@ -114,35 +108,43 @@ ExecHostW3(){
     SendKey("c")
 }
 
-ExecMultiW3() {
+ExecMultiW3(num := 0) {
     IfWinExist, ahk_class Warcraft III 
     {
         MsgBox, Warcraft III가 이미 실행 중입니다.
         return
     }
-
-    ExecHostW3()
-    IfWinNotActive, ahk_class Warcraft III
+    if(num > 0){
+        numW3 := num
+    } else {
+        numW3 := GetIniValue("NUM_W3", 3)
+        if !isNatural(numW3) {
+            GuiControlGet, squad, main:, SquadField
+            StringSplit, squadArray, squad, `,
+            numW3 := squadArray0
+        }
+    }
+    Loop, % numW3
     {
-        MsgBox, 현재 활성화된 창이 Warcraft III가 아닙니다. 실행을 중단합니다.
-        return
+        if (A_Index = 1) {
+            ExecHostW3()
+            IfWinNotActive, ahk_class Warcraft III    
+            {
+                MsgBox, 현재 활성화된 창이 Warcraft III가 아닙니다. 실행을 중단합니다.
+                return
+            }
+        } else {
+            ExecW3()
+            SendKey("L", 3000)
+            Click(0.4, 0.3)
+            SendKey("J")
+        }
     }
 
-    IniRead, count, %configFile%, Settings, count, 2
-    if !isNatural(count) {
-        GuiControlGet, squad,, SquadField
-        StringSplit, squadArray, squad, `,
-        count := squadArray0
-    }
-
-    Loop, %count% {
-        ExecW3()
-        SendKey("L", 3000)
-        Click(0.4, 0.3)
-        SendKey("J")
-    }
-
-    SwitchToMainW3()
+    if(numW3 > 0)
+        SwitchToMainW3()
+    else 
+        Sleep, 2000
     Sleep, 1000
     SendKey("!s")
 }

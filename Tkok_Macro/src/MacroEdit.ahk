@@ -67,8 +67,6 @@ SetHotkey(enable := false) {
     excludedKeys := "MButton,WheelDown,WheelUp,WheelLeft,WheelRight,Pause"
     mode := enable ? "On" : "Off"
 
-    ShowTip("SetHotKey:" mode)
-
     Loop, 254 {
         vk := Format("vk{:X}", A_Index)
         key := GetKeyName(vk)
@@ -97,7 +95,7 @@ LogToEdit(line) {
 }
 
 MergeMacro(content) {
-    cleanedLines := []
+    mergedLines := []
     lastLine := ""
     count := 0
 
@@ -106,8 +104,8 @@ MergeMacro(content) {
         line := Trim(A_LoopField)
         if (line = "") {
             if (count > 0)
-                cleanedLines.Push(MergeLine(lastLine, count))
-            cleanedLines.Push("")
+                mergedLines.Push(MergeLine(lastLine, count))
+            mergedLines.Push("")
             count := 0
             lastLine := ""
             continue
@@ -117,18 +115,17 @@ MergeMacro(content) {
             count++
         } else {
             if (lastLine != "")
-                cleanedLines.Push(MergeLine(lastLine, count))
+                mergedLines.Push(MergeLine(lastLine, count))
             lastLine := line
             count := 1
         }
     }
 
     if (count > 0)
-        cleanedLines.Push(MergeLine(lastLine, count))
+        mergedLines.Push(MergeLine(lastLine, count))
 
-    return StrJoin(cleanedLines, "`n")
+    return StrJoin(mergedLines, "`n")
 }
-
 
 MergeLine(line, count) {
     if (count > 1) {
@@ -155,9 +152,9 @@ IsSameMacroLine(line1, line2) {
         if (am1 != bm1)
             return false
         else if (isInt1 && isInt2)
-            return dist <= epsilonFixed
+            return dist <= EPSILON_FIXED
         else if (!isInt1 && !isInt2)
-            return dist <= epsilonRatio
+            return dist <= EPSILON_RATIO
         else
             return false ; 정수/실수가 혼합된 경우는 다르다고 간주
     } else {

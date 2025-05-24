@@ -61,7 +61,7 @@ IsMouseClipped() {
         return true
 }
 
-Click(x, y, btn := "L", coordMode := "", delay := 10) {
+Click(x, y, btn := "L", coordMode := "", delay := 30) {
     isClient := !InStr(coordMode,"screen")
     isRatio := !InStr(coordMode,"fixed")
 
@@ -70,14 +70,17 @@ Click(x, y, btn := "L", coordMode := "", delay := 10) {
     if(isRatio){
         if(isClient) {
             GetClientSize("A", w, h)
+        } else {
+            GetMonitorSize("A", w, h)
         }
         x := Round(x * w)
         y := Round(y * h)
     }
 
     MouseMove, %x%, %y%
-    Sleep, delay
     ; 우클릭일 경우
+    Sleep, delay
+
     if (btn == "R" || btn == false) {
         ; 우클릭: 0x08 (Down), 0x10 (Up)
         DllCall("mouse_event", "UInt", 0x08, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Down
@@ -89,7 +92,6 @@ Click(x, y, btn := "L", coordMode := "", delay := 10) {
         Sleep, delay
         DllCall("mouse_event", "UInt", 0x04, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Up
     }
-    Sleep, delay
 }
 ; ------------------------------- 화면 함수 ---------------------------------
 
@@ -178,6 +180,25 @@ GetMouseRatio(ByRef ratioX, ByRef ratioY, hwnd := "A") {
     return true
 }
 
+GetMonitorSize(hwnd, ByRef w, ByRef h) {
+    if(hwnd = "A")
+        WinGet, hwnd, ID, A
+
+    MONITOR_DEFAULTTONEAREST := 2
+    hMonitor := DllCall("MonitorFromWindow", "Ptr", hwnd, "UInt", MONITOR_DEFAULTTONEAREST, "Ptr")
+
+    VarSetCapacity(mi, 40)
+    NumPut(40, mi, 0, "UInt")
+    DllCall("GetMonitorInfo", "Ptr", hMonitor, "Ptr", &mi)
+
+    left   := NumGet(mi, 4, "Int")
+    top    := NumGet(mi, 8, "Int")
+    right  := NumGet(mi, 12, "Int")
+    bottom := NumGet(mi, 16, "Int")
+
+    w := right - left
+    h := bottom - top
+}
 
 ; ----------- 입력 및 컨트롤 함수 -----------
 

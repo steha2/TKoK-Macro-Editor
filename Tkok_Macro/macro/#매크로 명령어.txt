@@ -1,8 +1,8 @@
 ﻿--- 기본 명령어(대소문자 구분없음) ---                           #limit:0#
 Send, 키 이름 기능키는 {Enter} 처럼 입력
 send, {F1}
-send, {Ctrl}
-send, 1
+send, sample text
+send, 123456
 
 Click:L, 0.5, 0.5
 게임화면에 대한 비율로 기록
@@ -27,32 +27,3 @@ wait, 1000
 
 #wait:1000#
 명령 줄이 끝난후 1초 대기
-
-#limit:2#
-2줄 아래 까지만 실행(빈줄, 주석, 변수 선언만 하는 경우는 건너뜀)
-
-#dp_mode:round3# :ceil :floor
-소수점모드 반올림3자리  올림   버림
-
-#target:notepad#   (기본값 Warcraft III)
-매크로 실행시 notepad 창을 활성화 시키고 못찾으면 매크로 종료
-
-
---- 변수 할당 및 사용---
-#hero:warrior# #level:10#
-
-%hero% %level% 
-
----매크로 경로로 실행 및 변수 할당---
-하단에 매크로 경로 표시된것을 복사해서 사용
-war3실행.txt
-스텟창.txt #spsi:88# #stat:Q#
-skill\ranger.txt #level:23# #stat:R#
-
----함수명으로 실행---
-LoadHero("Warrior") 캐릭터 로드
-SendAptToW3() APt 입력
-ExecW3() 워3 실행
-ExecMultiW3() 워3 다중실행
-SwitchW3() 창 전환
-ClipWindow() 마우스 가두기

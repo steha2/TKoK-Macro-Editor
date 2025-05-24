@@ -6,8 +6,9 @@ ExecMacro(scriptText, vars) {
     limit := MACRO_LIMIT
     
     if !IsObject(vars)
-        vars := { target:DEFAULT_TARGET }
-    
+        vars := {}
+    if(!vars.HasKey("target"))
+        vars.target :=  DEFAULT_TARGET
     for index, line in lines {
         line := StripComments(line)
         if (line = "")
@@ -17,7 +18,6 @@ ExecMacro(scriptText, vars) {
         vars.rep := 1
         vars.wait := 0
         vars.delay := isDigit(vars.base_delay) ? vars.base_delay : BASE_DELAY
-        
         command := ParseLine(line, vars)
         if isDigit(vars.limit) {
             limit := Floor(vars.limit)
@@ -30,16 +30,17 @@ ExecMacro(scriptText, vars) {
             ExecSingleCommand(command, vars)
             if(!CheckAbortAndSleep(vars.delay)) 
                 break
+            if(command != "") {
+                if(A_Index = vars.rep || InStr(vars.limit_mode,"repeat"))
+                    limit--
+            }
         }
         if (!CheckAbortAndSleep(vars.wait))
             break
-        if(command != "")
-            limit--
     }
     UpdateMacroState(-1)
     ;test2(command, vars, runMacroCount)
-
-    ;ShowTip("--- Macro End ---`n,runMacroCount: " runMacroCount)
+    ShowTip("--- Macro End ---`n,실행중인 매크로 수 : " runMacroCount)
 }
 
 ;명령줄의 %key% 사이의 매크로내의 전역변수 vars 에 key:value로 치환한다

@@ -206,7 +206,7 @@ Insert::Gosub, ToggleMacro
 Pause:: Gosub, ToggleRecord
 
 #If IsTargetWindow("Macro Editor")
-^s:: Gosub, SaveMacro
+^S:: Gosub, SaveMacro
 #If !isLaunchedByMain
 ^+R::
     SaveMacroEditorSettings()

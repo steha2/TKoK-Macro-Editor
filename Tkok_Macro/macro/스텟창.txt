@@ -5,3 +5,5 @@ Send, {Numpad5}
 Wait, 200
 Chat, -spsi %spsi%
 Send, %stat%
+
+Chat, -tt #delay:300#

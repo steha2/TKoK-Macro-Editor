@@ -1,0 +1,33 @@
+﻿변수 선언 #...#, 사용 %...%
+#hero:warrior# #level:10#
+chat, %hero% %level% 
+
+#dp_mode:round2#     :ceil  :floor
+소수점 아래 2자리 반올림    올림    버림
+
+#limit:2# (기본값: 1000)
+최대 2개의 유효한 명령줄만 실행 (빈줄, 주석, 변수 선언만 있는 줄 X)
+
+#limit_mode:repeat#
+줄 수 대신 반복 횟수를 기준으로 실행 제한을 적용
+
+#target:notepad#   (기본값 Warcraft III)
+매크로 실행시 notepad 창을 활성화 시키고 못찾으면 중단
+
+#coord_mode:screen,fixed# 
+좌표모드를 전체화면, 고정값 좌표로 사용
+(기본값: 실행창,비율 : client,ratio)
+
+---매크로 경로로 실행---
+war3실행.txt
+스텟창.txt #spsi:88# #stat:Q#
+skill\ranger.txt #level:23# #stat:R#
+※변수 값을 공유 합니다.
+
+---함수명으로 실행---
+LoadHero("Warrior") 캐릭터 로드
+SendAptToW3() APt 입력
+ExecW3() 워3 실행
+ExecMultiW3() 워3 다중실행
+SwitchW3() 창 전환
+ClipWindow() 마우스 가두기

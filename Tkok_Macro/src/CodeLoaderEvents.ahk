@@ -114,7 +114,7 @@ F7::ClipWindow()
 return
 
 ;Ctrl+Shift+C
-^+c::ChampChat()
+^+n::ChampChat()
 ChampChat() {
     Chat("!dr 10")
     Chat("-fog")
@@ -136,12 +136,13 @@ ChampChat() {
 !t::LoadSquad()
 !h::LoadSquad(true) ;Champion Mode
 
-;Alt+Shift
-!+n::LastSaveTimes()
 
 ;Ctrl+Shift
 ^+k::ExecW3()
+^+a::SendAptToW3()
 ^+w::ExecMultiW3()
+^+h::ExecHostW3()
+^+c::LastSaveTimes()
 ^+i:: Run, notepad.exe "%CONFIG_FILE%"
 ^+o:: Run, %A_ScriptDir%
 ^+p:: Run, %SAVE_DIR%

@@ -1,9 +1,18 @@
-﻿Send, {F1} #level:23#
+﻿#level:23# #dp_mode:floor#
+
+Send, {F1} 
+
+#num_stat : %(level-1)*4% #
+#num_skill : %level / 2 + 2% #
+
+chat, Level : %level% num_stat : %num_stat% num_skill : %num_skill%
+
 스텟창.txt #spsi: %(level-1)*4 %# #stat:R#
 
 Chat, -tt #delay:300#
-#limit:%level / 2 + 2%#
-chat,%level / 2 + 2%
+
+#limit:%level / 2 + 2%# 
+
 Click:L, 0.277, 0.213 
 Click:L, 0.350, 0.217
 Click:L, 0.278, 0.321
