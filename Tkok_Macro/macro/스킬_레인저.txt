@@ -1,6 +1,5 @@
 ﻿Send, {F1}
 Chat, -tt #delay:300#
-#limit:%level / 2 + 1 | 100%#
 Click:L, 0.277, 0.213 
 Click:L, 0.350, 0.217
 Click:L, 0.278, 0.321

@@ -1,4 +1,4 @@
-﻿--- 기본 명령어(대소문자 구분없음) ---                           #limit:0#
+﻿--- 기본 명령어(대소문자 구분없음) ---               #limit:0#
 Send, 키 이름 기능키는 {Enter} 처럼 입력
 send, {F1}
 send, sample text

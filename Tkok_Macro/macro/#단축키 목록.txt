@@ -1,4 +1,4 @@
-﻿--- 단축키 목록 ---- src/....Eventes.ahk 맨 아래에서 변경가능                     #limit:0#
+﻿--- 단축키 목록 ---- src/....Eventes.ahk 맨 아래에서 변경가능 #limit:0#
 Insert::매크로 실행/중단
 Pause::매크로 기록/중단
 Ctrl+S 매크로 저장
@@ -11,7 +11,7 @@ Alt+3 메인 창으로 전환
 Alt+T 캐릭터 로드
 Alt+U 세이브 파일들 old 폴더로 이동
 
-Ctrl+Shift+C 로드목록에 있는 영웅 최근 세이브한 시간보기
+Ctrl+Shift+C 로드 목록에 있는 영웅 최근 세이브한 경과 시간보기
 Ctrl+Shift+K 워크래프트3 실행
 Ctrl+Shift+W 다중 실행 및 랜접속
 
@@ -27,6 +27,6 @@ config.ini 에서 매크로 단축키 지정가능
 Ctrl:^  Alt:!  Shift:+  Win:#
 ^J = 인벤다팔기.txt
 !K = 카릭스-워리어.txt
-!L = chat, hello %name% #name:Alice# #target:Warcraft III#
+!L = chat, hello %name% #name:Alice#
 +Numpad1 = send, 테스트 #target:notepad#
 !0 = Run, calc

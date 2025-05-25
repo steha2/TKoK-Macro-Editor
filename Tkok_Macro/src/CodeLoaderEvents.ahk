@@ -18,12 +18,12 @@ return
 
 HeroButtonClick:
     Gui, Submit, NoHide
-    GuiControlGet, btnText, , %A_GuiControl% ; 버튼의 텍스트를 가져온다
+    GuiControlGet, btnText, main:, %A_GuiControl% ; 버튼의 텍스트를 가져온다
     UpdateHeroInfo(btnText)
 return
 
 AddHero:
-    GuiControlGet, resultText,, ResultOutput
+    GuiControlGet, resultText, main:, ResultOutput
     if(!resultText)
         return
     heroNames := ""
@@ -36,25 +36,24 @@ AddHero:
 
     ; 마지막 쉼표 제거
     StringTrimRight, heroNames, heroNames, 1
-    GuiControlGet, oldSquad,, SquadField
+    GuiControlGet, oldSquad, main:, SquadField
 
     ; 일반 클릭 시 클래스 추가
     if (oldSquad != "")
         newSquad := oldSquad . "," . heroNames
     else
         newSquad := heroNames
-
-    GuiControl,, SquadField, %newSquad%
-    IniWrite, %newSquad%, %configFile%, Settings, SavedSquad
+    GuiControl, main:, SquadField, %newSquad%
+    SetIniValue("Settings","SavedSquad",newSquad)
 return
 
 RemoveHero:
-    GuiControlGet, oldSquad,, SquadField
+    GuiControlGet, oldSquad, main:, SquadField
     if (oldSquad = "")
         return
     newSquad := TrimLastToken(oldSquad, ",")
-    GuiControl,, SquadField, %newSquad%
-    IniWrite, %newSquad%, %configFile%, Settings, SavedSquad
+    GuiControl, main:, SquadField, %newSquad%
+    SetIniValue("Settings","SavedSquad",newSquad)
 return
 
 AptBtn:

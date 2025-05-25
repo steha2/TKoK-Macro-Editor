@@ -63,13 +63,14 @@ SwitchToMainW3() {
     ShowTip("적절한 Warcraft III 창을 찾을 수 없습니다.")
 }
 
-SwitchW3() {
+SwitchW3(isClip := true) {
     ; 현재 열린 모든 Warcraft III 창을 가져오기
     WinGet, idList, List, %W3_WINTITLE%
     lastHwnd := idList%idList%
     if(lastHwnd){
         WinActivate, ahk_id %lastHwnd%
-        ClipWindow()
+        if(isClip)
+            ClipWindow()
     }
     switchRunning := 0
 }

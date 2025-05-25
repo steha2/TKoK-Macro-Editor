@@ -7,8 +7,8 @@ ExecMacro(scriptText, vars) {
     
     if !IsObject(vars)
         vars := {}
-    if(!vars.HasKey("target"))
-        vars.target :=  DEFAULT_TARGET
+    ; if(!vars.HasKey("target"))
+        ; vars.target := DEFAULT_TARGET
     for index, line in lines {
         line := StripComments(line)
         if (line = "")
@@ -28,7 +28,7 @@ ExecMacro(scriptText, vars) {
         ; 실행 성공했으면 반복 횟수 감소
         Loop, % vars.rep {
             ExecSingleCommand(command, vars)
-            if(!CheckAbortAndSleep(vars.delay)) 
+            if(!CheckAbortAndSleep(vars.delay))
                 break
             if(command != "") {
                 if(A_Index = vars.rep || InStr(vars.limit_mode,"repeat"))
@@ -91,12 +91,12 @@ ParseLine(line, vars) {
 
     ;MsgBox, % line
     pos := 1
-    while (found := RegExMatch(line, "i)#\s*([^#]+?)\s*#", m, pos)) {
+    while (found := RegExMatch(line, "#\s*([^#]+?)\s*#", m, pos)) {
         fullMatch := m       ; 전체: "# ... #"
         inner := Trim(m1)     ; 내부 내용
 
         ; key:val 또는 key: 형식 모두 지원
-        if RegExMatch(inner, "i)^(\w+)\s*:(.*)$", cm) {
+        if RegExMatch(inner, "^(\w+)\s*:(.*)$", cm) {
             key := cm1
             val := cm2
 

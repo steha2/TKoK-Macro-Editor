@@ -1,4 +1,6 @@
-﻿Run, notepad #wait:1000#
+﻿#target:# ;target 값을 없에서 아무창에서나 실행 가능하도록 함
+
+Run, notepad #wait:1000#
 
 #target:notepad#
 

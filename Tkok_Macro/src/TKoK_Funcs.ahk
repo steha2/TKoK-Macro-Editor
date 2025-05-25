@@ -101,31 +101,35 @@ LoadSquad(champ := false) {
         MsgBox, 현재 활성화된 창이 Warcraft III가 아닙니다. 실행을 중단합니다.
         return
     }
-
     GuiControlGet, squadText, %hMain%:, SquadField
     StringSplit, squad, squadText, `,
 
     WinGet, w3List, List, %W3_WINTITLE%
-    maxWindowCount := w3List
+    w3Count := w3List
 
     ; squad0 값과 창 수 중 작은 쪽으로 루프 돌리기
-    loopCount := (squad0 < maxWindowCount) ? squad0 : maxWindowCount
+    loopCount := Min(squad0,w3Count)
 
     Loop, %loopCount%
     {
-        if (A_Index > 1) {
+        if (A_Index > 1)
             ShareUnit()
         if(!champ) {
             thisHero := squad%A_Index%
             LoadHero(thisHero)
         }
         Chat("-qs")
+        Sleep, 300
         if (thisHero = "Shadowblade")
+            Sleep, 1000
             Click(0.906, 0.879, "R")
         if (thisHero = "Barbarian")
+            Sleep, 1000
             Click(0.801, 0.953, "R")
-        if (loopCount > 1)
-            SwitchW3()
+        if (A_Index < loopCount)
+            SwitchW3(false)
+        else    
+            SwitchToMainW3()
     }
     if(squad0 > 1)
         SendKey("^s {F3} ^3 {F2} ^2 {F1} ^1", 0, true)

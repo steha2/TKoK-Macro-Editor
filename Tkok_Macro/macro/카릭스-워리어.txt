@@ -15,8 +15,7 @@ Click:L, 0.496, 0.277 #rep:4#
 Click:L, 0.911, 0.804
 Click:L, 0.498, 0.266 #rep:2#
 
-Send, {F1}
-Chat, -tt #delay:300#
+스텟창.txt #spsi:88# #stat:Z#
 Click:L, 0.282, 0.222
 Click:L, 0.350, 0.219
 Click:L, 0.423, 0.218
@@ -29,4 +28,3 @@ Click:L, 0.415, 0.491
 Click:L, 0.568, 0.325 #rep:2#
 Click:L, 0.276, 0.500
 Click:L, 0.639, 0.317
-스텟창.txt #spsi:88# #stat:Z#
