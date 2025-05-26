@@ -12,7 +12,7 @@ chat, %hero% %level%
 #limit_mode:repeat#
 줄 수 대신 반복 횟수를 기준으로 실행 제한을 적용
 
-#target:notepad#   (기본값 Warcraft III)
+#target:notepad#
 매크로 실행시 notepad 창을 활성화 시키고 못찾으면 중단
 
 #coord_mode:screen,fixed# 
@@ -20,6 +20,8 @@ chat, %hero% %level%
 
 기본값: 실행창,비율 client,ratio >> 모든 해상도에서 동일한 좌표를 사용하기 위함
 
+SendRaw, text...
+문자열을 보낼때 사용
 
 ---매크로 경로로 실행---
 war3실행.txt

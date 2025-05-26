@@ -17,4 +17,4 @@ if not A_IsAdmin
 #Include %A_ScriptDir%\src\MacroEditorEvents.ahk
 #Include %A_ScriptDir%\src\TreeViewHandler.ahk
 #Include %A_ScriptDir%\src\MacroExec.ahk
-#Include %A_ScriptDir%\lib\CommonUtils.ahk
+#Include %A_ScriptDir%\LibIncludes.ahk

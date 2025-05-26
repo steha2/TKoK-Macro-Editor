@@ -1,0 +1,14 @@
+﻿;Run, notepad
+
+#target:notepad#
+
+
+#c:a+b# #a:1# #b:2# 
+
+send, %c%
+
+sendraw, %c%
+
+#c:a+b# 
+
+chat, %c*3%

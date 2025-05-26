@@ -71,14 +71,8 @@ ResolveExpr(line, vars) {
             expr := defaultVal
 
         ; 산술 계산 가능한지 검사
-        if RegExMatch(expr, "^[\d+\-*/.() ]+$") && RegExMatch(expr, "\d\s*[\+\-\*/]\s*\d") {
-            mode := "trim"
-            if(vars.HasKey("dp_mode"))
-                mode := vars.dp_mode
-            result := FormatDecimal(Eval(expr), mode)
-        } else {
-            result := expr
-        }
+        result := TryEval(expr, vars)
+        
         line := StrReplace(line, fullMatch, result)
         pos := found + StrLen(result) - 1
     }
@@ -103,6 +97,13 @@ ParseLine(line, vars) {
             if (Trim(val) = "") {
                 vars.Delete(key)  ; 값이 비어 있으면 해당 변수 제거
             } else {
+                array := ToKeyLengthSortedArray(vars)
+                Loop % array.Length()
+                {
+                    item := array[A_Index]
+                    val := StrReplace(val, item.key, item.value)
+                }
+                val := TryEval(val,vars)
                 vars[key] := Trim(val)
             }
         }
@@ -118,16 +119,18 @@ ExecSingleCommand(command, vars) {
         Click(m2,m3,m1,"fixed")
     } else if RegExMatch(command, "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)$", m) {
         Click(m2,m3,m1)
-    } else if RegExMatch(command, "i)^Send\s*,\s*(.*)$", m) {
+    } else if RegExMatch(command, "i)^SendRaw\s*,?\s*(.*)$", m) {
+        SendRaw, %m1% 
+    } else if RegExMatch(command, "i)^Send\s*,?\s*(.*)$", m) {
         Send, {Blind}%m1% 
-    } else if RegExMatch(command, "i)^Chat\s*,\s*(.*)$", m) {
+    } else if RegExMatch(command, "i)^Chat\s*,?\s*(.*)$", m) {
         Chat(m1)
     } else if RegExMatch(command, "i)^(Sleep|Wait)\s*,?\s*(\d*)", m) {
         if(isDigit(m2))
             vars.wait += m2
     } else if RegExMatch(command, "i)^(.+\.txt)$", m) {
         ExecMacroFile(m1, vars)
-    } else if RegExMatch(command, "i)^(Run|RunAs)\s*,\s*(.*)$", m) {
+    } else if RegExMatch(command, "i)^(Run|RunAs)\s*,?\s*(.*)$", m) {
         Run_(m1,m2)
     } else if RegExMatch(command, "^([a-zA-Z0-9_]+)\s*\((.*)\)\s*$", m) {
         ExecFunc(m1, m2)
@@ -190,6 +193,18 @@ UpdateMacroState(delta) {
         ;GuiControl, macro:Enable, RecordBtn
         GuiControl, macro:Text, execBtn, ▶ Run
         macroAbortRequested := false
+    }
+}
+
+TryEval(expr, vars) {
+    if RegExMatch(expr, "^[\d+\-*/.() ]+$") && RegExMatch(expr, "\d\s*[\+\-\*/]\s*\d") {
+        mode := "trim"
+        if(vars.HasKey("dp_mode"))
+            mode := vars.dp_mode
+        ;test("EVAL!",expr,mode,FormatDecimal(Eval(expr), mode))
+        return FormatDecimal(Eval(expr), mode)
+    } else {
+        return expr
     }
 }
 

@@ -100,7 +100,7 @@ ExecHostW3(){
     RestoreW3Pos()
     SendKey("c",3000)
 
-    IniRead, speed, %CONFIG_FILE%, Settings, speed, 2
+    speed := GetIniValue("Settings","speed")
     if(speed = 0) {
         Click(0.053, 0.160)
     } else if (speed = 1) {

@@ -105,10 +105,8 @@ LoadSquad(champ := false) {
     StringSplit, squad, squadText, `,
 
     WinGet, w3List, List, %W3_WINTITLE%
-    w3Count := w3List
-
     ; squad0 값과 창 수 중 작은 쪽으로 루프 돌리기
-    loopCount := Min(squad0,w3Count)
+    loopCount := Min(squad0,w3List)
 
     Loop, %loopCount%
     {

@@ -8,6 +8,7 @@ global MACRO_DIR := A_ScriptDir . "\macro"
 global DEFAULT_TARGET := "ahk_class Warcraft III" ;매크로 실행시 활성화 기본 창
 global BASE_DELAY := 30
 global MACRO_LIMIT := 1000
+global EDITOR_TITLE := "Macro Editor"
 
 ;---------------------- Macro Editor Vars ---------------------------
 global g_PathMap := {} ; TreeView ID → 전체 경로 매핑
@@ -78,7 +79,7 @@ if(macroWinX < 0)
     macroWinX := 0
 if(macroWinY < 0)
     macroWinY := 0
-Gui, macro:Show, Hide x%macroWinX% y%macroWinY% w%macroWinW% h550, Macro Editor
+Gui, macro:Show, Hide x%macroWinX% y%macroWinY% w%macroWinW% h550, %EDITOR_TITLE%
 
 ToggleMacroGui(isLaunchedByMain ? GetIniValue("MacroGUI","Shown") : true)
 

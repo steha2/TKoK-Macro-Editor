@@ -44,7 +44,7 @@ AddHero:
     else
         newSquad := heroNames
     GuiControl, main:, SquadField, %newSquad%
-    SetIniValue("Settings","SavedSquad",newSquad)
+    SetIniValue("Settings","SavedSquad",newSquad) 
 return
 
 RemoveHero:
@@ -72,21 +72,44 @@ LoadBtn:
 return
 
 #If (WinActive("ahk_class Warcraft III") and yMapped and !isRecording)
-;Y키와 F키를 서로바꿈 Ctrl+F 를 누르면 F를 누른것처럼 작동
-y::Send, f
-f::Send, y
-^f::Send, % yMapped ? "f" : "^f"
+; Y → F (조합키 포함)
+*f::SendMapped("y")
+; F → Y (조합키 포함)
+*y::SendMapped("f")
+
+; Ctrl+F 예외처리
+; ^f::
+;     if (yMapped)
+;         Send ^f  ; yMapped 상태에서는 실제 f 키 전송
+;     else
+;         Send ^f  ; 그대로
+; return
 
 #IfWinActive ahk_class Warcraft III
 ^y::ToggleYMapping(2)
 
-; 토글 함수
+; 키 매핑 토글
 ToggleYMapping(force := 2) {
+    global yMapped
     if (force != 2)
         yMapped := !!force
     else
         yMapped := !yMapped
     ShowTip(yMapped ? "🟢 y↔f 매핑 켜짐" : "🔴 y↔f 매핑 꺼짐")
+}
+
+; 실제 전송 함수 (Shift, Ctrl 등 고려)
+SendMapped(key) {
+    mods := ""
+    if (GetKeyState("Shift", "P"))
+        mods .= "+"
+    if (GetKeyState("Ctrl", "P"))
+        mods .= "^"
+    if (GetKeyState("Alt", "P"))
+        mods .= "!"
+    if(yMapped && mods = "^" && key = "y")
+        mods := "", key := "f"
+    Send, % mods key
 }
 
 ;Interact

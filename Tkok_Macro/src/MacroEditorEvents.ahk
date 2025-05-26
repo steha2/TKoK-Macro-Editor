@@ -40,14 +40,14 @@ ClearMacro:
     if (Trim(curText) = "")  ; 이미 비어있으면 무시
         return
 
-    MsgBox, 4, Clear, 내용을 모두 지웁니까?
+    MsgBox, 4, %EDITOR_TITLE%, 내용을 모두 지웁니까?
     IfMsgBox, Yes
         GuiControl, macro:, EditMacro,  ; 빈 문자열로 설정
 return
 
 DeleteMacro:
     if (!FileExist(macroPath)) {
-        MsgBox, 유효한 매크로 파일 또는 폴더를 선택하세요.
+        MsgBox,, %EDITOR_TITLE%, 유효한 매크로 파일 또는 폴더를 선택하세요.
         return
     }
 
@@ -59,7 +59,7 @@ DeleteMacro:
         ? "정말 이 파일을 삭제하시겠습니까?"
         : "정말 이 폴더를 삭제하시겠습니까?`n(※ 비어있는 폴더만 삭제됩니다.)"
 
-    MsgBox, 4, %itemName% - %title%, %confirmMsg%
+    MsgBox, 4, %EDITOR_TITLE%, % itemName " - " title "`n " confirmMsg
     IfMsgBox, No
         return
 
@@ -67,7 +67,7 @@ DeleteMacro:
         failMsg := isFile
             ? "파일을 삭제할 수 없습니다.`n(사용 중이거나 권한 문제일 수 있습니다.)"
             : "폴더를 삭제할 수 없습니다.`n(※ 비어있는 폴더만 삭제 가능합니다.)"
-        MsgBox, 48, 삭제 실패, %failMsg%
+        MsgBox, 48, %EDITOR_TITLE%, 삭제 실패`n%failMsg%
     } else {
         ReloadTreeView()
     }
@@ -76,14 +76,15 @@ return
 
 RenameMacro:
     if (!macroPath || !FileExist(macroPath)) {
-        MsgBox, 선택된 파일이 없습니다.
+        MsgBox,,%EDITOR_TITLE%, 삭제 선택된 파일이 없습니다.
         return
     }
 
     SplitPath, macroPath, oldName, dir
+    msgText := (IsFile(macroPath) ? "파일명 변경" : "폴더명 변경")
     InputBox, newName
-        , % IsFile(macroPath) ? "파일명 변경" : "폴더명 변경"
-        , 새 이름을 입력하세요:`n
+        , %EDITOR_TITLE%
+        , %msgText%`n새 이름을 입력하세요:`n
         , , 300, 150, , , , , %oldName%
     if (ErrorLevel || newName = "")
         return
@@ -94,7 +95,7 @@ RenameMacro:
     newPath := dir . "\" . newName
 
     if (FileExist(newPath)) {
-        MsgBox, 동일한 이름의 파일이 이미 존재합니다.`n%newPath%
+        MsgBox,,%EDITOR_TITLE%, 동일한 이름의 파일이 이미 존재합니다.`n%newPath%
         return
     }
 
@@ -123,7 +124,9 @@ AddMacro:
         defaultInput := ""
     }
 
-    InputBox, macroRelPath, 새 매크로 파일, 파일 경로\이름을 입력하세요:`n(확장자 제외), , 300, 150, , , , , %defaultInput%
+    InputBox, macroRelPath, %EDITOR_TITLE% 
+            ,새 매크로 파일`n 파일 경로\이름을 입력하세요:`n(확장자 제외)
+            , , 300, 170, , , , , %defaultInput%
     if (!ErrorLevel){
         macroRelPath := StrReplace(macroRelPath, "/", "\")  ; ✅ / → \ 변환
         WriteMacroFile("", Trim(macroRelPath))
@@ -132,17 +135,14 @@ return
 
 SaveMacro:
     GuiControlGet, content, macro:, EditMacro
-
     ; 내용을 모두 지운채로도 저장가능
     if (Trim(content, "`n`t ") = "" && macroPath = "")
         return
-
     if (macroPath = "") {
     ; 선택된 매크로가 없으면 새 파일 생성
         WriteMacroFile(content)
         return
     }
-
     ; 선택된 경로가 있으면 기존 파일 덮어쓰기
     FileDelete, %macroPath%
     FileAppend, %content%, %macroPath%
@@ -166,7 +166,7 @@ ToggleMacroImpl() {
 
 
 MergeMacro:
-    MsgBox, 4, Merge Macro, 반복 명령 병합를 실행합니까? `n 클릭 오차범위 %EPSILON_RATIO%, %EPSILON_FIXED% 이내라면 합처집니다.
+    MsgBox,4,%EDITOR_TITLE%,반복 명령 병합를 실행합니까?`n클릭 오차범위 %EPSILON_RATIO%, %EPSILON_FIXED% 이내라면 합처집니다.
     IfMsgBox, No
         return
         

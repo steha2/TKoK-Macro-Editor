@@ -21,4 +21,4 @@ global isLaunchedByMain := true
 #Include %A_ScriptDir%\src\TKoK_Funcs.ahk
 #Include %A_ScriptDir%\src\War3Funcs.ahk
 
-#Include %A_ScriptDir%\lib\CommonUtils.ahk
+#Include %A_ScriptDir%\LibIncludes.ahk
