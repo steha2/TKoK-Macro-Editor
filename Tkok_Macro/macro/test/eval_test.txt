@@ -1,13 +1,15 @@
-﻿;Run, notepad
+﻿#t:notepad#
 
-#target:notepad#
+Run, %t%
+
+#target:t#
 
 
 #c:a+b# #a:1# #b:2# 
 
 send, %c%
 
-sendraw, %c%
+sendraw, `n`r%c%
 
 #c:a+b# 
 

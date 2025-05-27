@@ -90,7 +90,6 @@ return
 
 ; 키 매핑 토글
 ToggleYMapping(force := 2) {
-    global yMapped
     if (force != 2)
         yMapped := !!force
     else
@@ -129,10 +128,21 @@ F7::ClipWindow()
 ;아이템 교체
 !x::
     KeyWait, Alt
-    gosub, F5
-    Sleep, 200
-    SwapItems()
-    ;gosub, F5
+    GuiControlGet, squadText, %hMain%:, SquadField
+    StringSplit, squad, squadText, `,
+    WinGet, w3List, List, %W3_WINTITLE%
+    loopCount := Min(squad0,w3List)
+    Loop, %loopCount%
+    {
+        gosub, F5
+        Sleep, 200
+        SwapItems()
+        if (A_Index < loopCount)
+            SwitchW3(false)
+        else    
+            SwitchToMainW3()
+        Sleep, 300
+    }
 return
 
 ;Ctrl+Shift+C

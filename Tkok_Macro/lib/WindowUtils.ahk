@@ -59,6 +59,12 @@ Win_Wait(winTitle, timeout := "") {
     WinWait, %winTitle%, , %timeout%
 }
 
+Win_BringToFront(winTitle := "A") {
+    WinGet, hWnd, ID, %winTitle%
+    DllCall("SetWindowPos", "UInt", hWnd, "UInt", -1  ; HWND_TOP
+        , "Int", 0, "Int", 0, "Int", 0, "Int", 0
+        , "UInt", 0x0001 | 0x0002)  ; SWP_NOMOVE | SWP_NOSIZE
+}
 
 ;-------------------------------- 마우스 함수 --------------------------------
 
@@ -140,10 +146,8 @@ Click(x, y, btn := "L", coordMode := "", delay := 30) {
     }
 
     MouseMove, %x%, %y%
-    ; 우클릭일 경우
     Sleep, delay
-
-    if (btn == "R" || btn == false) {
+    if (btn = "R") {
         ; 우클릭: 0x08 (Down), 0x10 (Up)
         DllCall("mouse_event", "UInt", 0x08, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Down
         Sleep, delay
@@ -259,3 +263,5 @@ GetMonitorSize(hwnd, ByRef w, ByRef h) {
     w := right - left
     h := bottom - top
 }
+
+

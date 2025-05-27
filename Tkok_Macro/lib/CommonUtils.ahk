@@ -3,10 +3,9 @@ test(a := "", b := "", c := "", d := "", e := "", f := "", isTip := false, write
     args := [a, b, c, d, e, f]
     output := ""
     for index, value in args {
-        if (value != "")  ; ← 수정: a가 아니라 value 기준 체크해야 함
+        if (value != "")
             output .= "Arg" index " : " FormatValue(value) "`n`n"
     }
-    
     if (writeLog) {
         FileAppend, % output, % logFilePath
     }
@@ -73,4 +72,37 @@ RemoveToolTip() {
     ToolTip
 }
 
-; --------------------------- 파일 함수 -----------------------------------
+Note(newText := "") {
+    static guiName := "SingleNote"
+    static isCreated := false
+
+    ; GUI 없으면 생성
+    if (!isCreated) {
+        Gui, %guiName%:New
+        Gui, %guiName%:Default
+        Gui, +Resize +AlwaysOnTop
+        Gui, Margin, 10, 10
+        Gui, Add, Edit, vNoteEdit w400 h300 WantTab
+        Gui, Add, Button, g%guiName%_CloseSection Default, 닫기
+        isCreated := true
+    }
+
+    ; 기존 텍스트에 이어붙이기
+    GuiControlGet, existingText, %guiName%:, NoteEdit
+    updatedText := existingText . (existingText != "" ? "`n" : "") . newText
+    GuiControl, %guiName%:, NoteEdit, %updatedText%
+
+    ; 창이 이미 떠 있지 않다면 띄우기
+    WinGet, existingID, ID, ahk_gui %guiName%
+    if (!existingID) {
+        Gui, %guiName%:Show,, AHK 메모장
+    }
+
+    return
+
+    ; 닫기 버튼 핸들러
+    %guiName%_CloseSection:
+        Gui, %guiName%:Destroy
+        isCreated := false
+    return
+}

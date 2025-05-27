@@ -118,12 +118,13 @@ LoadSquad(champ := false) {
         }
         Chat("-qs")
         Sleep, 300
-        if (thisHero = "Shadowblade")
-            Sleep, 1000
-            Click(0.906, 0.879, "R")
-        if (thisHero = "Barbarian")
-            Sleep, 1000
+        if (thisHero = "Shadowblade") {
+            Click(0.976, 0.879, "R")
+            Sleep, 500
+        } else if (thisHero = "Barbarian") {
             Click(0.801, 0.953, "R")
+            Sleep, 500 
+        }
         if (A_Index < loopCount)
             SwitchW3(false)
         else    

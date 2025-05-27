@@ -1,4 +1,11 @@
+if not A_IsAdmin
+{
+    Run *RunAs "%A_ScriptFullPath%"
+    ExitApp
+}
 
-test(isDigit(var.d))
-#Include, lib/commonutils.ahk
-#Include, src/macroexec.ahk
+^u::
+Click(0.976, 0.879, "R")
+return
+
+#Include, LibIncludes.ahk

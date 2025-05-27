@@ -33,6 +33,8 @@ BackMacro:
     trimmed := RTrim(content,"`n`t ")
     ; 마지막 \n 위치 찾기 (없으면 -1)
     GuiControl, macro:, EditMacro, % TrimLastToken(trimmed, "`n")
+    GuiControl, Focus, EditMacro
+    Send, ^{End}
     return
 
 ClearMacro:
@@ -41,8 +43,11 @@ ClearMacro:
         return
 
     MsgBox, 4, %EDITOR_TITLE%, 내용을 모두 지웁니까?
-    IfMsgBox, Yes
-        GuiControl, macro:, EditMacro,  ; 빈 문자열로 설정
+    IfMsgBox, No
+        return
+    
+    GuiControl, macro:, EditMacro,  ; 빈 문자열로 설정
+    GuiControl, Focus, EditMacro
 return
 
 DeleteMacro:
@@ -106,6 +111,7 @@ RenameMacro:
 
     ReloadTreeView(newPath)
     ShowTip("이름 변경 완료: " . newName)
+    GuiControl, Focus, EditMacro
 return
 
 AddMacro:
@@ -130,6 +136,7 @@ AddMacro:
     if (!ErrorLevel){
         macroRelPath := StrReplace(macroRelPath, "/", "\")  ; ✅ / → \ 변환
         WriteMacroFile("", Trim(macroRelPath))
+        GuiControl, Focus, EditMacro
     }
 return
 
@@ -166,12 +173,14 @@ ToggleMacroImpl() {
 
 
 MergeMacro:
-    MsgBox,4,%EDITOR_TITLE%,반복 명령 병합를 실행합니까?`n클릭 오차범위 %EPSILON_RATIO%, %EPSILON_FIXED% 이내라면 합처집니다.
+    GuiControlGet, content, macro:, EditMacro
+    if(Trim(content) = "")
+        return
+    MsgBox,4,%EDITOR_TITLE%,반복 명령 병합를 실행합니까?`n클릭 오차범위 %EPSILON_RATIO% or %EPSILON_FIXED%px 이내라면 합쳐집니다.
     IfMsgBox, No
         return
-        
-    GuiControlGet, content, macro:, EditMacro
     GuiControl, macro:, EditMacro, % MergeMacro(content)
+    GuiControl, Focus, EditMacro
 return
 
 ; -------------------------

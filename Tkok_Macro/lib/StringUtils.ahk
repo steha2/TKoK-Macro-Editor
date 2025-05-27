@@ -38,11 +38,7 @@ StrJoin(arr, delim := "`n") {
 
 ToKeyLengthSortedArray(object) {
     ; 복사본 생성
-    copied := {}
-    for k, v in object
-        copied[k] := v
-
-    arr := ObjectToArray(copied)
+    arr := ObjectToArray(object)
     count := arr.Length()
     Loop, % count {
         Loop, % count - A_Index {
@@ -57,12 +53,6 @@ ToKeyLengthSortedArray(object) {
     return arr
 }
 
-ArrayToObject(arr) {
-    obj := {}
-    for index, item in arr
-        obj[item.key] := item.value
-    return obj
-}
 
 ObjectToArray(obj) {
     arr := []
@@ -70,4 +60,11 @@ ObjectToArray(obj) {
         arr.Push({key: k, value: v})
     }
     return arr
+}
+
+ArrayToObject(arr) {
+    obj := {}
+    for index, item in arr
+        obj[item.key] := item.value
+    return obj
 }
