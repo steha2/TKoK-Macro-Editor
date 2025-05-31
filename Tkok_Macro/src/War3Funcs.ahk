@@ -30,7 +30,7 @@ RestoreW3Pos() {
         if (winClass = W3_WINTITLE) {
             mainW3Hwnd := activeHwnd
             WinMove, ahk_id %mainW3Hwnd%, , %savedX%, %savedY%, %savedW%, %savedH%
-            ShowTip("현재 창을 mainW3Hwnd 로 사용`nX:" savedX " Y:" savedY " W:" savedW " H:" savedH)
+            ; ShowTip("현재 창을 mainW3Hwnd 로 사용`nX:" savedX " Y:" savedY " W:" savedW " H:" savedH)
         }
     }
 }

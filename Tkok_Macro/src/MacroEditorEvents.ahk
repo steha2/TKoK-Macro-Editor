@@ -183,6 +183,24 @@ MergeMacro:
     GuiControl, Focus, EditMacro
 return
 
+ToggleSpy:
+if (WinExist("ahk_id " . miniSpyHwnd))
+{
+    WinClose, ahk_id %miniSpyHwnd%
+    miniSpyHwnd := ""
+}
+else
+{
+    Run, *RunAs "%A_ScriptDir%\src\MiniSpy.ahk", , , pid
+    WinWait, ahk_pid %pid%, , 2
+    if ErrorLevel {
+        MsgBox, MiniSpy 실행 실패
+        return
+    }
+    miniSpyHwnd := WinExist("ahk_pid " . pid)
+}
+return
+
 ; -------------------------
 ; 기록 시작/중지
 ToggleRecord:
@@ -211,8 +229,26 @@ EnableGuiControl(ctrlName, guiName := "macro") {
     GuiControl, %guiName%:Enable, %ctrlName%
 }
 
+OnCoordMode:
+    GuiControlGet, isClient, macro:, ClientBtn
+    if (isClient) {
+        GuiControl, macro:Enable, RatioBtn
+        GuiControl, macro:, RatioBtn, 1
+    } else {
+        GuiControl, macro:Disable, RatioBtn
+        GuiControl, macro:, FixedBtn, 1  ; Fixed 선택
+    }
+return
+
 Insert::Gosub, ToggleMacro
 Pause:: Gosub, ToggleRecord
+
+#If !isRecording && runningMacroCount <= 0
++Space::
+    MouseGetPos,,, hwnd
+    if(GetAdjustedCoords(xStr,yStr))
+        LogToEdit("Click:L, " . xStr . ", " . yStr)
+return
 
 #If IsTargetWindow("Macro Editor")
 ^S:: Gosub, SaveMacro

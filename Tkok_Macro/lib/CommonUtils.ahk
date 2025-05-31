@@ -40,27 +40,6 @@ test2(a="", b="", c="", d="", e="", f="",isTip:=true,isLog:=true) {
 }
 
 
-Chat(text) {
-    SendKey("{Enter}",100)
-    Suspend, On
-    SendRaw, %text%
-    Suspend, Off
-    SendKey("{Enter}")
-}
-
-;dealy :음/양수 선/후 딜레이
-SendKey(key, delay := 0, ignoreSpace := false) {
-    if (delay < 0)
-        Sleep, -delay
-
-    if (ignoreSpace)
-        key := StrReplace(key, " ")
-
-    Send, {Blind}%key%
-
-    if (delay > 0)
-        Sleep, delay
-}
 
 ShowTip(msg, duration := 1500) {
     Tooltip, %msg%

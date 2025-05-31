@@ -5,7 +5,7 @@ global CONFIG_FILE := A_ScriptDir . "\config.ini"
 global EPSILON_RATIO := 0.005
 global EPSILON_FIXED := 3
 global MACRO_DIR := A_ScriptDir . "\macro"
-global DEFAULT_TARGET := "ahk_class Warcraft III" ;매크로 실행시 활성화 기본 창
+;global DEFAULT_TARGET := "ahk_class Warcraft III" ;매크로 실행시 활성화 기본 창
 global BASE_DELAY := 30
 global MACRO_LIMIT := 1000
 global EDITOR_TITLE := "Macro Editor"
@@ -19,6 +19,7 @@ global isRecording := false
 global macroGuiShown := false
 global suspendTreeEvents := false
 global macroAbortRequested := false
+global CoordTrackingRunning := false
 ;---------------------------------------------------
 
 
@@ -48,6 +49,7 @@ buttons.Push({text: "Delete",   g: "DeleteMacro",   v: "DeleteBtn"})
 buttons.Push({text: "🡅 Back",     g: "BackMacro",     v: "BackBtn"})
 buttons.Push({text: "Clear",    g: "ClearMacro",    v: "ClearBtn"})
 buttons.Push({text: "Merge",     g: "MergeMacro",     v: "MergeBtn"})
+;buttons.Push({text: "Spy",     g: "ToggleSpy",     v: "SpyBtn"})
 
 ; === 버튼 추가 루프 ===
 for index, btn in buttons {
@@ -69,8 +71,8 @@ Gui, macro:Add, Edit, x290 y50 w%editW% h410 -Wrap vEditMacro
 Gui, Font, , Segoe UI
 
 Gui, macro:Add, Edit, x290 y470 w%editW% h30 vMacroPath +ReadOnly
-Gui, macro:Add, Edit, x290 y510 w240 h30 vLatestRec1 +ReadOnly
-Gui, macro:Add, Edit, x540 y510 w240 h30 vLatestRec2 +ReadOnly
+Gui, macro:Add, Edit, x290 y510 w200 h30 vLatestRec +ReadOnly
+Gui, macro:Add, Edit, x500 y510 w280 h30 vCoordTrack +ReadOnly
 
 macroWinX := GetIniValue("MacroGUI","X","Center")
 macroWinY := GetIniValue("MacroGUI","Y","Center")
@@ -99,13 +101,16 @@ Loop, Parse, hotkeyMacros, `n, `r
 
 Gui, font, s8
 
-Gui, macro:Add, Radio, x790 y510 vClientBtn Checked Group, Client
-Gui, macro:Add, Radio, x790 y530 vScreenBtn, Screen
+Gui, macro:Add, Radio, x790 y510 vClientBtn gOnCoordMode Checked Group, Client
+Gui, macro:Add, Radio, x790 y530 vScreenBtn gOnCoordMode , Screen
 
 Gui, macro:Add, Radio, x850 y510 vRatioBtn Checked Group, Ratio
 Gui, macro:Add, Radio, x850 y530 vFixedBtn, Fixed
 
 ReloadTreeView(GetIniValue("MacroGUI", "MACRO_PATH"))
+
+SetTimer, CoordTracking, 500
+
 return
 
 SaveMacroEditorSettings() {
@@ -117,4 +122,3 @@ SaveMacroEditorSettings() {
     if (y2 > 0)
         SetIniValue("MacroGUI", "Y", y2)
 }
-

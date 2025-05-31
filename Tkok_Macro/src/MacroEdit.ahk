@@ -9,24 +9,8 @@ LogKeyControl(key) {
 
 LogMouseClick(key) {
     MouseGetPos,,, hwnd
-    if (!isRecording || IsTargetWindow("Macro Editor", hwnd))
+    if (!isRecording || IsTargetWindow("Macro Editor", hwnd) || !GetAdjustedCoords(xStr, yStr))
         return
-
-    GuiControlGet, isClient, macro:, ClientBtn
-    GuiControlGet, isRatio, macro:, RatioBtn
-    if (isClient) {
-        CoordMode, Mouse, Client
-    } else {
-        CoordMode, Mouse, Screen
-    }
-    if (isRatio) {
-        if(!GetMouseRatio(xStr,yStr))
-            return
-    } else {
-        MouseGetPos, mx, my
-        xStr := mx
-        yStr := my
-    }
     btn := SubStr(key, 1, 1)
     LogToEdit("Click:" . btn . ", " . xStr . ", " . yStr)
 }
@@ -89,9 +73,7 @@ LogToEdit(line) {
         current .= "`n"  ; 마지막 줄에 줄바꿈 추가
 
     GuiControl, macro:, EditMacro, % current . line
-    GuiControlGet, l2, macro:, LatestRec2
-    GuiControl, macro:, LatestRec1, % l2
-    GuiControl, macro:, LatestRec2, % line
+    GuiControl, macro:, LatestRec, % line
 }
 
 MergeMacro(content) {
@@ -141,22 +123,22 @@ IsSameMacroLine(line1, line2) {
 
     pattern := "i)^Click:(\w),\s*([\d.]+),\s*([\d.]+)"
     if (RegExMatch(line1, pattern , am) && RegExMatch(line2, pattern , bm)) {
+        ; 문자열 기반 소수점 포함 여부로 정수/실수 판별
+        isFloat1 := InStr(am2, ".") || InStr(am3, ".")
+        isFloat2 := InStr(bm2, ".") || InStr(bm3, ".")
+
         x1 := am2 + 0, y1 := am3 + 0
         x2 := bm2 + 0, y2 := bm3 + 0
         dist := Sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
-        ; Check if all coordinates are integers
-        isInt1 := (Mod(x1, 1) = 0) && (Mod(y1, 1) = 0)
-        isInt2 := (Mod(x2, 1) = 0) && (Mod(y2, 1) = 0)
-
         if (am1 != bm1)
             return false
-        else if (isInt1 && isInt2)
+        else if (!isFloat1 && !isFloat2) ; 둘 다 정수
             return dist <= EPSILON_FIXED
-        else if (!isInt1 && !isInt2)
+        else if (isFloat1 && isFloat2)   ; 둘 다 실수
             return dist <= EPSILON_RATIO
         else
-            return false ; 정수/실수가 혼합된 경우는 다르다고 간주
+            return false ; 정수/실수 혼합 → 다르다고 판단
     } else {
         return (line1 = line2)
     }
@@ -200,4 +182,33 @@ WriteMacroFile(content := "", macroFilePath := "") {
     FileAppend, %content%, %fullPath%
     ShowTip("매크로 파일 생성 완료`n" fullPath)
     ReloadTreeView(fullPath)
+}
+
+GetAdjustedCoords(ByRef x, ByRef y) {
+    GuiControlGet, isClient, macro:, ClientBtn
+    GuiControlGet, isRatio, macro:, RatioBtn
+    CoordMode, Mouse, % isClient ? "Client" : "Screen"
+    if (isRatio) {
+        if(!GetMouseRatio(x, y, "A"))
+            return false
+    } else {
+        MouseGetPos, x, y
+    }
+    return true
+}
+
+CoordTracking() {
+    if CoordTrackingRunning || GetKeyState("Shift", "P")
+        return
+    CoordTrackingRunning := true
+    if (GetAdjustedCoords(x, y)) {
+        coordStr := x . ", " . y
+        GuiControlGet, isClient, macro:, ClientBtn
+        WinGetTitle, activeTitle, A
+        if (isClient && activeTitle) {
+            coordStr .= " / " . activeTitle
+        }
+        GuiControl, macro:, CoordTrack, %coordStr%
+    }
+    CoordTrackingRunning := false
 }

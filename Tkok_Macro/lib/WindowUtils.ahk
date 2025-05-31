@@ -129,36 +129,7 @@ IsMouseClipped() {
         return true
 }
 
-Click(x, y, btn := "L", coordMode := "", delay := 30) {
-    isClient := !InStr(coordMode,"screen")
-    isRatio := !InStr(coordMode,"fixed")
 
-    CoordMode, Mouse, % isClient ? "Client" : "Screen"
-    
-    if(isRatio){
-        if(isClient) {
-            GetClientSize("A", w, h)
-        } else {
-            GetMonitorSize("A", w, h)
-        }
-        x := Round(x * w)
-        y := Round(y * h)
-    }
-
-    MouseMove, %x%, %y%
-    Sleep, delay
-    if (btn = "R") {
-        ; 우클릭: 0x08 (Down), 0x10 (Up)
-        DllCall("mouse_event", "UInt", 0x08, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Down
-        Sleep, delay
-        DllCall("mouse_event", "UInt", 0x10, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Up
-    } else {
-        ; 좌클릭: 0x02 (Down), 0x04 (Up)
-        DllCall("mouse_event", "UInt", 0x02, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Down
-        Sleep, delay
-        DllCall("mouse_event", "UInt", 0x04, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Up
-    }
-}
 ; ------------------------------- 화면 함수 ---------------------------------
 
 IsAllowedWindow(target) {
@@ -211,7 +182,11 @@ ActivateWindow(target) {
 }
 
 GetClientSize(hwnd := "A", ByRef w := "", ByRef h := "") {
-    if (!hwnd || hwnd = "A")
+    if (!hwnd) {
+        ShowTip("hwnd 없음")
+        return
+    }
+    if (hwnd = "A")
         WinGet, hwnd, ID, A
 
     VarSetCapacity(rect, 16)
@@ -221,22 +196,18 @@ GetClientSize(hwnd := "A", ByRef w := "", ByRef h := "") {
 }
 
 GetMouseRatio(ByRef ratioX, ByRef ratioY, hwnd := "A") {
-    ; hwnd 생략 시 활성 창 사용
-    if (hwnd = "A")
+     if (hwnd = "A")
         WinGet, hwnd, ID, A
-
     GetClientSize(hwnd, w, h)
+    MouseGetPos, x, y, , , 2  ; 클라이언트 기준
 
     ; 유효성 검사
     if (!w || !h || w < 10 || h < 10) {
         ratioX := -1
         ratioY := -1
-        Showtip("오류, 클라이언트 영역 크기를 가져오지 못했거나 유효하지 않습니다.`n창 크기: width : " w " height : " h)
+        ShowTip("오류: 클라이언트/스크린 크기를 가져올 수 없습니다.`n창 크기: width: " w " height: " h)
         return false
     }
-
-    ; 마우스 좌표 (클라이언트 기준)
-    MouseGetPos, x, y, , , 2
 
     ; 비율 계산
     ratioX := Round(x / w, 3)
@@ -264,4 +235,22 @@ GetMonitorSize(hwnd, ByRef w, ByRef h) {
     h := bottom - top
 }
 
+GetMouseMonitorRatio(ByRef rx, ByRef ry) {
+    MouseGetPos, x, y
+
+    SysGet, count, MonitorCount
+    Loop %count%
+    {
+        SysGet, mon, Monitor, %A_Index%
+        if (x >= monLeft && x < monRight && y >= monTop && y < monBottom) {
+            monW := monRight - monLeft
+            monH := monBottom - monTop
+            rx := Round((x - monLeft) / monW, 3)
+            ry := Round((y - monTop) / monH, 3)
+            return true
+        }
+    }
+    rx := ry := -1
+    return false
+}
 

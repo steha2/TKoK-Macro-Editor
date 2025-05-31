@@ -134,14 +134,17 @@ F7::ClipWindow()
     loopCount := Min(squad0,w3List)
     Loop, %loopCount%
     {
+        SendKey("n",100)
         gosub, F5
         Sleep, 200
         SwapItems()
+        gosub, F5
         if (A_Index < loopCount)
             SwitchW3(false)
         else    
             SwitchToMainW3()
         Sleep, 300
+        
     }
 return
 
