@@ -209,19 +209,20 @@ CoordTracking() {
     CoordTrackingRunning := false
 }
 
-ProcessPresetLines(lines, vars) {
-    newContents := []
+PreprocessMacroLines(lines, vars) {
+    processedLines := []
     for index, line in lines {
         line := ResolveExpr(line, vars)
+        cmd := StripComments(cmd)
         cmd := ParseLine(line, vars)
         if (vars.HasKey("force")) {
             vars.Delete("force")
-            ExecSingleCommand(StripComments(cmd), vars)
+            ExecSingleCommand(cmd, vars)
         } else {
-            newContents.Push(line)
+            processedLines.Push(line)
         }
     }
-    return newContents
+    return processedLines
 }
 
 LoadPresetForMacro(fileName, vars) {
@@ -242,9 +243,69 @@ LoadPresetForMacro(fileName, vars) {
             }
             
             lines := StrSplit(presetContent, ["`r`n", "`n", "`r"])
-            newContents := ProcessPresetLines(lines, vars)
-
+            newContents := PreprocessMacroLines(lines, vars)
             return RTrim(StrJoin(newContents),"`t`n ")
         }
     }
 }
+
+ToggleOverlay() {
+    if (overlayVisible) {
+        Gui, overlay:Destroy
+        overlayVisible := false
+        return
+    }
+
+    ; Overlay GUI 준비
+    Gui, overlay:+AlwaysOnTop -Caption +ToolWindow +HwndhOverlay
+    Gui, overlay:Font, Bold
+
+    vars := {}
+    GuiControlGet, currentText, macro:, EditMacro
+    lines := StrSplit(currentText, ["`r`n", "`n", "`r"])
+    lines := PreprocessMacroLines(lines, vars)
+
+    if(vars.target) 
+        hwnd := ActivateWindow(vars.target)
+    else 
+        WinGet, hwnd, ID, A
+
+    if(!hwnd)
+        return
+        
+    GetClientPos(hwnd, x, y)
+    GetClientSize(hwnd, w, h)
+    dpi := GetWindowDPI(hwnd)
+    
+    w := w/dpi*100
+    h := h/dpi*100
+
+    Loop, % lines.Length()
+    {
+        if RegExMatch(lines[A_Index], "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)$", m) {
+            mx := m2/dpi*100, my := m3/dpi*100
+            CalcCoords(mx, my, vars.coordMode)
+            boxX := mx - 14
+            boxY := my - 14
+            Gui, overlay:Add, Button, x%boxX% y%boxY% w29 h29 cRed BackgroundTrans Border gOnOverlayBtn, %A_Index%
+        }
+    }
+
+    Gui, overlay:Color, 0x222244
+    Gui, overlay:Show, x%x% y%y% w%w% h%h% NoActivate
+    WinSet, Transparent, 150, ahk_id %hOverlay% 
+    overlayVisible := true
+}
+
+OnOverlayBtn:
+GuiControlGet, btnText, overlay:, %A_GuiControl%
+Gui, overlay:Destroy
+overlayVisible := false
+GuiControl, macro:Focus, EditMacro
+lineNum := btnText -1
+SendKey("^{Home}")
+Loop, %lineNum% {
+    SendKey("{Down}")
+}
+SendKey("+{End}")
+return

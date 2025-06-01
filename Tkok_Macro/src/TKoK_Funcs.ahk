@@ -115,20 +115,21 @@ LoadSquad(champ := false) {
         if(!champ) {
             thisHero := squad%A_Index%
             LoadHero(thisHero)
+            Chat("-qs")
+            Sleep, 300
+            if (thisHero = "Shadowblade") {
+                Click(0.976, 0.879, "R")
+                Click(0.906, 0.879, "R")
+                Sleep, 500
+            } else if (thisHero = "Barbarian") {
+                Click(0.801, 0.953, "R")
+                Sleep, 500 
+            } else if (thisHero = "Chaotic Knight") {
+                Click(0.797, 0.954, "R")
+                Sleep, 500 
+            }
         }
-        Chat("-qs")
-        Sleep, 300
-        if (thisHero = "Shadowblade") {
-            Click(0.976, 0.879, "R")
-            Click(0.906, 0.879, "R")
-            Sleep, 500
-        } else if (thisHero = "Barbarian") {
-            Click(0.801, 0.953, "R")
-            Sleep, 500 
-        } else if (thisHero = "Chaotic Knight") {
-            Click(0.797, 0.954, "R")
-            Sleep, 500 
-        }
+        
         if (A_Index < loopCount)
             SwitchW3(false)
         else    

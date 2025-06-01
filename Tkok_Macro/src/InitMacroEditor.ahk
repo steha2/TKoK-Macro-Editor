@@ -20,6 +20,8 @@ global macroGuiShown := false
 global suspendTreeEvents := false
 global macroAbortRequested := false
 global CoordTrackingRunning := false
+global overlayVisible, hOverlay
+
 ;---------------------------------------------------
 
 

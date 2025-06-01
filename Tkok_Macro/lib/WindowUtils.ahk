@@ -195,6 +195,23 @@ GetClientSize(hwnd := "A", ByRef w := "", ByRef h := "") {
     h := NumGet(rect, 12, "int")
 }
 
+GetClientPos(hwnd := "A", ByRef x:= "", ByRef y := "") {
+    if (!hwnd) {
+        return
+    }
+    if (hwnd = "A")
+        WinGet, hwnd, ID, A
+
+    ; 클라이언트 (0,0) → 화면 좌표 변환
+    VarSetCapacity(pt, 8, 0)
+    NumPut(0, pt, 0, "Int")  ; pt.x = 0
+    NumPut(0, pt, 4, "Int")  ; pt.y = 0
+    DllCall("ClientToScreen", "Ptr", hwnd, "Ptr", &pt)
+
+    x := NumGet(pt, 0, "Int")
+    y := NumGet(pt, 4, "Int")
+}
+
 GetMouseRatio(ByRef ratioX, ByRef ratioY, hwnd := "A") {
      if (hwnd = "A")
         WinGet, hwnd, ID, A
@@ -252,5 +269,15 @@ GetMouseMonitorRatio(ByRef rx, ByRef ry) {
     }
     rx := ry := -1
     return false
+}
+
+GetWindowDPI(hwnd := "A") {
+    if (hwnd = "A")
+        WinGet, hwnd, ID, A
+    ; AHK 1.1 은 기본적으로 DPI unaware → DPI 인식 설정이 필요할 수 있음
+    hdc := DllCall("GetDC", "Ptr", hwnd, "Ptr")
+    dpi := DllCall("GetDeviceCaps", "Ptr", hdc, "Int", 88)  ; LOGPIXELSX
+    DllCall("ReleaseDC", "Ptr", hwnd, "Ptr", hdc)
+    return Round(dpi / 96 * 100)  ; 96 DPI가 100%
 }
 

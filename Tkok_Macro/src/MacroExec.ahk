@@ -22,9 +22,10 @@ ExecMacro(scriptText, vars) {
             continue
         ; -------------------------------------
       
-        line := ParseLine(line, vars)
         line := ResolveExpr(line, vars)
         line := StripComments(line)
+        line := ParseLine(line, vars)
+        
         if (line = "")
             continue
         
@@ -49,8 +50,7 @@ ExecMacro(scriptText, vars) {
             break
     }
     UpdateMacroState(-1)
-    ;test2(command, vars, runMacroCount)
-    ShowTip("--- Macro End ---`n,실행중인 매크로 수 : " runMacroCount)
+    ; ShowTip("--- Macro End ---`n,실행중인 매크로 수 : " runMacroCount)
 }
 
 ;명령줄의 %key% 사이의 매크로내의 전역변수 vars 에 key:value로 치환한다

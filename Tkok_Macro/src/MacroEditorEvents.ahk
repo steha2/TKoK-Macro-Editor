@@ -33,7 +33,7 @@ BackMacro:
     trimmed := RTrim(content,"`n`t ")
     ; 마지막 \n 위치 찾기 (없으면 -1)
     GuiControl, macro:, EditMacro, % TrimLastToken(trimmed, "`n")
-    GuiControl, Focus, EditMacro
+    GuiControl, macro:Focus, EditMacro
     Send, ^{End}
     return
 
@@ -47,7 +47,7 @@ ClearMacro:
         return
     
     GuiControl, macro:, EditMacro,  ; 빈 문자열로 설정
-    GuiControl, Focus, EditMacro
+    GuiControl, macro:Focus, EditMacro
 return
 
 DeleteMacro:
@@ -55,7 +55,6 @@ DeleteMacro:
         MsgBox,, %EDITOR_TITLE%, 유효한 매크로 파일 또는 폴더를 선택하세요.
         return
     }
-
     SplitPath, macroPath, itemName, outDir
 
     isFile := IsFile(macroPath)
@@ -121,7 +120,7 @@ RenameMacro:
 
     ReloadTreeView(newPath)
     ShowTip("이름 변경 완료: " . newName)
-    GuiControl, Focus, EditMacro
+    GuiControl, macro:Focus, EditMacro
 return
 
 
@@ -150,7 +149,7 @@ AddMacro:
     newContents := LoadPresetForMacro(fileName, vars)
 
     WriteMacroFile(newContents, macroRelPath)
-    GuiControl, Focus, EditMacro
+    GuiControl, macro:Focus, EditMacro
 return
 
 SaveMacro:
@@ -193,7 +192,7 @@ MergeMacro:
     IfMsgBox, No
         return
     GuiControl, macro:, EditMacro, % MergeMacro(content)
-    GuiControl, Focus, EditMacro
+    GuiControl, macro:Focus, EditMacro
 return
 
 ToggleSpy:
@@ -282,3 +281,5 @@ return
 ;     MsgBox, %output%
 ;     return
 ; }
+
+!F1::ToggleOverlay()

@@ -1,5 +1,8 @@
 ﻿#target:Warcraft III#
-champ\mk\warrior-equip.txt
+
+Exec, champ\mk\warrior-equip
+
+Exec, 스텟창 #spsi:140# #stat:Z#
 
 Chat, -tt #delay:300# 
 Click:L, 0.413, 0.232
@@ -19,4 +22,3 @@ Click:L, 0.272, 0.596
 Click:L, 0.272, 0.589
 Click:L, 0.633, 0.409 #rep:3#
 
-스텟창.txt #spsi:140# #stat:z#
