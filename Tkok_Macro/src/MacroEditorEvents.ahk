@@ -252,11 +252,18 @@ OnCoordMode:
     }
 return
 
-Insert::Gosub, ToggleMacro
-Pause:: Gosub, ToggleRecord
+Insert::
+KeyWait, Insert
+Gosub, ToggleMacro
+return
+
+Pause::
+KeyWait, Pause
+Gosub, ToggleRecord
+return
 
 #If !isRecording && runningMacroCount <= 0
-+Space::
+!F2::
     MouseGetPos,,, hwnd
     if(GetAdjustedCoords(xStr,yStr))
         LogToEdit("Click:L, " . xStr . ", " . yStr)

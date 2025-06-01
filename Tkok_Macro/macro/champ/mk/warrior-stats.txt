@@ -1,10 +1,9 @@
 ﻿#target:Warcraft III#
-
 Exec, champ\mk\warrior-equip
 
 Exec, 스텟창 #spsi:140# #stat:Z#
 
-Chat, -tt #delay:300# 
+Chat, -tt #wait:300# 
 Click:L, 0.413, 0.232
 Click:L, 0.419, 0.311
 Click:L, 0.428, 0.423

@@ -118,7 +118,7 @@ ExecMultiW3(num := 0) {
     if(num > 0){
         numW3 := num
     } else {
-        numW3 := GetIniValue("NUM_W3", 3)
+        numW3 := GetIniValue("Settings","NUM_W3", 3)
         if !isNatural(numW3) {
             GuiControlGet, squad, main:, SquadField
             StringSplit, squadArray, squad, `,

@@ -209,13 +209,13 @@ CoordTracking() {
     CoordTrackingRunning := false
 }
 
-PreprocessMacroLines(lines, vars) {
+PreprocessMacroLines(lines, vars, isExec := false) {
     processedLines := []
     for index, line in lines {
         line := ResolveExpr(line, vars)
         cmd := StripComments(cmd)
         cmd := ParseLine(line, vars)
-        if (vars.HasKey("force")) {
+        if (vars.HasKey("force") && isExec) {
             vars.Delete("force")
             ExecSingleCommand(cmd, vars)
         } else {
@@ -243,7 +243,7 @@ LoadPresetForMacro(fileName, vars) {
             }
             
             lines := StrSplit(presetContent, ["`r`n", "`n", "`r"])
-            newContents := PreprocessMacroLines(lines, vars)
+            newContents := PreprocessMacroLines(lines, vars, true)
             return RTrim(StrJoin(newContents),"`t`n ")
         }
     }
@@ -282,7 +282,7 @@ ToggleOverlay() {
 
     Loop, % lines.Length()
     {
-        if RegExMatch(lines[A_Index], "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)$", m) {
+        if RegExMatch(lines[A_Index], "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)", m) {
             mx := m2/dpi*100, my := m3/dpi*100
             CalcCoords(mx, my, vars.coordMode)
             boxX := mx - 14

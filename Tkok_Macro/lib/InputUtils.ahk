@@ -33,7 +33,7 @@ CalcCoords(ByRef x, ByRef y, coordMode := "") {
     }
 }
 
-Click(x, y, btn := "L", delay := 30, coordMode := "") {
+Click(x, y, btn := "L", delay := 50, coordMode := "") {
     CalcCoords(x, y, coordMode)
     MouseMove, %x%, %y%
     Sleep, delay
