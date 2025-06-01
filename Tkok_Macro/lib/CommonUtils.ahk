@@ -51,37 +51,42 @@ RemoveToolTip() {
     ToolTip
 }
 
-Note(newText := "") {
-    static guiName := "SingleNote"
-    static isCreated := false
+Clone(obj) {
+    new := {}
+    for k, v in obj
+        new[k] := v
+    return new
+}
 
+Note(newText := "", isAppend := false) {
+    static isCreated := false
+    static NoteEdit
     ; GUI 없으면 생성
     if (!isCreated) {
-        Gui, %guiName%:New
-        Gui, %guiName%:Default
-        Gui, +Resize +AlwaysOnTop
-        Gui, Margin, 10, 10
-        Gui, Add, Edit, vNoteEdit w400 h300 WantTab
-        Gui, Add, Button, g%guiName%_CloseSection Default, 닫기
+        Gui, SingleNote: New
+        Gui, SingleNote: +Resize +AlwaysOnTop
+        Gui, SingleNote: Margin, 10, 10
+        Gui, SingleNote: Add, Edit, vNoteEdit w400 h300 WantTab
         isCreated := true
     }
 
-    ; 기존 텍스트에 이어붙이기
-    GuiControlGet, existingText, %guiName%:, NoteEdit
-    updatedText := existingText . (existingText != "" ? "`n" : "") . newText
-    GuiControl, %guiName%:, NoteEdit, %updatedText%
+    if (isAppend) {
+        GuiControlGet, existingText, SingleNote:, NoteEdit
+        newText := existingText . (existingText != "" ? "`n" : "") . newText
+    }
+    GuiControl, SingleNote:, NoteEdit, %newText%
 
     ; 창이 이미 떠 있지 않다면 띄우기
-    WinGet, existingID, ID, ahk_gui %guiName%
+    WinGet, existingID, ID, ahk_gui SingleNote
     if (!existingID) {
-        Gui, %guiName%:Show,, AHK 메모장
+        Gui, SingleNote: Show,, AHK 메모장
     }
 
     return
 
     ; 닫기 버튼 핸들러
-    %guiName%_CloseSection:
-        Gui, %guiName%:Destroy
+    SingleNoteGuiClose:
+        Gui, SingleNote:Destroy
         isCreated := false
     return
 }

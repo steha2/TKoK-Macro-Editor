@@ -1,0 +1,7 @@
+﻿#target:Warcraft III#
+
+Exec, champ\mk\shaman-equip
+
+Exec, 스텟창 #spsi:140# #stat:z#
+
+Chat, -tt #delay:300# 

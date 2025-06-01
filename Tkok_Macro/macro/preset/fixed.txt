@@ -1,1 +1,1 @@
-﻿
+﻿#coord_mode:fixed#

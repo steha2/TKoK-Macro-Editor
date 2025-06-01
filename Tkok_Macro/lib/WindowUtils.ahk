@@ -183,7 +183,7 @@ ActivateWindow(target) {
 
 GetClientSize(hwnd := "A", ByRef w := "", ByRef h := "") {
     if (!hwnd) {
-        ShowTip("hwnd 없음")
+        ;ShowTip("hwnd 없음")
         return
     }
     if (hwnd = "A")
@@ -205,7 +205,7 @@ GetMouseRatio(ByRef ratioX, ByRef ratioY, hwnd := "A") {
     if (!w || !h || w < 10 || h < 10) {
         ratioX := -1
         ratioY := -1
-        ShowTip("오류: 클라이언트/스크린 크기를 가져올 수 없습니다.`n창 크기: width: " w " height: " h)
+        ; ShowTip("오류: 클라이언트/스크린 크기를 가져올 수 없습니다.`n창 크기: width: " w " height: " h)
         return false
     }
 

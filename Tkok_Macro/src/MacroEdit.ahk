@@ -153,13 +153,9 @@ IsMacroModified() {
 WriteMacroFile(content := "", macroFilePath := "") {
     if (macroFilePath  = "") {
         FormatTime, now,, MMdd_HHmmss
-        macroFilePath := "Macro_" . now . ".txt"
+        macroFilePath := "Macro_" . now
     }
-
-    ; .txt 확장자 붙이기 (없으면)
-    if (!RegExMatch(macroFilePath, "i)\.txt$"))
-        macroFilePath .= ".txt"
-
+    AppendExt(macroFilePath)
     ; 절대경로인지 검사 (드라이브 문자 or \로 시작)
     if (SubStr(macroFilePath, 1, 1) = "\" || RegExMatch(macroFilePath, "^[a-zA-Z]:\\")) {
         fullPath := macroFilePath
@@ -211,4 +207,44 @@ CoordTracking() {
         GuiControl, macro:, CoordTrack, %coordStr%
     }
     CoordTrackingRunning := false
+}
+
+ProcessPresetLines(lines, vars) {
+    newContents := []
+    for index, line in lines {
+        line := ResolveExpr(line, vars)
+        cmd := ParseLine(line, vars)
+        if (vars.HasKey("force")) {
+            vars.Delete("force")
+            ExecSingleCommand(StripComments(cmd), vars)
+        } else {
+            newContents.Push(line)
+        }
+    }
+    return newContents
+}
+
+LoadPresetForMacro(fileName, vars) {
+    presetDir := MACRO_DIR . "\preset"
+    Loop, Files, %presetDir%\*.txt
+    {
+        SplitPath, A_LoopFileName,,,, noExt
+        if InStr(fileName, noExt) {
+            FileRead, presetContent, %A_LoopFileFullPath%
+
+            ; fileName를 - 또는 _ 기준으로 분리하여 vars에 넣기
+            i := 1
+            Loop, Parse, fileName, -_ 
+            {
+                key := "part" . i
+                vars[key] := A_LoopField
+                i++
+            }
+            
+            lines := StrSplit(presetContent, ["`r`n", "`n", "`r"])
+            newContents := ProcessPresetLines(lines, vars)
+
+            return RTrim(StrJoin(newContents),"`t`n ")
+        }
+    }
 }

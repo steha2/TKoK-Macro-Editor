@@ -19,10 +19,9 @@ FormatDecimal(num, mode) {
         return Floor(num)
     } else if (mode = "ceil") {
         return Ceil(num)
-    } else if (mode = "none") {
+    } else {
         return num
     }
-    return false
 }
 
 ;a.delay += b

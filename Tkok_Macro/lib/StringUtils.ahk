@@ -23,6 +23,11 @@ TrimLastToken(str, delim) {
         return ""  ; 구분자가 없으면 빈 문자열
 }
 
+AppendExt(ByRef path, ext := "txt") {
+    if !RegExMatch(path, "i)\." . ext . "$")
+        path .= "." . ext
+}
+
 ;배열을 구분자를 넣어 합친다
 StrJoin(arr, delim := "`n") {
     out := ""
@@ -32,6 +37,11 @@ StrJoin(arr, delim := "`n") {
         out .= v
     }
     return out
+}
+
+JoinLines(arr) {
+    test(arr.Length())
+    return arr.Length() ? arr.Join("`r`n") . "`r`n" : ""
 }
 
 ;----------------------------------------------객체 함수-----------------------------------------------

@@ -17,16 +17,25 @@ chat, %hero% %level%
 
 #coord_mode:screen,fixed# 
 좌표모드를 전체화면,고정값 좌표로 사용
-
 기본값: 실행창,비율 client,ratio >> 모든 해상도에서 동일한 좌표를 사용하기 위함
+
+#if:a>1# 조건 설정~
+#if# ~조건 해제
+
+#force# 
+해당 줄 강제 실행, preset 폴더내의 명령에도 적용
+
+\preset
+폴더안의 파일명을 새로 만드는 매크로 이름에 포함시킬 경우 적용됨
 
 SendRaw, text...
 문자열을 보낼때 사용
 
----매크로 경로로 실행---
-war3실행.txt
-스텟창.txt #spsi:88# #stat:Q#
-skill\ranger.txt #level:23# #stat:R#
+
+---다른 매크로 실행---
+Exec, 아이템교체
+Exec, 스텟창 #spsi:100# #stat:Q#
+Exec, skill\ranger.txt #level:23# #stat:R#
 ※변수 값을 공유 합니다.
 
 ---함수명으로 실행---
@@ -37,4 +46,4 @@ ExecMultiW3() 워3 다중실행
 SwitchW3() 창 전환
 ClipWindow() 마우스 가두기
 
-※Macro Editor.ahk 를 독립 실행시에는 작동 안할수 있음
+※Macro Editor.ahk 를 독립 실행시에는 작동 안 될수 있음

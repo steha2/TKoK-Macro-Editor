@@ -56,7 +56,7 @@ DeleteMacro:
         return
     }
 
-    SplitPath, macroPath, itemName
+    SplitPath, macroPath, itemName, outDir
 
     isFile := IsFile(macroPath)
     title := isFile ? "파일 삭제 확인" : "폴더 삭제 확인"
@@ -74,10 +74,11 @@ DeleteMacro:
             : "폴더를 삭제할 수 없습니다.`n(※ 비어있는 폴더만 삭제 가능합니다.)"
         MsgBox, 48, %EDITOR_TITLE%, 삭제 실패`n%failMsg%
     } else {
-        ReloadTreeView()
+        origContent := ""
+        GuiControl, macro:, EditMacro
+        ReloadTreeView(outDir)
     }
 return
-
 
 RenameMacro:
     if (!macroPath || !FileExist(macroPath)) {
@@ -85,8 +86,16 @@ RenameMacro:
         return
     }
 
-    SplitPath, macroPath, oldName, dir
-    msgText := (IsFile(macroPath) ? "파일명 변경" : "폴더명 변경")
+    isFile := IsFile(macroPath)
+    SplitPath, macroPath, rawName, dir
+
+    ; 파일이면 확장자 제거
+    if (isFile)
+        oldName := RegExReplace(rawName, "i)\.txt$", "")
+    else
+        oldName := rawName
+
+    msgText := (isFile ? "파일명 변경" : "폴더명 변경")
     InputBox, newName
         , %EDITOR_TITLE%
         , %msgText%`n새 이름을 입력하세요:`n
@@ -94,8 +103,9 @@ RenameMacro:
     if (ErrorLevel || newName = "")
         return
 
-    if (IsFile(macroPath) && !RegExMatch(newName, "i)\.txt$"))
-        newName .= ".txt"
+    ; 파일명인 경우, 확장자가 없으면 추가
+    if (isFile)
+        AppendExt(newName)
 
     newPath := dir . "\" . newName
 
@@ -104,7 +114,7 @@ RenameMacro:
         return
     }
 
-    if(IsFile(macroPath))
+    if (isFile)
         FileMove, %macroPath%, %newPath%
     else
         FileMoveDir, %macroPath%, %newPath%
@@ -114,16 +124,13 @@ RenameMacro:
     GuiControl, Focus, EditMacro
 return
 
-AddMacro:
-    ; 파일일 경우 상위 폴더로 이동
-    outputDir := macroPath
-    if(isFile(macroPath))
-        SplitPath, macroPath, , outputDir
-    
 
-    ; MACRO_DIR 기준 상대 경로 계산
+AddMacro:
+    outputDir := macroPath
+    if (isFile(macroPath))
+        SplitPath, macroPath, , outputDir
+
     if (outputDir != "" && InStr(outputDir, MACRO_DIR)) {
-        ; +2는 백슬래시 포함한 다음 문자부터
         macroRelPath := SubStr(outputDir, StrLen(MACRO_DIR) + 2)
         defaultInput := (macroRelPath != "") ? macroRelPath . "\" : ""
     } else {
@@ -133,11 +140,17 @@ AddMacro:
     InputBox, macroRelPath, %EDITOR_TITLE% 
             ,새 매크로 파일`n 파일 경로\이름을 입력하세요:`n(확장자 제외)
             , , 300, 170, , , , , %defaultInput%
-    if (!ErrorLevel){
-        macroRelPath := StrReplace(macroRelPath, "/", "\")  ; ✅ / → \ 변환
-        WriteMacroFile("", Trim(macroRelPath))
-        GuiControl, Focus, EditMacro
-    }
+    if (ErrorLevel)
+        return
+    macroRelPath := Trim(macroRelPath)
+    macroRelPath := StrReplace(macroRelPath, "/", "\")
+    SplitPath, macroRelPath, fileName, outDir
+
+    vars := {rel_path:acroRelPath, out_dir:outDir}
+    newContents := LoadPresetForMacro(fileName, vars)
+
+    WriteMacroFile(newContents, macroRelPath)
+    GuiControl, Focus, EditMacro
 return
 
 SaveMacro:
@@ -252,6 +265,7 @@ return
 
 #If IsTargetWindow("Macro Editor")
 ^S:: Gosub, SaveMacro
+
 #If !isLaunchedByMain
 ^+R::
     SaveMacroEditorSettings()

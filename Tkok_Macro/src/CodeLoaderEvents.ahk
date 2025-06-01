@@ -73,9 +73,9 @@ return
 
 #If (WinActive("ahk_class Warcraft III") and yMapped and !isRecording)
 ; Y → F (조합키 포함)
-*f::SendMapped("y")
+*F::SendMapped("y")
 ; F → Y (조합키 포함)
-*y::SendMapped("f")
+*Y::SendMapped("f")
 
 ; Ctrl+F 예외처리
 ; ^f::
@@ -86,7 +86,7 @@ return
 ; return
 
 #IfWinActive ahk_class Warcraft III
-^y::ToggleYMapping(2)
+^Y::ToggleYMapping(2)
 
 ; 키 매핑 토글
 ToggleYMapping(force := 2) {
@@ -126,7 +126,7 @@ F6::Chat("-tt")
 F7::ClipWindow()
 
 ;아이템 교체
-!x::
+!X::
     KeyWait, Alt
     GuiControlGet, squadText, %hMain%:, SquadField
     StringSplit, squad, squadText, `,
@@ -149,7 +149,7 @@ F7::ClipWindow()
 return
 
 ;Ctrl+Shift+C
-^+n::ChampChat()
+^+N::ChampChat()
 ChampChat() {
     Chat("!dr 10")
     Chat("-fog")
@@ -159,28 +159,28 @@ ChampChat() {
     SendAptToW3()
 }
 
-!+w::SaveW3Pos()
+!+W::SaveW3Pos()
 
 #If ;워크래프트3 내에서만 작동 끝
 
 ;Alt
-!e::RestoreW3Pos()
+!E::RestoreW3Pos()
 !3::SwitchToMainW3()
 !2::TrySwitchW3()
-!u::MoveOldSaves()
-!t::LoadSquad()
-!h::LoadSquad(true) ;Champion Mode
+!U::MoveOldSaves()
+!T::LoadSquad()
+!H::LoadSquad(true) ;Champion Mode
 
 
 ;Ctrl+Shift
-^+k::ExecW3()
-^+a::SendAptToW3()
-^+w::ExecMultiW3()
-^+h::ExecHostW3()
-^+c::LastSaveTimes()
-^+i:: Run, notepad.exe "%CONFIG_FILE%"
-^+o:: Run, %A_ScriptDir%
-^+p:: Run, %SAVE_DIR%
+^+K::ExecW3()
+^+A::SendAptToW3()
+^+W::ExecMultiW3()
+^+H::ExecHostW3()
+^+C::LastSaveTimes()
+^+I:: Run, notepad.exe "%CONFIG_FILE%"
+^+O:: Run, %A_ScriptDir%
+^+P:: Run, %SAVE_DIR%
 
 ;매크로 재시작
 ^+R::

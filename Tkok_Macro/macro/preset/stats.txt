@@ -1,0 +1,9 @@
+﻿#target:Warcraft III#
+
+Exec, %out_dir%\%part1%-equip
+
+Exec, 스텟창 #spsi:100# #stat:Q#
+
+Chat, -tt #delay:300# 
+
+WriteMacroFile("","%out_dir%\%part1%-equip") #force#

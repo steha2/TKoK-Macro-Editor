@@ -1,13 +1,14 @@
-﻿Chat, -tt #delay:300#
+﻿#target:Warcraft III#
+champ\mk\warrior-equip.txt
+
+Chat, -tt #delay:300# 
 Click:L, 0.413, 0.232
 Click:L, 0.419, 0.311
 Click:L, 0.428, 0.423
 Click:L, 0.351, 0.221
 Click:L, 0.342, 0.307
-Click:L, 0.639, 0.217
-Click:L, 0.639, 0.217
-Click:L, 0.562, 0.335
-Click:L, 0.561, 0.332
+Click:L, 0.639, 0.217 #rep:2#
+Click:L, 0.562, 0.335 #rep:2#
 Click:L, 0.416, 0.492
 Click:L, 0.413, 0.594
 Click:L, 0.348, 0.426
@@ -16,6 +17,6 @@ Click:L, 0.349, 0.579
 Click:L, 0.278, 0.511
 Click:L, 0.272, 0.596
 Click:L, 0.272, 0.589
-Click:L, 0.633, 0.409
-Click:L, 0.633, 0.407
-Click:L, 0.633, 0.407
+Click:L, 0.633, 0.409 #rep:3#
+
+스텟창.txt #spsi:140# #stat:z#
