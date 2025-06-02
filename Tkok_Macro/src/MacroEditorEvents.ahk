@@ -258,9 +258,8 @@ return
 Insert up::Gosub, ToggleMacro
 Pause up::Gosub, ToggleRecord
 
-!F1::ToggleOverlay()
-
 #If !isRecording && runningMacroCount <= 0
+!F1::ToggleOverlay()
 !F2::
     MouseGetPos,,, hwnd
     if(GetAdjustedCoords(xStr,yStr))
@@ -275,15 +274,4 @@ return
     SaveMacroEditorSettings()
     reload
 return
-#IF
-
-;^u:: ; Ctrl + U
-; {
-;     output := "g_PathMap 구조:`n`n"
-;     for id, path in g_PathMap {
-;         output .= "ID: " . id . "`n경로: " . path . "`n"
-;     }
-;     MsgBox, %output%
-;     return
-; }
-
+#If

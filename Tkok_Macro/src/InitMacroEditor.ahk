@@ -8,7 +8,7 @@ global EPSILON_WAIT := 200
 global MACRO_DIR := A_ScriptDir . "\macro"
 ;global DEFAULT_TARGET := "ahk_class Warcraft III" ;매크로 실행시 활성화 기본 창
 global BASE_DELAY := 30
-global MACRO_LIMIT := 1000
+global BASE_LIMIT := 1000
 global EDITOR_TITLE := "Macro Editor"
 
 ;---------------------- Macro Editor Vars ---------------------------
@@ -84,8 +84,6 @@ if(macroWinY < 0)
     macroWinY := 0
 Gui, macro:Show, Hide x%macroWinX% y%macroWinY% w%macroWinW% h550, %EDITOR_TITLE%
 
-ToggleMacroGui(isLaunchedByMain ? GetIniValue("MacroGUI","Shown") : true)
-
 hotkeyMacros := GetIniValue("Macro","")
 Loop, Parse, hotkeyMacros, `n, `r
 {
@@ -115,9 +113,8 @@ Gui, macro:Add, Radio, x850 y510 vRatioBtn Checked Group, Ratio
 Gui, macro:Add, Radio, x850 y530 vFixedBtn, Fixed
 
 ReloadTreeView(GetIniValue("MacroGUI", "MACRO_PATH"))
-
+ToggleMacroGui(isLaunchedByMain ? GetIniValue("MacroGUI","Shown") : true)
 SetTimer, CoordTracking, 500
-
 return
 
 SaveMacroEditorSettings() {
@@ -129,7 +126,7 @@ SaveMacroEditorSettings() {
 
     GuiControlGet, isAutoMerge, macro:, AutoMerge
     SetIniValue("MacroGUI", "isAutoMerge", isAutoMerge)
-    
+
     WinGetPos, x2, y2,,, ahk_id %hMacro%
     if (x2 > 0)
         SetIniValue("MacroGUI", "X", x2)

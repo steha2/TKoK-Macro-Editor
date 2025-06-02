@@ -161,7 +161,7 @@ ChampChat() {
 
 !+W::SaveW3Pos()
 
-#If ;워크래프트3 내에서만 작동 끝
+#If !isRecording
 
 ;Alt
 !E::RestoreW3Pos()
@@ -182,6 +182,7 @@ ChampChat() {
 ^+O:: Run, %A_ScriptDir%
 ^+P:: Run, %SAVE_DIR%
 
+#If
 ;매크로 재시작
 ^+R::
     SaveCodeLoaderSettings()

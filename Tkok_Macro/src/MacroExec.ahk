@@ -1,9 +1,10 @@
 ExecMacro(scriptText, vars) {
     if (scriptText = "")
         return
+
     UpdateMacroState(+1)
     lines := StrSplit(scriptText, ["`r`n", "`n", "`r"])
-    limit := MACRO_LIMIT
+    limit := BASE_LIMIT
     
     if !IsObject(vars)
         vars := {}
@@ -216,69 +217,4 @@ CheckAbortAndSleep(totalDelay) {
         Sleep, % Min(100, totalDelay)
     }
     return true
-}
-
-
-
-;명령줄의 %key% 사이의 매크로내의 전역변수 vars 에 key:value로 치환한다
-ResolveExpr2(line, vars) {
-    pos := 1
-    while (found := RegExMatch(line, "(%([^%]+)%)", m, pos)) {
-        fullMatch := m1    ; "%...%"
-        expr := Trim(m2)         ; 내부 내용 예: "count|5" 또는 "count"
-        defaultVal := ""
-        ; 기본값 문법 처리: 변수명|기본값 분리
-        if (InStr(expr, "|")) {
-            parts := StrSplit(expr, "|")
-            expr := Trim(parts[1])
-            defaultVal := Trim(parts[2])
-        }
-        ; vars 객체의 키들을 치환
-        isReplaced := false
-        array := ToKeyLengthSortedArray(vars)
-        Loop % array.Length()
-        {
-            item := array[A_Index]
-            if(InStr(expr,item.key)) {
-                expr := StrReplace(expr, item.key, item.value)
-                isReplaced := true
-            }
-        }
-        if(!isReplaced)
-            expr := defaultVal
-
-        ; 산술 계산 가능한지 검사
-        result := TryEval(expr, vars)
-        
-        line := StrReplace(line, fullMatch, result)
-        pos := found + StrLen(result) - 1
-    }
-    return line
-}
-
-ResolveMarker2(line, vars) {
-    command := line        ; command 문자열이 될 것
-    pos := 1
-    while (found := RegExMatch(line, "#\s*([^#]+?)\s*#", m, pos)) {
-        fullMatch := m       ; 전체: "# ... #"
-        inner := Trim(m1)     ; 내부 내용
-
-        ; key:val 또는 key: 형식 모두 지원^\s*(\w+)\s*(:(.*))?$
-        if RegExMatch(inner, "^(\w+)\s*(:(.*))?$", m) {
-            key := m1
-            val := m3
-            array := ToKeyLengthSortedArray(vars)
-            Loop % array.Length()
-            {
-                item := array[A_Index]
-                val := StrReplace(val, item.key, item.value)
-            }
-            val := TryEval(val,vars)
-            vars[key] := Trim(val)
-        }
-        ; 원래 라인에서 제거
-        command := StrReplace(command, fullMatch, "")
-        pos := found + StrLen(fullMatch)
-    }
-    return Trim(command)
 }

@@ -1,11 +1,11 @@
 LogKeyControl(key) {
   k:=InStr(key,"Win") ? key : SubStr(key,2)
   StringLower, k, k
-  LogToEdit("Send, {" . k . " down}", k)
+  LogToEdit("Send, {" . k . " down}", k, true)
   Critical, Off
   KeyWait, %key%
   Critical
-  LogToEdit("Send, {" . k . " up}" , k)
+  LogToEdit("Send, {" . k . " up}" , k, true)
 }
 
 LogMouseClick(key) {
@@ -23,9 +23,6 @@ LogKey() {
     k := StrReplace(k, "Control", "Ctrl")
     r := SubStr(k, 2)
 
-    ; ShowTip("InputKey: "k,300)
-
-    ; 반복 입력 제어
     if r in Alt,Ctrl,Shift,Win
         LogKeyControl(k)
     else if k in LButton,RButton,MButton
@@ -61,13 +58,14 @@ SetHotkey(enable := false) {
     }
 }
 
-LogToEdit(line, k := "") {
+LogToEdit(line, k := "", isModifier := false) {
     static lastKey := ""
 
     currTime := A_TickCount
     elapsed := currTime - lastTime
-    if (k = lastKey && elapsed < 100)
+    if (k = lastKey && elapsed < 100 && !isModifier) {
         return
+    }
     else 
         lastKey := k
 
@@ -80,7 +78,7 @@ LogToEdit(line, k := "") {
     GuiControlGet, scriptText, macro:, EditMacro
     GuiControlGet, isAutoMerge, macro:, AutoMerge
     
-    if(isAutoMerge){
+    if(isAutoMerge && !isModifier){
         trimmedScript := RTrim(scriptText, "`n`t ")
         lastLine := GetLastPart(trimmedScript, "`n")
         if(IsSameMacroLine(line, lastLine)){

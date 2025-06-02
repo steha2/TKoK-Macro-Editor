@@ -35,7 +35,7 @@ OpenLogFile() {
         MsgBox, 로그 파일이 없습니다.
 }
 
-test2(a="", b="", c="", d="", e="", f="",isTip:=true,isLog:=true) {
+test2(a:="", b:="", c:="", d:="", e:="", f:="",isTip:=true,isLog:=true) {
     test(a,b,c,d,e,f,isTip,isLog)
 }
 
@@ -63,30 +63,30 @@ Note(newText := "", isAppend := false) {
     static NoteEdit
     ; GUI 없으면 생성
     if (!isCreated) {
-        Gui, SingleNote: New
-        Gui, SingleNote: +Resize +AlwaysOnTop
-        Gui, SingleNote: Margin, 10, 10
-        Gui, SingleNote: Add, Edit, vNoteEdit w400 h300 WantTab
+        Gui, SimpleNote: New
+        Gui, SimpleNote: +Resize +AlwaysOnTop
+        Gui, SimpleNote: Margin, 10, 10
+        Gui, SimpleNote: Add, Edit, vNoteEdit w400 h300 WantTab
         isCreated := true
     }
 
     if (isAppend) {
-        GuiControlGet, existingText, SingleNote:, NoteEdit
+        GuiControlGet, existingText, SimpleNote:, NoteEdit
         newText := existingText . (existingText != "" ? "`n" : "") . newText
     }
-    GuiControl, SingleNote:, NoteEdit, %newText%
+    GuiControl, SimpleNote:, NoteEdit, %newText%
 
     ; 창이 이미 떠 있지 않다면 띄우기
-    WinGet, existingID, ID, ahk_gui SingleNote
+    WinGet, existingID, ID, ahk_gui SimpleNote
     if (!existingID) {
-        Gui, SingleNote: Show,, AHK 메모장
+        Gui, SimpleNote: Show,, AHK Note
     }
 
     return
 
     ; 닫기 버튼 핸들러
-    SingleNoteGuiClose:
-        Gui, SingleNote:Destroy
+    SimpleNoteGuiClose:
+        Gui, SimpleNote:Destroy
         isCreated := false
     return
 }
