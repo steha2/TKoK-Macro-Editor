@@ -25,6 +25,10 @@ OnTreeViewClick:
     OnClickTreeItem()
 return
 
+OnTimeGapsCheck:
+    lastTime := 0
+return
+
 BackMacro:
     GuiControlGet, content, macro:, EditMacro
     if content =  ; 내용 없으면 종료
@@ -188,7 +192,7 @@ MergeMacro:
     GuiControlGet, content, macro:, EditMacro
     if(Trim(content) = "")
         return
-    MsgBox,4,%EDITOR_TITLE%,반복 명령 병합를 실행합니까?`n클릭 오차범위 %EPSILON_RATIO% or %EPSILON_FIXED%px 이내라면 합쳐집니다.
+    MsgBox,4,%EDITOR_TITLE%,반복 명령 병합를 실행합니까?`n오차범위 wait:%EPSILON_WAIT%, %EPSILON_RATIO%, %EPSILON_FIXED%px 이내라면 합쳐집니다.
     IfMsgBox, No
         return
     GuiControl, macro:, EditMacro, % MergeMacro(content)
@@ -224,7 +228,6 @@ ToggleRecord:
     if (isRecording) {
         GuiControl, macro:+ReadOnly, EditMacro
         WinActivate, %DEFAULT_TARGET%
-        LastTime := A_TickCount
     } else {
         GuiControl, macro:-ReadOnly, EditMacro
     }
@@ -252,15 +255,10 @@ OnCoordMode:
     }
 return
 
-Insert::
-KeyWait, Insert
-Gosub, ToggleMacro
-return
+Insert up::Gosub, ToggleMacro
+Pause up::Gosub, ToggleRecord
 
-Pause::
-KeyWait, Pause
-Gosub, ToggleRecord
-return
+!F1::ToggleOverlay()
 
 #If !isRecording && runningMacroCount <= 0
 !F2::
@@ -289,4 +287,3 @@ return
 ;     return
 ; }
 
-!F1::ToggleOverlay()

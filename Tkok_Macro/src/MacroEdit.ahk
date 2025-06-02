@@ -1,10 +1,11 @@
 LogKeyControl(key) {
   k:=InStr(key,"Win") ? key : SubStr(key,2)
-  LogToEdit("Send, {" . k . " Down}")
+  StringLower, k, k
+  LogToEdit("Send, {" . k . " down}", k)
   Critical, Off
   KeyWait, %key%
   Critical
-  LogToEdit("Send, {" . k . " Up}")
+  LogToEdit("Send, {" . k . " up}" , k)
 }
 
 LogMouseClick(key) {
@@ -12,13 +13,11 @@ LogMouseClick(key) {
     if (!isRecording || IsTargetWindow("Macro Editor", hwnd) || !GetAdjustedCoords(xStr, yStr))
         return
     btn := SubStr(key, 1, 1)
-    LogToEdit("Click:" . btn . ", " . xStr . ", " . yStr)
+    LogToEdit("Click:" . btn . ", " . xStr . ", " . yStr, key)
 }
 
 LogKey() {
-    static lastKey := "", lastTime := 0
     Critical
-
     vksc := SubStr(A_ThisHotkey, 3)
     k := GetKeyName(vksc)
     k := StrReplace(k, "Control", "Ctrl")
@@ -36,13 +35,8 @@ LogKey() {
             return
         k := StrLen(k) > 1 ? "{" k "}" : k ~= "\w" ? k : "{" vksc "}"
 
-        now := A_TickCount
-        if (k = lastKey && (now - lastTime) < 100)
-            return
-       
-        lastKey := k
-        lastTime := now
-        LogToEdit("Send, " . k)
+        StringLower, k, k
+        LogToEdit("Send, " . k, k)
     }
 }
 
@@ -67,13 +61,42 @@ SetHotkey(enable := false) {
     }
 }
 
-LogToEdit(line) {
-    GuiControlGet, current, macro:, EditMacro
-    if (current != "" && SubStr(current, -1) != "`n")
-        current .= "`n"  ; 마지막 줄에 줄바꿈 추가
+LogToEdit(line, k := "") {
+    static lastKey := ""
 
-    GuiControl, macro:, EditMacro, % current . line
-    GuiControl, macro:, LatestRec, % line
+    currTime := A_TickCount
+    elapsed := currTime - lastTime
+    if (k = lastKey && elapsed < 100)
+        return
+    else 
+        lastKey := k
+
+    GuiControlGet, isTimeGaps, macro:, TimeGapsCheck
+    if (isTimeGaps && lastTime) {
+        line .= " #wait:" . Format("{:4}", elapsed) . "#"
+    }
+    lastTime := currTime
+
+    GuiControlGet, scriptText, macro:, EditMacro
+    GuiControlGet, isAutoMerge, macro:, AutoMerge
+    
+    if(isAutoMerge){
+        trimmedScript := RTrim(scriptText, "`n`t ")
+        lastLine := GetLastPart(trimmedScript, "`n")
+        if(IsSameMacroLine(line, lastLine)){
+            count := 2
+            if(RegExMatch(lastLine,"#rep:(\d+)#",m)) {
+                count := m1 + 1
+            }
+            scriptText := TrimLastToken(trimmedScript, "`n")
+            line := MergeLine(lastLine, count)
+        }
+    }
+    if (scriptText != "" && SubStr(scriptText, 0) != "`n")
+        scriptText .= "`n"  ; 줄바꿈 보정
+    scriptText .= line
+    GuiControl, macro:, EditMacro, %scriptText%
+    GuiControl, macro:, LatestRec, %line%
 }
 
 MergeMacro(content) {
@@ -84,6 +107,7 @@ MergeMacro(content) {
     Loop, Parse, content, `n, `r 
     {
         line := Trim(A_LoopField)
+        
         if (line = "") {
             if (count > 0)
                 mergedLines.Push(MergeLine(lastLine, count))
@@ -92,7 +116,6 @@ MergeMacro(content) {
             lastLine := ""
             continue
         }
-
         if (IsSameMacroLine(line, lastLine)) {
             count++
         } else {
@@ -118,11 +141,21 @@ MergeLine(line, count) {
 }
 
 IsSameMacroLine(line1, line2) {
-    if (InStr(line1, "#") || InStr(line1, ";") || InStr(line1, "%"))
+    pattern := "[;%]|#(?!wait:|rep:)[^#:]+:"
+    if (RegExMatch(line1, pattern) || RegExMatch(line2, pattern))
+        return false
+
+    vars1 := {}
+    vars2 := {}
+    cmd1 := ResolveMarker(line1, vars1)
+    cmd2 := ResolveMarker(line2, vars2)
+    wait1 := vars1.wait ? vars1.wait : 0
+    wait2 := vars2.wait ? vars2.wait : 0
+    if (Abs(wait1 - wait2) > EPSILON_WAIT)
         return false
 
     pattern := "i)^Click:(\w),\s*([\d.]+),\s*([\d.]+)"
-    if (RegExMatch(line1, pattern , am) && RegExMatch(line2, pattern , bm)) {
+    if (RegExMatch(cmd1, pattern , am) && RegExMatch(cmd2, pattern , bm)) {
         ; 문자열 기반 소수점 포함 여부로 정수/실수 판별
         isFloat1 := InStr(am2, ".") || InStr(am3, ".")
         isFloat2 := InStr(bm2, ".") || InStr(bm3, ".")
@@ -140,7 +173,7 @@ IsSameMacroLine(line1, line2) {
         else
             return false ; 정수/실수 혼합 → 다르다고 판단
     } else {
-        return (line1 = line2)
+        return (cmd1 = cmd2)
     }
 }
 
@@ -194,7 +227,7 @@ GetAdjustedCoords(ByRef x, ByRef y) {
 }
 
 CoordTracking() {
-    if CoordTrackingRunning || GetKeyState("Shift", "P")
+    if CoordTrackingRunning || GetKeyState("Ctrl", "P")
         return
     CoordTrackingRunning := true
     if (GetAdjustedCoords(x, y)) {
@@ -214,7 +247,7 @@ PreprocessMacroLines(lines, vars, isExec := false) {
     for index, line in lines {
         line := ResolveExpr(line, vars)
         cmd := StripComments(cmd)
-        cmd := ParseLine(line, vars)
+        cmd := ResolveMarker(line, vars)
         if (vars.HasKey("force") && isExec) {
             vars.Delete("force")
             ExecSingleCommand(cmd, vars)
@@ -265,7 +298,7 @@ ToggleOverlay() {
     lines := StrSplit(currentText, ["`r`n", "`n", "`r"])
     lines := PreprocessMacroLines(lines, vars)
 
-    if(vars.target) 
+    if(vars.target)
         hwnd := ActivateWindow(vars.target)
     else 
         WinGet, hwnd, ID, A
@@ -280,9 +313,13 @@ ToggleOverlay() {
     w := w/dpi*100
     h := h/dpi*100
 
+    vars := {}
     Loop, % lines.Length()
     {
-        if RegExMatch(lines[A_Index], "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)", m) {
+        ResolveMarker(lines[A_Index], vars)
+        if RegExMatch(lines[A_Index], "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)", m)
+            && !InStr(vars.coordMode, "screen") 
+        {
             mx := m2/dpi*100, my := m3/dpi*100
             CalcCoords(mx, my, vars.coordMode)
             boxX := mx - 14

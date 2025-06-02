@@ -1,0 +1,21 @@
+﻿#target:Warcraft III#
+
+Exec, champ\hydra\warrior-equip
+
+Exec, 스텟창 #spsi:144# #stat:Z#
+
+Chat, -tt #wait:300#
+Click:L, 0.421, 0.405
+Click:L, 0.419, 0.218
+Click:L, 0.419, 0.306
+Click:L, 0.348, 0.210
+Click:L, 0.349, 0.313
+Click:L, 0.357, 0.411
+Click:L, 0.282, 0.507
+Click:L, 0.284, 0.595 #rep:2#
+Click:L, 0.638, 0.412 #rep:3#
+Click:L, 0.637, 0.218 #rep:2#
+Click:L, 0.562, 0.307 #rep:2#
+Click:L, 0.417, 0.503
+Click:L, 0.415, 0.590
+Click:L, 0.494, 0.220 #rep:2#

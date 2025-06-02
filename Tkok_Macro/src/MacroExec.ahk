@@ -17,14 +17,14 @@ ExecMacro(scriptText, vars) {
      
         ; ----------- 임시 검사 블록 -----------
         tempVars := Clone(vars)
-        testLine := ParseLine(line, tempVars)
+        ResolveMarker(line, tempVars)
         if (!tempVars.HasKey("force") && tempVars.HasKey("if") && tempVars.if = 0)
             continue
         ; -------------------------------------
       
-        line := ResolveExpr(line, vars)
         line := StripComments(line)
-        line := ParseLine(line, vars)
+        line := ResolveMarker(line, vars)
+        line := ResolveExpr(line, vars)
         
         if (line = "")
             continue
@@ -33,7 +33,7 @@ ExecMacro(scriptText, vars) {
             limit := Floor(vars.limit)
             vars.limit := ""
         }
-        if (limit <= 0 || !IsAllowedWindow(vars.target))
+        if (limit <= 0 || !IsAllowedWindow(vars.target) || !CheckAbortAndSleep(vars.wait))
             break
         ; 실행 성공했으면 반복 횟수 감소
         Loop, % vars.rep {
@@ -46,75 +46,77 @@ ExecMacro(scriptText, vars) {
                     limit--
             }
         }
-        if (!CheckAbortAndSleep(vars.wait))
-            break
     }
     UpdateMacroState(-1)
     ; ShowTip("--- Macro End ---`n,실행중인 매크로 수 : " runMacroCount)
 }
 
-;명령줄의 %key% 사이의 매크로내의 전역변수 vars 에 key:value로 치환한다
+ResolveMarker(line, vars) {
+    command := line
+    pos := 1
+    while (found := RegExMatch(line, "#([^#]+)#", m, pos)) {
+        fullMatch := m
+        inner := Trim(m1)
+        if RegExMatch(inner, "^\s*(\w+)\s*(:(.*))?$", m) {
+            key := m1
+            rawVal := m3
+            if (rawVal != "") {
+                val := EvaluateExpr(rawVal, vars)
+            }
+            vars[key] := Trim(val)
+        }
+        command := StrReplace(command, fullMatch, "")
+        pos := found + StrLen(fullMatch)
+    }
+    ; test2(line,command,vars)
+    return Trim(command)
+}
+
 ResolveExpr(line, vars) {
     pos := 1
-    while (found := RegExMatch(line, "(%([^%]+)%)", m, pos)) {
-        fullMatch := m1    ; "%...%"
-        expr := Trim(m2)         ; 내부 내용 예: "count|5" 또는 "count"
-        defaultVal := ""
-        ; 기본값 문법 처리: 변수명|기본값 분리
-        if (InStr(expr, "|")) {
-            parts := StrSplit(expr, "|")
-            expr := Trim(parts[1])
-            defaultVal := Trim(parts[2])
-        }
-        ; vars 객체의 키들을 치환
-        isReplaced := false
-        array := ToKeyLengthSortedArray(vars)
-        Loop % array.Length()
-        {
-            item := array[A_Index]
-            if(InStr(expr,item.key)) {
-                expr := StrReplace(expr, item.key, item.value)
-                isReplaced := true
-            }
-        }
-        if(!isReplaced)
-            expr := defaultVal
+    while (found := RegExMatch(line, "%([^%]+)%", m, pos)) {
+        fullMatch := m
+        rawExpr := Trim(m1)
 
-        ; 산술 계산 가능한지 검사
-        result := TryEval(expr, vars)
-        
+        result := EvaluateExpr(rawExpr, vars)
+
         line := StrReplace(line, fullMatch, result)
-        pos := found + StrLen(result) - 1
+        pos := found + StrLen(result)
     }
     return line
 }
 
-ParseLine(line, vars) {
-    command := line        ; command 문자열이 될 것
-    pos := 1
-    while (found := RegExMatch(line, "#\s*([^#]+?)\s*#", m, pos)) {
-        fullMatch := m       ; 전체: "# ... #"
-        inner := Trim(m1)     ; 내부 내용
-
-        ; key:val 또는 key: 형식 모두 지원
-        if RegExMatch(inner, "^(\w+)\s*(:(.*))?$", m) {
-            key := m1
-            val := m3
-            array := ToKeyLengthSortedArray(vars)
-            Loop % array.Length()
-            {
-                item := array[A_Index]
-                val := StrReplace(val, item.key, item.value)
-            }
-            val := TryEval(val,vars)
-            vars[key] := Trim(val)
-        }
-        ; 원래 라인에서 제거
-        command := StrReplace(command, fullMatch, "")
-        pos := found + StrLen(fullMatch)
+EvaluateExpr(expr, vars) {
+    ; 기본값 문법 처리
+    hasDefault := false
+    defaultVal := ""
+    if (RegExMatch(expr, "^(.*[^|])?\|([^|].*)$", m)) {
+        expr := Trim(m1)
+        defaultVal := Trim(m2)
+        hasDefault := true
     }
-    return Trim(command)
+
+    ; vars 객체의 키들을 치환
+    isReplaced := false
+    array := ToKeyLengthSortedArray(vars)
+    Loop % array.Length() {
+        item := array[A_Index]
+        if (InStr(expr, item.key)) {
+            expr := StrReplace(expr, item.key, item.value)
+            isReplaced := true
+        }
+        if (InStr(defaultVal, item.key)){
+            defaultVal := StrReplace(defaultVal, item.key, item.value)
+        }
+    }
+
+    ; 키 치환이 없었고, 기본값 문법이 있었다면 기본값 사용
+    if (hasDefault && !isReplaced)
+        expr := defaultVal
+
+    return TryEval(expr, vars)
 }
+
 
 ExecSingleCommand(command, vars) {
     if RegExMatch(command, "i)^Click:(\w+),\s*(\d+),\s*(\d+)$", m) {
@@ -214,4 +216,69 @@ CheckAbortAndSleep(totalDelay) {
         Sleep, % Min(100, totalDelay)
     }
     return true
+}
+
+
+
+;명령줄의 %key% 사이의 매크로내의 전역변수 vars 에 key:value로 치환한다
+ResolveExpr2(line, vars) {
+    pos := 1
+    while (found := RegExMatch(line, "(%([^%]+)%)", m, pos)) {
+        fullMatch := m1    ; "%...%"
+        expr := Trim(m2)         ; 내부 내용 예: "count|5" 또는 "count"
+        defaultVal := ""
+        ; 기본값 문법 처리: 변수명|기본값 분리
+        if (InStr(expr, "|")) {
+            parts := StrSplit(expr, "|")
+            expr := Trim(parts[1])
+            defaultVal := Trim(parts[2])
+        }
+        ; vars 객체의 키들을 치환
+        isReplaced := false
+        array := ToKeyLengthSortedArray(vars)
+        Loop % array.Length()
+        {
+            item := array[A_Index]
+            if(InStr(expr,item.key)) {
+                expr := StrReplace(expr, item.key, item.value)
+                isReplaced := true
+            }
+        }
+        if(!isReplaced)
+            expr := defaultVal
+
+        ; 산술 계산 가능한지 검사
+        result := TryEval(expr, vars)
+        
+        line := StrReplace(line, fullMatch, result)
+        pos := found + StrLen(result) - 1
+    }
+    return line
+}
+
+ResolveMarker2(line, vars) {
+    command := line        ; command 문자열이 될 것
+    pos := 1
+    while (found := RegExMatch(line, "#\s*([^#]+?)\s*#", m, pos)) {
+        fullMatch := m       ; 전체: "# ... #"
+        inner := Trim(m1)     ; 내부 내용
+
+        ; key:val 또는 key: 형식 모두 지원^\s*(\w+)\s*(:(.*))?$
+        if RegExMatch(inner, "^(\w+)\s*(:(.*))?$", m) {
+            key := m1
+            val := m3
+            array := ToKeyLengthSortedArray(vars)
+            Loop % array.Length()
+            {
+                item := array[A_Index]
+                val := StrReplace(val, item.key, item.value)
+            }
+            val := TryEval(val,vars)
+            vars[key] := Trim(val)
+        }
+        ; 원래 라인에서 제거
+        command := StrReplace(command, fullMatch, "")
+        pos := found + StrLen(fullMatch)
+    }
+    return Trim(command)
 }

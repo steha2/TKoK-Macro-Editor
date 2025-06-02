@@ -4,6 +4,7 @@ global CONFIG_FILE := A_ScriptDir . "\config.ini"
 ;---------------------- Macro Editor Const ------------------------------
 global EPSILON_RATIO := 0.005
 global EPSILON_FIXED := 3
+global EPSILON_WAIT := 200
 global MACRO_DIR := A_ScriptDir . "\macro"
 ;global DEFAULT_TARGET := "ahk_class Warcraft III" ;매크로 실행시 활성화 기본 창
 global BASE_DELAY := 30
@@ -13,6 +14,7 @@ global EDITOR_TITLE := "Macro Editor"
 ;---------------------- Macro Editor Vars ---------------------------
 global g_PathMap := {} ; TreeView ID → 전체 경로 매핑
 global runMacroCount := 0
+global lastTime := 0
 global macroPath := ""
 global origContent = ""
 global isRecording := false
@@ -21,9 +23,6 @@ global suspendTreeEvents := false
 global macroAbortRequested := false
 global CoordTrackingRunning := false
 global overlayVisible, hOverlay
-
-;---------------------------------------------------
-
 
 ;-----------------------------------------Macro Gui---------------------------------------------------
 if !FileExist(MACRO_DIR)
@@ -72,7 +71,7 @@ Gui, macro:Add, Edit, x290 y50 w%editW% h410 -Wrap vEditMacro
 
 Gui, Font, , Segoe UI
 
-Gui, macro:Add, Edit, x290 y470 w%editW% h30 vMacroPath +ReadOnly
+Gui, macro:Add, Edit, x290 y470 w490 h30 vMacroPath +ReadOnly
 Gui, macro:Add, Edit, x290 y510 w200 h30 vLatestRec +ReadOnly
 Gui, macro:Add, Edit, x500 y510 w280 h30 vCoordTrack +ReadOnly
 
@@ -96,15 +95,21 @@ Loop, Parse, hotkeyMacros, `n, `r
     hotkey := Trim(parts[1])
     macro := Trim(parts[2])
     vars := {}
-    cmd := ParseLine(macro, vars)
+    cmd := ResolveMarker(macro, vars)
     fn := Func("ExecMacro").Bind(cmd, vars)
     Hotkey, %hotkey%, % fn
 }
 
 Gui, font, s8
 
+isChecked := GetIniValue("MacroGUI","isTimeGaps") ? "Checked" : ""
+Gui, macro:Add, Checkbox, x790 y470 vTimeGapsCheck gOnTimeGapsCheck %isChecked%, Record Time Gaps
+
+isChecked := GetIniValue("MacroGUI","isAutoMerge") ? "Checked" : ""
+Gui, macro:Add, Checkbox, x790 y488 vAutoMerge %isChecked%, Auto Merge
+
 Gui, macro:Add, Radio, x790 y510 vClientBtn gOnCoordMode Checked Group, Client
-Gui, macro:Add, Radio, x790 y530 vScreenBtn gOnCoordMode , Screen
+Gui, macro:Add, Radio, x790 y530 vScreenBtn gOnCoordMode, Screen
 
 Gui, macro:Add, Radio, x850 y510 vRatioBtn Checked Group, Ratio
 Gui, macro:Add, Radio, x850 y530 vFixedBtn, Fixed
@@ -117,7 +122,14 @@ return
 
 SaveMacroEditorSettings() {
     SetIniValue("MacroGUI", "MACRO_PATH", macroPath)
-    SetIniValue("MacroGUI", "Shown", (macroGuiShown ? 1 : 0))
+    SetIniValue("MacroGUI", "Shown", macroGuiShown)
+    
+    GuiControlGet, isTimeGaps, macro:, TimeGapsCheck
+    SetIniValue("MacroGUI", "isTimeGaps", isTimeGaps)
+
+    GuiControlGet, isAutoMerge, macro:, AutoMerge
+    SetIniValue("MacroGUI", "isAutoMerge", isAutoMerge)
+    
     WinGetPos, x2, y2,,, ahk_id %hMacro%
     if (x2 > 0)
         SetIniValue("MacroGUI", "X", x2)

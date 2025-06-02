@@ -1,1 +1,0 @@
-﻿skill\ranger.txt #level:23# #stat:R#

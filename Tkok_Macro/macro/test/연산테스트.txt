@@ -1,7 +1,4 @@
-﻿#target:notepad#
-send, ^a
-send, {Delete}
-
+﻿Note()
 chat, -----------start----------
 #a:2.5000# #b:1# 
 chat, % a / b %
@@ -14,4 +11,7 @@ chat, %a,b% % a / b % #dp_mode:floor#
 #if:a>1# chat, a는1보다 크다
 #if:a>5# chat, a는5보다 크다
 #if:a>5# chat, a는5보다 크다??? #force#
+chat, if문 적용중.. 실행안됨
+#if#
+chat, if문 끝 실행
 chat, -----------end----------

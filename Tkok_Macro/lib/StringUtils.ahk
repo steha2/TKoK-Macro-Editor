@@ -23,6 +23,11 @@ TrimLastToken(str, delim) {
         return ""  ; 구분자가 없으면 빈 문자열
 }
 
+GetLastPart(str, delim) {
+    parts := StrSplit(str, delim)
+    return parts[parts.MaxIndex()]
+}
+
 AppendExt(ByRef path, ext := "txt") {
     if !RegExMatch(path, "i)\." . ext . "$")
         path .= "." . ext
