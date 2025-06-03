@@ -1,5 +1,4 @@
-﻿;Exec, 스텟창 #spsi:100# #stat:Q#
-#if:stat_open|1#
+﻿#if:stat_open|1#
 Send, {F1}
 Send, n #delay:500#
 Send, {Numpad5}

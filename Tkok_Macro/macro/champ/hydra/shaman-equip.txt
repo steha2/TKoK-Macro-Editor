@@ -1,0 +1,17 @@
+﻿#target:Warcraft III#
+Click:L, 0.798, 0.813 #wait:100#
+Click:L, 0.624, 0.449 #rep:2#
+Click:L, 0.561, 0.455 #rep:2#
+Click:L, 0.848, 0.797
+Click:L, 0.489, 0.489 #rep:2#
+Click:L, 0.459, 0.495 #rep:2#
+Click:L, 0.591, 0.362 #rep:2#
+Click:L, 0.560, 0.362 #rep:2#
+Click:L, 0.628, 0.306 #rep:2#
+Click:L, 0.490, 0.408 #rep:2#
+Click:L, 0.795, 0.881
+Click:L, 0.490, 0.408 #rep:2#
+Click:L, 0.457, 0.453 #rep:2#
+Click:L, 0.522, 0.361 #rep:2#
+Click:L, 0.848, 0.885
+Click:L, 0.491, 0.358 #rep:2#

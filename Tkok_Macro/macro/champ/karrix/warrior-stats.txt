@@ -1,0 +1,7 @@
+﻿#target:Warcraft III#
+
+Exec, champ\karrix\warrior-equip
+
+Exec, stat-up #spsi:100# #stat:Q#
+
+Chat, -tt #wait:300#

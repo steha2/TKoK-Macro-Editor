@@ -175,11 +175,6 @@ IsSameMacroLine(line1, line2) {
     }
 }
 
-IsMacroModified() {
-    GuiControlGet, currentText, macro:, EditMacro
-    return (currentText != origContent)
-}
-
 
 WriteMacroFile(content := "", macroFilePath := "") {
     if (macroFilePath  = "") {
@@ -280,7 +275,7 @@ LoadPresetForMacro(fileName, vars) {
     }
 }
 
-ToggleOverlay() {
+ToggleOverlay2() {
     if (overlayVisible) {
         Gui, overlay:Destroy
         overlayVisible := false
@@ -332,15 +327,64 @@ ToggleOverlay() {
     overlayVisible := true
 }
 
-OnOverlayBtn:
-    GuiControlGet, btnText, overlay:, %A_GuiControl%
-    Gui, overlay:Destroy
-    overlayVisible := false
-    GuiControl, macro:Focus, EditMacro
-    lineNum := btnText -1
-    SendKey("^{Home}")
-    Loop, %lineNum% {
-        SendKey("{Down}")
+ToggleOverlay() {
+    if (overlayVisible) {
+        Gui, overlayBG:Destroy
+        Gui, overlayBtn:Destroy
+        overlayVisible := false
+        return
     }
-    SendKey("+{End}")
-return
+
+    ; 매크로 내용 가져오기
+    vars := {}
+    GuiControlGet, currentText, macro:, EditMacro
+    lines := StrSplit(currentText, ["`r`n", "`n", "`r"])
+    lines := PreprocessMacroLines(lines, vars)
+
+    ; 타겟 윈도우
+    if (vars.target)
+        hwnd := ActivateWindow(vars.target)
+    else
+        WinGet, hwnd, ID, A
+    if (!hwnd)
+        return
+
+    ; 타겟 창 정보
+    GetClientPos(hwnd, x, y)
+    GetClientSize(hwnd, w, h)
+    dpi := GetWindowDPI(hwnd)
+    w := w/dpi*100
+    h := h/dpi*100
+
+    ; 1. 어두운 배경 GUI
+    Gui, overlayBG:+AlwaysOnTop -Caption +ToolWindow +E0x20 +HwndhOverlayBG
+    Gui, overlayBG:Color, 0x222244
+    Gui, overlayBG:Show, x%x% y%y% w%w% h%h% NoActivate
+    WinSet, Transparent, 100, ahk_id %hOverlayBG%
+
+    ; 2. 버튼 전용 GUI (투명 배경)
+    Gui, overlayBtn:+AlwaysOnTop -Caption +ToolWindow +HwndhOverlayBtn
+    Gui, overlayBtn:Color, 0x123456
+    Gui, overlayBtn:Font, s10 Bold, Segoe UI
+
+    vars := {}
+    Loop, % lines.Length()
+    {
+        ResolveMarker(lines[A_Index], vars)
+        if RegExMatch(lines[A_Index], "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)", m)
+            && !InStr(vars.coordMode, "screen") 
+        {
+            mx := m2/dpi*100, my := m3/dpi*100
+            CalcCoords(mx, my, vars.coordMode)
+            size := 27/dpi*100
+            boxX := mx - Floor(size / 2)
+            boxY := my - Floor(size / 2)
+            Gui, overlayBtn:Add, Button, x%boxX% y%boxY% w%size% h%size% cRed gOnOverlayBtn, %A_Index%
+        }
+    }
+    Gui, overlayBtn:Show, x%x% y%y% w%w% h%h% NoActivate
+    WinSet, TransColor, 0x123456 200, ahk_id %hOverlayBtn%
+
+    overlayVisible := true
+}
+

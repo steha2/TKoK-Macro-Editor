@@ -1,7 +1,7 @@
 ﻿#target:Warcraft III#
 Exec, champ\mk\warrior-equip
 
-Exec, 스텟창 #spsi:140# #stat:Z#
+Exec, stat-up #spsi:140# #stat:Z#
 
 Chat, -tt #wait:300# 
 Click:L, 0.413, 0.232

@@ -3,7 +3,7 @@ SendCodeToW3() {
     if(pl1 != "" && pl2 != "") {
         Chat(pl1)
         Chat(pl2)
-        Sleep, 1000
+        Sleep, 1500
         SendAptToW3()
     } else {
         MsgBox, 코드를 입력하지 못했습니다.

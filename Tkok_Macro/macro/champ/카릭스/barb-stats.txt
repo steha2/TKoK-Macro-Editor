@@ -2,7 +2,7 @@
 
 Exec, champ\카릭스\barb-equip
 
-Exec, 스텟창 #spsi:88# #stat:Q#
+Exec, stat-up #spsi:88# #stat:Q#
 
 Chat, -tt #delay:300#
 Click:L, 0.343, 0.213

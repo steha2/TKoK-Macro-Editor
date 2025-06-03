@@ -1,11 +1,10 @@
 ﻿#target:Warcraft III#
 
-Exec, champ\mk\shaman-equip
+Exec, champ\hydra\shaman-equip
 
-Exec, stat-up #spsi:140# #stat:D#
+Exec, 스텟창 #spsi:144# #stat:D#
 
-Chat, -tt #delay:300#
-
+Chat, -tt #wait:300#
 Click:L, 0.282, 0.224
 Click:L, 0.351, 0.218
 Click:L, 0.419, 0.217

@@ -2,7 +2,7 @@
 
 Exec, %out_dir%\%part1%-equip
 
-Exec, 스텟창 #spsi:100# #stat:Q#
+Exec, stat-up #spsi:100# #stat:Q#
 
 Chat, -tt #wait:300# 
 

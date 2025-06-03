@@ -2,7 +2,7 @@
 
 Exec, champ\mk\druid-equip
 
-Exec, 스텟창 #spsi:140# #stat:S#
+Exec, stat-up #spsi:140# #stat:S#
 
 Chat, -tt #delay:300#
 Click:L, 0.278, 0.211

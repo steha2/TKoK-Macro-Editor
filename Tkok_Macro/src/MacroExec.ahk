@@ -106,7 +106,7 @@ EvaluateExpr(expr, vars) {
             expr := StrReplace(expr, item.key, item.value)
             isReplaced := true
         }
-        if (InStr(defaultVal, item.key)){
+        if (InStr(defaultVal, item.key)) {
             defaultVal := StrReplace(defaultVal, item.key, item.value)
         }
     }

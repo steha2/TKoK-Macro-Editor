@@ -22,7 +22,8 @@ ToggleMacroGui(force := 2) {
 }
 
 OnTreeViewClick:
-    OnClickTreeItem()
+   if ConfirmNotSaved()
+       OnClickTreeItem()
 return
 
 OnTimeGapsCheck:
@@ -31,15 +32,17 @@ return
 
 BackMacro:
     GuiControlGet, content, macro:, EditMacro
-    if content =  ; 내용 없으면 종료
+    if (!content)
         return
     ; 우측 공백 및 줄바꿈 제거
     trimmed := RTrim(content,"`n`t ")
     ; 마지막 \n 위치 찾기 (없으면 -1)
     GuiControl, macro:, EditMacro, % TrimLastToken(trimmed, "`n")
-    GuiControl, macro:Focus, EditMacro
-    Send, ^{End}
-    return
+    if(IsTargetWindow("Macro Editor")) {
+        GuiControl, macro:Focus, EditMacro
+        Send, ^{End}
+    }
+return  
 
 ClearMacro:
     GuiControlGet, curText, macro:, EditMacro
@@ -84,6 +87,8 @@ DeleteMacro:
 return
 
 RenameMacro:
+    if !ConfirmNotSaved()
+        return
     if (!macroPath || !FileExist(macroPath)) {
         MsgBox,,%EDITOR_TITLE%, 삭제 선택된 파일이 없습니다.
         return
@@ -129,6 +134,8 @@ return
 
 
 AddMacro:
+    if !ConfirmNotSaved()
+        return
     outputDir := macroPath
     if (isFile(macroPath))
         SplitPath, macroPath, , outputDir
@@ -183,10 +190,11 @@ ToggleMacro:
 return
 
 ToggleMacroImpl() {
+    if(overlayVisible)
+        ToggleOverlay()
     GuiControlGet, content, macro:, EditMacro
     ExecMacro(content, "")
 }
-
 
 MergeMacro:
     GuiControlGet, content, macro:, EditMacro
@@ -227,7 +235,6 @@ ToggleRecord:
 
     if (isRecording) {
         GuiControl, macro:+ReadOnly, EditMacro
-        WinActivate, %DEFAULT_TARGET%
     } else {
         GuiControl, macro:-ReadOnly, EditMacro
     }
@@ -243,6 +250,31 @@ DisableShortTime(ctrlName, delay := 500, guiName := "macro") {
 EnableGuiControl(ctrlName, guiName := "macro") {
     GuiControl, %guiName%:Enable, %ctrlName%
 }
+
+ConfirmNotSaved() {
+    GuiControlGet, currentText, macro:, EditMacro
+    if (currentText != origContent) {
+        MsgBox, 4, 저장되지 않음, 변경 내용을 저장하지 않고 진행합니까?
+        IfMsgBox, No
+            return false
+        
+        origContent := ""
+        GuiControl, macro:, EditMacro, 
+    }
+    return true
+}
+
+OnOverlayBtn:
+    GuiControlGet, btnText, overlayBtn:, %A_GuiControl%
+    ToggleOverlay()
+    GuiControl, macro:Focus, EditMacro
+    lineNum := btnText -1
+    SendKey("^{Home}")
+    Loop, %lineNum% {
+        SendKey("{Down}")
+    }
+    SendKey("+{End}")
+return
 
 OnCoordMode:
     GuiControlGet, isClient, macro:, ClientBtn
@@ -261,10 +293,15 @@ Pause up::Gosub, ToggleRecord
 #If !isRecording && runningMacroCount <= 0
 !F1::ToggleOverlay()
 !F2::
-    MouseGetPos,,, hwnd
-    if(GetAdjustedCoords(xStr,yStr))
-        LogToEdit("Click:L, " . xStr . ", " . yStr)
+    if(GetAdjustedCoords(x,y)) {
+        LogToEdit("Click:L, " . x . ", " . y)
+        if(overlayVisible) {
+            ToggleOverlay()
+            ToggleOverlay()
+        }
+    }
 return
+!F3:: Gosub, BackMacro
 
 #If IsTargetWindow("Macro Editor")
 ^S:: Gosub, SaveMacro

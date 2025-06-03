@@ -70,11 +70,8 @@ SelectTreeItemByPath(path) {
 
 ;path가 "" 없으면 Edit지우기, 있으면 파일로드
 UpdatePathAndEdit(path) {
-    if IsMacroModified() {
-        MsgBox, 4, 저장되지 않음, 변경 내용을 저장하지 않고 진행합니까?
-        IfMsgBox, No
-            return 
-    }
+    if !ConfirmNotSaved()
+        return
     macroPath := path
     content := ""
     if (IsFile(path)) {

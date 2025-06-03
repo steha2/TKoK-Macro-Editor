@@ -22,16 +22,17 @@ global macroGuiShown := false
 global suspendTreeEvents := false
 global macroAbortRequested := false
 global CoordTrackingRunning := false
-global overlayVisible, hOverlay
+global overlayVisible := false
+global hOverlayBG
+global hOverlayBtn
+global hMacro
 
 ;-----------------------------------------Macro Gui---------------------------------------------------
 if !FileExist(MACRO_DIR)
     FileCreateDir, %MACRO_DIR%
 
-global hMacro
 Gui, macro:New, +hwndhMacro
 Gui, Font, s12, Consolas
-
 
 ; === 버튼 속성 정의 ===
 btnW := 70     ; 버튼 너비
