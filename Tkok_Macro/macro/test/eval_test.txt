@@ -4,6 +4,7 @@ Run, %t%
 
 #target:t#
 
+wait, 100
 
 #c:a+b# #a:1# #b:2# 
 

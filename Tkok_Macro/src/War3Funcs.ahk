@@ -136,7 +136,7 @@ ExecMultiW3(num := 0) {
             }
         } else {
             ExecW3()
-            SendKey("L", 3000)
+            SendKey("L", 3100)
             Click(0.4, 0.3)
             SendKey("J")
         }

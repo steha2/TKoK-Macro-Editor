@@ -1,21 +1,3 @@
-LogKeyControl(key) {
-  k:=InStr(key,"Win") ? key : SubStr(key,2)
-  StringLower, k, k
-  LogToEdit("Send, {" . k . " down}", k, true)
-  Critical, Off
-  KeyWait, %key%
-  Critical
-  LogToEdit("Send, {" . k . " up}" , k, true)
-}
-
-LogMouseClick(key) {
-    MouseGetPos,,, hwnd
-    if (!isRecording || IsTargetWindow("Macro Editor", hwnd) || !GetAdjustedCoords(xStr, yStr))
-        return
-    btn := SubStr(key, 1, 1)
-    LogToEdit("Click:" . btn . ", " . xStr . ", " . yStr, key)
-}
-
 LogKey() {
     Critical
     vksc := SubStr(A_ThisHotkey, 3)
@@ -37,26 +19,24 @@ LogKey() {
     }
 }
 
-; 🔁 핫키 등록/해제
-SetHotkey(enable := false) {
-    excludedKeys := "MButton,WheelDown,WheelUp,WheelLeft,WheelRight,Pause"
-    mode := enable ? "On" : "Off"
-
-    Loop, 254 {
-        vk := Format("vk{:X}", A_Index)
-        key := GetKeyName(vk)
-        if key not in ,%excludedKeys%
-            Hotkey, ~*%vk%, LogKey, %mode% UseErrorLevel
-    }
-
-    ; 추가 키 (방향키 등 SC 기반)
-    extraKeys := "NumpadEnter|Home|End|PgUp|PgDn|Left|Right|Up|Down|Delete"
-    For i, key in StrSplit(extraKeys, "|") {
-        sc := Format("sc{:03X}", GetKeySC(key))
-        if key not in ,%excludedKeys%
-            Hotkey, ~*%sc%, LogKey, %mode% UseErrorLevel
-    }
+LogKeyControl(key) {
+  k:=InStr(key,"Win") ? key : SubStr(key,2)
+  StringLower, k, k
+  LogToEdit("Send, {" . k . " down}", k, true)
+  Critical, Off
+  KeyWait, %key%
+  Critical
+  LogToEdit("Send, {" . k . " up}" , k, true)
 }
+
+LogMouseClick(key) {
+    MouseGetPos,,, hwnd
+    if (!isRecording || IsTargetWindow("Macro Editor", hwnd) || !GetAdjustedCoords(xStr, yStr))
+        return
+    btn := SubStr(key, 1, 1)
+    LogToEdit("Click:" . btn . ", " . xStr . ", " . yStr, key)
+}
+
 
 LogToEdit(line, k := "", isModifier := false) {
     static lastKey := ""
@@ -65,8 +45,7 @@ LogToEdit(line, k := "", isModifier := false) {
     elapsed := currTime - lastTime
     if (k = lastKey && elapsed < 100 && !isModifier) {
         return
-    }
-    else 
+    } else 
         lastKey := k
 
     GuiControlGet, isTimeGaps, macro:, TimeGapsCheck
@@ -95,6 +74,27 @@ LogToEdit(line, k := "", isModifier := false) {
     scriptText .= line
     GuiControl, macro:, EditMacro, %scriptText%
     GuiControl, macro:, LatestRec, %line%
+}
+
+; 🔁 핫키 등록/해제
+SetHotkey(enable := false) {
+    excludedKeys := "MButton,WheelDown,WheelUp,WheelLeft,WheelRight,Pause"
+    mode := enable ? "On" : "Off"
+
+    Loop, 254 {
+        vk := Format("vk{:X}", A_Index)
+        key := GetKeyName(vk)
+        if key not in ,%excludedKeys%
+            Hotkey, ~*%vk%, LogKey, %mode% UseErrorLevel
+    }
+
+    ; 추가 키 (방향키 등 SC 기반)
+    extraKeys := "NumpadEnter|Home|End|PgUp|PgDn|Left|Right|Up|Down|Delete"
+    For i, key in StrSplit(extraKeys, "|") {
+        sc := Format("sc{:03X}", GetKeySC(key))
+        if key not in ,%excludedKeys%
+            Hotkey, ~*%sc%, LogKey, %mode% UseErrorLevel
+    }
 }
 
 MergeMacro(content) {
@@ -333,14 +333,14 @@ ToggleOverlay() {
 }
 
 OnOverlayBtn:
-GuiControlGet, btnText, overlay:, %A_GuiControl%
-Gui, overlay:Destroy
-overlayVisible := false
-GuiControl, macro:Focus, EditMacro
-lineNum := btnText -1
-SendKey("^{Home}")
-Loop, %lineNum% {
-    SendKey("{Down}")
-}
-SendKey("+{End}")
+    GuiControlGet, btnText, overlay:, %A_GuiControl%
+    Gui, overlay:Destroy
+    overlayVisible := false
+    GuiControl, macro:Focus, EditMacro
+    lineNum := btnText -1
+    SendKey("^{Home}")
+    Loop, %lineNum% {
+        SendKey("{Down}")
+    }
+    SendKey("+{End}")
 return
