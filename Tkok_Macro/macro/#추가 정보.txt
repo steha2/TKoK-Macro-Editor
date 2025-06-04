@@ -19,15 +19,15 @@ chat, %hero% %level%
 좌표모드를 전체화면,고정값 좌표로 사용
 기본값:실행창,비율 - 모든 해상도에서 동일한 좌표를 사용하기 위함
 
-\preset 
-폴더안의 파일명을 새로 만드는 매크로 이름에 포함시킬 경우 적용됨
-
+preset 폴더안의 파일명을 새로 만드는 매크로 이름에 포함시킬 경우 적용됨
+[+ New] > ranger-stats 입력 > preset\stats 파일을 적용
+vars := {rel_path:상대경로,out_dir:상위폴더,part1:"ranger",part2:"stats")
 
 #if:a>1# 조건 설정~
 #if# ~조건 해제
 
 #force# 
-해당 줄 조건 무시 실행, 
+해당 줄 조건 무시 실행
 preset 적용시 해당 줄은 즉시실행 후 복사안함
 
 SendRaw, text...

@@ -1,5 +1,4 @@
 BuildTreeView(rootPath, parentID := 0) {
-    global g_PathMap
     Loop, Files, % rootPath "\*", D
     {
         folderName := A_LoopFileName

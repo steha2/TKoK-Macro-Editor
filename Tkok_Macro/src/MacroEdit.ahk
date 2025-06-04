@@ -275,58 +275,6 @@ LoadPresetForMacro(fileName, vars) {
     }
 }
 
-ToggleOverlay2() {
-    if (overlayVisible) {
-        Gui, overlay:Destroy
-        overlayVisible := false
-        return
-    }
-
-    ; Overlay GUI 준비
-    Gui, overlay:+AlwaysOnTop -Caption +ToolWindow +HwndhOverlay
-    Gui, overlay:Font, Bold
-
-    vars := {}
-    GuiControlGet, currentText, macro:, EditMacro
-    lines := StrSplit(currentText, ["`r`n", "`n", "`r"])
-    lines := PreprocessMacroLines(lines, vars)
-
-    if(vars.target)
-        hwnd := ActivateWindow(vars.target)
-    else 
-        WinGet, hwnd, ID, A
-
-    if(!hwnd)
-        return
-        
-    GetClientPos(hwnd, x, y)
-    GetClientSize(hwnd, w, h)
-    dpi := GetWindowDPI(hwnd)
-    
-    w := w/dpi*100
-    h := h/dpi*100
-
-    vars := {}
-    Loop, % lines.Length()
-    {
-        ResolveMarker(lines[A_Index], vars)
-        if RegExMatch(lines[A_Index], "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)", m)
-            && !InStr(vars.coordMode, "screen") 
-        {
-            mx := m2/dpi*100, my := m3/dpi*100
-            CalcCoords(mx, my, vars.coordMode)
-            boxX := mx - 14
-            boxY := my - 14
-            Gui, overlay:Add, Button, x%boxX% y%boxY% w29 h29 cRed BackgroundTrans Border gOnOverlayBtn, %A_Index%
-        }
-    }
-
-    Gui, overlay:Color, 0x222244
-    Gui, overlay:Show, x%x% y%y% w%w% h%h% NoActivate
-    WinSet, Transparent, 150, ahk_id %hOverlay% 
-    overlayVisible := true
-}
-
 ToggleOverlay() {
     if (overlayVisible) {
         Gui, overlayBG:Destroy

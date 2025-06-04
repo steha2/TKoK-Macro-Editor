@@ -1,10 +1,10 @@
 Chat(text) {
-    SendKey("{Enter}")
     ClipSaved := ClipboardAll
     Clipboard := text
     ClipWait, 0.5
+    SendKey("{Enter}", -20)
     SendKey("^v", -50)
-    SendKey("{Enter}")
+    SendKey("{Enter}", 30)
     Clipboard := ClipSaved
 }
 

@@ -30,13 +30,13 @@ RestoreW3Pos() {
         if (winClass = W3_WINTITLE) {
             mainW3Hwnd := activeHwnd
             WinMove, ahk_id %mainW3Hwnd%, , %savedX%, %savedY%, %savedW%, %savedH%
-            ShowTip("현재 창을 mainW3Hwnd : " mainW3Hwnd "`nX:" savedX " Y:" savedY " W:" savedW " H:" savedH)
+            ;ShowTip("현재 창을 mainW3Hwnd : " mainW3Hwnd "`nX:" savedX " Y:" savedY " W:" savedW " H:" savedH)
         }
     }
 }
 
 ;큰 W3 창으로 이동한다
-SwitchToMainW3() {
+SwitchToMainW3(isClip := true) {
     WinGet, war3List, List, %W3_WINTITLE%
     WinGet, prevHwnd, ID, A  ; 현재 활성 창 핸들 얻기
     
@@ -56,7 +56,8 @@ SwitchToMainW3() {
             WinActivate, ahk_id %hwnd%
             Sleep, 100
             ;이전창이 현재창과 같으면 마우스 가두기 토글, 아니면 마우스 가두기 실행
-            ClipWindow(prevHwnd != hwnd) 
+            if(isClip)
+                ClipWindow(prevHwnd != hwnd) 
             return
         }
     }
@@ -143,7 +144,7 @@ ExecMultiW3(num := 0) {
     }
 
     if(numW3 > 0)
-        SwitchToMainW3()
+        SwitchToMainW3(false)
     else 
         Sleep, 2000
     Sleep, 1000

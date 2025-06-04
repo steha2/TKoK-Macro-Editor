@@ -156,7 +156,7 @@ AddMacro:
     macroRelPath := StrReplace(macroRelPath, "/", "\")
     SplitPath, macroRelPath, fileName, outDir
 
-    vars := {rel_path:acroRelPath, out_dir:outDir}
+    vars := {rel_path:macroRelPath, out_dir:outDir}
     newContents := LoadPresetForMacro(fileName, vars)
 
     WriteMacroFile(newContents, macroRelPath)
