@@ -121,9 +121,9 @@ EvaluateExpr(expr, vars) {
 
 ExecSingleCommand(command, vars) {
     if RegExMatch(command, "i)^Click:(\w+),\s*(\d+),\s*(\d+)$", m) {
-        Click(m2,m3,m1,"fixed")
+        Click(m2,m3,m1,vars.coordMode,"fixed")
     } else if RegExMatch(command, "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)$", m) {
-        Click(m2,m3,m1)
+        Click(m2,m3,m1,vars.coordMode,"ratio")
     } else if RegExMatch(command, "i)^SendRaw\s*,?\s*(.*)$", m) {
         SendRaw, %m1% 
     } else if RegExMatch(command, "i)^Send\s*,?\s*(.*)$", m) {

@@ -32,33 +32,33 @@ SendKey(key, delay := 0, ignoreSpace := false) {
         Sleep, delay
 }
 
-CalcCoords(ByRef x, ByRef y, coordMode := "") {
+CalcCoords(ByRef x, ByRef y, coordMode := "", coordType := "") {
     isClient := !InStr(coordMode,"screen")
-    isRatio := !InStr(coordMode,"fixed") && isClient
+    isRatio := !InStr(coordType,"fixed")
 
     CoordMode, Mouse, % isClient ? "Client" : "Screen"
-    
     if(isRatio){
         GetClientSize("A", w, h)
         x := Round(x * w)
         y := Round(y * h)
     }
+    test(x,y,isClient, isRatio,coordMode,coordType)
 }
 
-Click(x, y, btn := "L", delay := 50, coordMode := "") {
-    CalcCoords(x, y, coordMode)
+Click(x, y, btn := "L", coordMode := "", coordType := "") {
+    CalcCoords(x, y, coordMode, coordType)
     MouseMove, %x%, %y%
-    Sleep, delay
+    Sleep, 50
     ; MouseClick, %btn%
     if (btn = "R") {
         ; 우클릭: 0x08 (Down), 0x10 (Up)
         DllCall("mouse_event", "UInt", 0x08, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Down
-        Sleep, delay
+        Sleep, 50
         DllCall("mouse_event", "UInt", 0x10, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Up
     } else {
         ; 좌클릭: 0x02 (Down), 0x04 (Up)
         DllCall("mouse_event", "UInt", 0x02, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Down
-        Sleep, delay
+        Sleep, 50
         DllCall("mouse_event", "UInt", 0x04, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Up
     }
 }

@@ -15,9 +15,8 @@ chat, %hero% %level%
 #target:notepad#
 매크로 실행시 notepad 창을 활성화 시키고 못찾으면 중단
 
-#coord_mode:screen,fixed# 
-좌표모드를 전체화면,고정값 좌표로 사용
-기본값:실행창,비율 - 모든 해상도에서 동일한 좌표를 사용하기 위함
+#coord_mode:screen# 
+좌표모드:전체화면 (기본값:실행창)
 
 preset 폴더안의 파일명을 새로 만드는 매크로 이름에 포함시킬 경우 적용됨
 [+ New] > ranger-stats 입력 > preset\stats 파일을 적용

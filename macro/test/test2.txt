@@ -1,2 +1,2 @@
 ﻿chat, test2 %abc+d|10%
-test3.txt
+Exec, test3.txt
