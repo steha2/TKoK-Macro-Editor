@@ -24,11 +24,10 @@ ExecMacro(scriptText, vars) {
         ; -------------------------------------
       
         line := StripComments(line)
-        line := ResolveMarker(line, vars)
-        line := ResolveExpr(line, vars)
-        
         if (line = "")
             continue
+        line := ResolveMarker(line, vars)
+        line := ResolveExpr(line, vars)
         
         if isDigit(vars.limit) {
             limit := Floor(vars.limit)

@@ -154,32 +154,35 @@ IsTargetWindow(target, hwnd := "A") {
     return InStr(title, target, false) || InStr(class, target, false) || InStr(exe, target, false)
 }
 
+TryActivate(win) {
+    if WinExist(win) {
+        WinActivate, %win%
+        WinWaitActive, %win%
+        return WinActive(win)
+    }
+    return false
+}
+
 ActivateWindow(target) {
     if (target = "")
         return false
 
     targetClass := "ahk_class " . target
-    ; 2. ahk_class 로 시도 
-    if WinExist(targetClass) {
-        WinActivate, %targetClass%
-        return WinActive(targetClass)
-    }
+    if TryActivate(targetClass)
+        return true
 
-    targetExe := "ahk_exe" . target . ".exe"
-    if WinExist(targetExe) {
-        WinActivate, %targetExe%
-        return WinActive(targetExe)
-    }
+    targetExe := "ahk_exe " . target . ".exe"
+    if TryActivate(targetExe)
+        return true
 
-    ; 4. 마지막으로 title에 포함된 창 찾기
-    if WinExist(target) {
-        WinActivate, %target%
-        return WinActive(target)
-    }
+    if TryActivate(target)
+        return true
 
     ShowTip("대상 창을 활성화 할 수 없습니다.`n`nTarget : "  target)
     return false
 }
+
+
 
 GetClientSize(hwnd := "A", ByRef w := "", ByRef h := "") {
     if (!hwnd) {
