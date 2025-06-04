@@ -66,7 +66,7 @@ Note(newText := "", isAppend := false) {
         Gui, SimpleNote: New
         Gui, SimpleNote: +Resize
         Gui, SimpleNote: Margin, 10, 10
-        Gui, SimpleNote: Add, Edit, vNoteEdit w400 h300 WantTab
+        Gui, SimpleNote: Add, Edit, vNoteEdit w700 h500 WantTab
         isCreated := true
     }
 

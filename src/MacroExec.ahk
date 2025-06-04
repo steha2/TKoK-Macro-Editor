@@ -1,4 +1,4 @@
-ExecMacro(scriptText, vars) {
+ExecMacro(scriptText, vars, current_path) {
     if (scriptText = "")
         return
 
@@ -10,8 +10,12 @@ ExecMacro(scriptText, vars) {
         ShowTip("Warning! : vars is not Object")
         vars := {}
     }
+    vars.current_path := current_path
 
     for index, line in lines {
+        if(macroAbortRequested)
+            break
+
         vars.rep := 1
         vars.wait := 0
         vars.Delete("force")
@@ -131,9 +135,9 @@ ExecSingleCommand(command, vars) {
         Send, {Blind}%m1% 
     } else if RegExMatch(command, "i)^Chat\s*,?\s*(.*)$", m) {
         Chat(m1)
-    } else if RegExMatch(command, "i)^(Sleep|Wait)\s*,?\s*(\d*)", m) {
+    } else if RegExMatch(command, "i)^(Sleep|Wait|Delay)\s*,?\s*(\d*)", m) {
         if(isDigit(m2))
-            vars.wait += m2
+            vars.delay := m2
     } else if RegExMatch(command, "i)^Exec,?\s*(.+?)(?:\.txt)?$", m) {
         ExecMacroFile(m1, vars)
     } else if RegExMatch(command, "i)^(Run|RunAs)\s*,?\s*(.*)$", m) {
@@ -178,22 +182,25 @@ ExecFunc(fnName, argsStr) {
 
 ExecMacroFile(macroFilePath, vars) {
     AppendExt(macroFilePath)
+    macroFilePath := StrReplace(macroFilePath, "/", "\")
+
     if (IsAbsolutePath(macroFilePath)) {
         fullPath := macroFilePath
     } else {
-        fullPath := MACRO_DIR . "\" . macroFilePath
-        ; 1. vars.macro_path 기준 상대경로
-        base1 := GetContainingFolder(vars.macro_path)
-        try1 := base1 . "\" . macroFilePath
-        ; 2. MACRO_DIR 기준
-        try2 := MACRO_DIR . "\" . macroFilePath
+        try1 := GetContainingFolder(vars.current_path) . "\" . macroFilePath
+        try2 := GetContainingFolder(vars.base_path) . "\" . macroFilePath
+        try3 := MACRO_DIR . "\" . macroFilePath
+
+        ;test(macroFilePath,try1,try2,try3,vars)
 
         if (IsFile(try1))
             fullPath := try1
         else if (IsFile(try2))
             fullPath := try2
+        else if (IsFile(try3))
+            fullPath := try3
         else {
-            MsgBox, % "매크로 파일을 찾을 수 없습니다.`n" . try1 . "`n" . try2
+            MsgBox, % "매크로 파일을 찾을 수 없습니다.`n" . try1 . "`n" . try2 . "`n" . try3
             return
         }
     }
@@ -203,7 +210,7 @@ ExecMacroFile(macroFilePath, vars) {
         MsgBox, % "파일을 불러오는 데 실패했습니다: " . %fullPath%
         return
     }
-    ExecMacro(scriptText, vars)
+    ExecMacro(scriptText, vars, fullPath)
 }
 
 UpdateMacroState(delta) {
@@ -237,5 +244,5 @@ CheckAbortAndSleep(totalDelay) {
         }
         Sleep, % Min(100, totalDelay)
     }
-    return true
+    return !macroAbortRequested
 }

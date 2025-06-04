@@ -2,4 +2,4 @@
 
 chat, test1 %target%
 chat, % missing|abc_%name% %    ; abc_홍길동
-Exec, test\test2
+Exec, test2

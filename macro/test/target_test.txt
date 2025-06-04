@@ -7,7 +7,7 @@ Run, %t%
 
 #c:a+b# #a:1# #b:2# 
 
-send, %c%
+chat, %c%
 
 sendraw, `n`r%c%
 

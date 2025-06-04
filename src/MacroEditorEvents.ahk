@@ -193,8 +193,8 @@ ToggleMacroImpl() {
     if(overlayVisible)
         ToggleOverlay()
     GuiControlGet, content, macro:, EditMacro
-    vars := {macro_path:macroPath}
-    ExecMacro(content, vars)
+    vars := {base_path:macroPath}
+    ExecMacro(content, vars, macroPath)
 }
 
 MergeMacro:
@@ -229,6 +229,9 @@ return
 ; -------------------------
 ; 기록 시작/중지
 ToggleRecord:
+    if(runningMacroCount > 0)
+        return
+
     DisableShortTime("RecordBtn")
     isRecording := !isRecording
     btnText := isRecording ? "■ Stop" : "Record"

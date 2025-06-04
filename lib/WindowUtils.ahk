@@ -157,7 +157,7 @@ IsTargetWindow(target, hwnd := "A") {
 TryActivate(win) {
     if WinExist(win) {
         WinActivate, %win%
-        WinWaitActive, %win%
+        WinWaitActive, %win%,, 1
         return WinActive(win)
     }
     return false

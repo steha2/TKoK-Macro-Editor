@@ -1,0 +1,4 @@
+﻿#target:notepad#
+chat, AAA
+wait, 3000
+Exec, loop-test

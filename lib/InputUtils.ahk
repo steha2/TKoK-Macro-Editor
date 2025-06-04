@@ -14,7 +14,7 @@ Chat2(text) {
     SendRaw, %text%
     Suspend, Off
     SendKey("{Enter}")
-} 
+}
 
 ;dealy :음/양수 선/후 딜레이
 SendKey(key, delay := 0, ignoreSpace := false) {
