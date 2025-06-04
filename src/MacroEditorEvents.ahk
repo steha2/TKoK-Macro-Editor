@@ -193,7 +193,8 @@ ToggleMacroImpl() {
     if(overlayVisible)
         ToggleOverlay()
     GuiControlGet, content, macro:, EditMacro
-    ExecMacro(content, "")
+    vars := {macro_path:macroPath}
+    ExecMacro(content, vars)
 }
 
 MergeMacro:

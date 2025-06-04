@@ -183,7 +183,7 @@ WriteMacroFile(content := "", macroFilePath := "") {
     }
     AppendExt(macroFilePath)
     ; 절대경로인지 검사 (드라이브 문자 or \로 시작)
-    if (SubStr(macroFilePath, 1, 1) = "\" || RegExMatch(macroFilePath, "^[a-zA-Z]:\\")) {
+    if (IsAbsolutePath(macroFilePath)) {
         fullPath := macroFilePath
     } else {
         fullPath := MACRO_DIR . "\" . macroFilePath

@@ -52,5 +52,16 @@ DeleteItem(path) {
     }
 }
 
+GetContainingFolder(path) {
+    if (FileExist(path) ~= "D")  ; Directory
+        return RTrim(path, "\")
+    else {
+        SplitPath, path,, dir
+        return dir
+    }
+}
 
+IsAbsolutePath(path) {
+    return RegExMatch(path, "i)^[a-z]:\\|^\\\\")  ; C:\ or \\network\
+}
 

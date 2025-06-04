@@ -2,11 +2,12 @@
 chat, -----------start----------
 #a:2.5000# #b:1# 
 chat, % a / b %
-chat, % a / b % #dp_mode:fixed#
+chat, % a / b % #dp_mode:fixed6#
 chat, % a / b % #dp_mode:ceil#
 
 #a:4.999# #b:1# 
 chat, % a / b % #dp_mode:round2#
+chat, % a / b % #dp_mode:round6#
 chat, %a,b% % a / b % #dp_mode:floor#
 #if:a>1# chat, a는1보다 크다
 #if:a>5# chat, a는5보다 크다

@@ -6,8 +6,10 @@ ExecMacro(scriptText, vars) {
     lines := StrSplit(scriptText, ["`r`n", "`n", "`r"])
     limit := BASE_LIMIT
     
-    if !IsObject(vars)
+    if !IsObject(vars) {
+        ShowTip("Warning! : vars is not Object")
         vars := {}
+    }
 
     for index, line in lines {
         vars.rep := 1
@@ -114,7 +116,7 @@ EvaluateExpr(expr, vars) {
     if (hasDefault && !isReplaced)
         expr := defaultVal
 
-    return TryEval(expr, vars)
+    return TryEval(expr, vars.dp_mode ? vars.dp_mode : "trim")
 }
 
 
@@ -174,11 +176,31 @@ ExecFunc(fnName, argsStr) {
     return fn.Call(args*)
 }
 
-ExecMacroFile(macroRelPath, vars := "") {
-    AppendExt(macroRelPath)
-    FileRead, scriptText, %MACRO_DIR%\%macroRelPath%
+ExecMacroFile(macroFilePath, vars) {
+    AppendExt(macroFilePath)
+    if (IsAbsolutePath(macroFilePath)) {
+        fullPath := macroFilePath
+    } else {
+        fullPath := MACRO_DIR . "\" . macroFilePath
+        ; 1. vars.macro_path 기준 상대경로
+        base1 := GetContainingFolder(vars.macro_path)
+        try1 := base1 . "\" . macroFilePath
+        ; 2. MACRO_DIR 기준
+        try2 := MACRO_DIR . "\" . macroFilePath
+
+        if (IsFile(try1))
+            fullPath := try1
+        else if (IsFile(try2))
+            fullPath := try2
+        else {
+            MsgBox, % "매크로 파일을 찾을 수 없습니다.`n" . try1 . "`n" . try2
+            return
+        }
+    }
+
+    FileRead, scriptText, %fullPath%
     if (ErrorLevel) {
-        MsgBox, % "파일을 불러오는 데 실패했습니다: " . macroRelPath
+        MsgBox, % "파일을 불러오는 데 실패했습니다: " . %fullPath%
         return
     }
     ExecMacro(scriptText, vars)
@@ -197,10 +219,10 @@ UpdateMacroState(delta) {
     }
 }
 
-TryEval(expr, vars) {
+TryEval(expr, dpMode) {
     if RegExMatch(expr, "^[\d+\-*/.() <>=!&|^~]+$") && RegExMatch(expr, "\d") {
         ;test("EVAL!",expr,mode,FormatDecimal(Eval(expr), mode))
-        return FormatDecimal(Eval(expr), vars.dp_mode)
+        return FormatDecimal(Eval(expr), dpMode)
     } else {
         return expr
     }

@@ -15,6 +15,9 @@ FormatDecimal(num, mode) {
         return Round(num, 3)
     } else if (RegExMatch(mode, "^round(-?\d+)$", m)) {
         return Round(num, m1 + 0)
+    } else if (RegExMatch(mode, "^fixed(\d+)$", m)) {
+        digits := m1 + 0
+        return Format("{:0." digits "f}", num)
     } else if (mode = "floor") {
         return Floor(num)
     } else if (mode = "ceil") {

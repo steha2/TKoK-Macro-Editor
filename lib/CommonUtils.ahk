@@ -64,7 +64,7 @@ Note(newText := "", isAppend := false) {
     ; GUI 없으면 생성
     if (!isCreated) {
         Gui, SimpleNote: New
-        Gui, SimpleNote: +Resize +AlwaysOnTop
+        Gui, SimpleNote: +Resize
         Gui, SimpleNote: Margin, 10, 10
         Gui, SimpleNote: Add, Edit, vNoteEdit w400 h300 WantTab
         isCreated := true
