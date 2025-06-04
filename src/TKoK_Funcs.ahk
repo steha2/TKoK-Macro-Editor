@@ -136,9 +136,9 @@ LoadSquad(champ := false) {
             SwitchToMainW3()
     }
     if(squad0 > 1)
-        SendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", 0, true)
+        SendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", 0, "", "", true)
     else
-        SendKey("^s {F1} ^1", 0, true)
+        SendKey("^s {F1} ^1", 0, "", "", true)
     if(champ)
         ChampChat() ;!dr -fog -cdist 
     else

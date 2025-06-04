@@ -1,15 +1,12 @@
 #SingleInstance, Force
 SendMode Input
 SetWorkingDir, %A_ScriptDir%
-GetLeafDir(path) {
-    if (FileExist(path) ~= "D")  ; Directory
-        return RTrim(path, "\")
-    else {
-        SplitPath, path,, dir
-        return dir
-    }
+a:=0
+while(i<3) {
+    i++
+    a++
+    MsgBox, % i " " a
 }
 
-a := "C:\ahk\c.txt"
-
-MsgBox, % GetLeafDir(a)
+MsgBox, % a
+ExitApp

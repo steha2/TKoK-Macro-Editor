@@ -1,5 +1,5 @@
 ExecMacro(scriptText, vars, current_path) {
-    if (scriptText = "")
+    if (scriptText = "" || runMacroCount > 20)
         return
 
     UpdateMacroState(+1)
@@ -11,46 +11,52 @@ ExecMacro(scriptText, vars, current_path) {
         vars := {}
     }
     vars.current_path := current_path
-
     for index, line in lines {
         if(macroAbortRequested)
             break
-
+        ; ----------- 임시 검사 블록 -----------
+        tempVars := Clone(vars)
+        ResolveMarker(line, tempVars)
+        vars.if := tempVars.if
+        if (!tempVars.HasKey("force") && tempVars.HasKey("if") && tempVars.if = 0)
+            continue
+        ; -------------------------------------
         vars.rep := 1
         vars.wait := 0
         vars.Delete("force")
         vars.Delete("dp_mode")
         vars.delay := isDigit(vars.base_delay) ? vars.base_delay : BASE_DELAY
-     
-        ; ----------- 임시 검사 블록 -----------
-        tempVars := Clone(vars)
-        ResolveMarker(line, tempVars)
-        if (!tempVars.HasKey("force") && tempVars.HasKey("if") && tempVars.if = 0)
-            continue
-        ; -------------------------------------
-      
+
         line := StripComments(line)
         if (line = "")
             continue
-        line := ResolveMarker(line, vars)
-        line := ResolveExpr(line, vars)
-        
-        if isDigit(vars.limit) {
-            limit := Floor(vars.limit)
-            vars.limit := ""
+        cmd := ResolveMarker(line, vars)
+        cmd := ResolveExpr(cmd, vars)
+
+        if (vars.HasKey("limit")) {
+            limit := Floor(vars.limit + 0)
+            vars.Delete("limit")
         }
-        if (limit <= 0 || !IsAllowedWindow(vars.target) || !CheckAbortAndSleep(vars.wait))
+        if (!CheckAbortAndSleep(vars.wait) || limit <= 0 || vars.HasKey("break"))
             break
-        ; 실행 성공했으면 반복 횟수 감소
-        Loop, % vars.rep {
-            ExecSingleCommand(line, vars)
-            
-            if(!CheckAbortAndSleep(vars.delay))
-                break
-            if(line != "") {
+        if(vars.target) {
+            targetWin := GetTargetHwnd(vars.target)
+            WinGet, winId, Id, %targetWin%
+            if(!targetWin)
+                Break
+            if (vars.send_mode != "inactive" && winId != WinExist("A")){
+                WinActivateWait(targetWin)
+            }
+        }
+        Loop, % vars.rep
+        {
+            ExecSingleCommand(cmd, vars, targetWin)
+            if(cmd != "") {
                 if(A_Index = vars.rep || InStr(vars.limit_mode,"repeat"))
                     limit--
             }
+            if(!CheckAbortAndSleep(vars.delay) || limit <= 0 || vars.HasKey("break"))
+                break
         }
     }
     UpdateMacroState(-1)
@@ -124,17 +130,17 @@ EvaluateExpr(expr, vars) {
 }
 
 
-ExecSingleCommand(command, vars) {
+ExecSingleCommand(command, vars, targetWin := "") {
     if RegExMatch(command, "i)^Click:(\w+),\s*(\d+),\s*(\d+)$", m) {
-        Click(m2,m3,m1,vars.coordMode,"fixed")
+        Click(m2, m3, m1, vars.coord_mode, "fixed", vars.send_mode, targetWin)
     } else if RegExMatch(command, "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)$", m) {
-        Click(m2,m3,m1,vars.coordMode,"ratio")
+        Click(m2, m3, m1, vars.coord_mode, "ratio", vars.send_mode, targetWin)
     } else if RegExMatch(command, "i)^SendRaw\s*,?\s*(.*)$", m) {
         SendRaw, %m1% 
     } else if RegExMatch(command, "i)^Send\s*,?\s*(.*)$", m) {
-        Send, {Blind}%m1% 
+        SendKey(m1, 0, vars.send_mode, targetWin)
     } else if RegExMatch(command, "i)^Chat\s*,?\s*(.*)$", m) {
-        Chat(m1)
+        Chat(m1, vars.send_mode, targetWin)
     } else if RegExMatch(command, "i)^(Sleep|Wait|Delay)\s*,?\s*(\d*)", m) {
         if(isDigit(m2))
             vars.delay := m2
@@ -242,7 +248,8 @@ CheckAbortAndSleep(totalDelay) {
             ShowTip("매크로 중단 요청")
             return false
         }
-        Sleep, % Min(100, totalDelay)
+        s := Min(100, totalDelay)
+        Sleep, %s%
     }
     return !macroAbortRequested
 }

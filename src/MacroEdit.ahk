@@ -27,12 +27,13 @@ LogKeyControl(key) {
   KeyWait, %key%
   Critical
   LogToEdit("Send, {" . k . " up}" , k, true)
-}
+} 
 
 LogMouseClick(key) {
     MouseGetPos,,, hwnd
     if (!isRecording || IsTargetWindow("Macro Editor", hwnd) || !GetAdjustedCoords(xStr, yStr))
         return
+    
     btn := SubStr(key, 1, 1)
     LogToEdit("Click:" . btn . ", " . xStr . ", " . yStr, key)
 }
@@ -61,12 +62,8 @@ LogToEdit(line, k := "", isModifier := false) {
         trimmedScript := RTrim(scriptText, "`n`t ")
         lastLine := GetLastPart(trimmedScript, "`n")
         if(IsSameMacroLine(line, lastLine)){
-            count := 2
-            if(RegExMatch(lastLine,"#rep:(\d+)#",m)) {
-                count := m1 + 1
-            }
             scriptText := TrimLastToken(trimmedScript, "`n")
-            line := MergeLine(lastLine, count)
+            line := MergeLine(lastLine, 2)
         }
     }
     if (scriptText != "" && SubStr(scriptText, 0) != "`n")
@@ -132,6 +129,9 @@ MergeMacro(content) {
 
 MergeLine(line, count) {
     if (count > 1) {
+        if(RegExMatch(line,"#rep:(\d+)#",m)) {
+            count += m1 -1
+        }
         line := RegExReplace(line, "\s*#rep:\d+#")
         line .= " #rep:" . count . "#"
     }
@@ -139,7 +139,7 @@ MergeLine(line, count) {
 }
 
 IsSameMacroLine(line1, line2) {
-    pattern := "[;%]|#(?!wait:|rep:)[^#:]+:"
+    pattern := "i)[;%]|#(?!wait:|rep:|delay:)[^#:]+:"
     if (RegExMatch(line1, pattern) || RegExMatch(line2, pattern))
         return false
 
@@ -149,7 +149,9 @@ IsSameMacroLine(line1, line2) {
     cmd2 := ResolveMarker(line2, vars2)
     wait1 := vars1.wait ? vars1.wait : 0
     wait2 := vars2.wait ? vars2.wait : 0
-    if (Abs(wait1 - wait2) > EPSILON_WAIT)
+    delay1 := vars1.delay ? vars1.delay : 0
+    delay2 := vars2.delay ? vars2.delay : 0
+    if (Abs(wait1 - wait2) > EPSILON_WAIT || delay1 != delay2)
         return false
 
     pattern := "i)^Click:(\w),\s*([\d.]+),\s*([\d.]+)"
@@ -211,7 +213,8 @@ GetAdjustedCoords(ByRef x, ByRef y) {
     GuiControlGet, isRatio, macro:, RatioBtn
     CoordMode, Mouse, % isClient ? "Client" : "Screen"
     if (isRatio) {
-        if(!GetMouseRatio(x, y, "A"))
+        WinGet, hwnd, ID, A
+        if(!GetMouseRatio(hwnd, x, y))
             return false
     } else {
         MouseGetPos, x, y
@@ -291,11 +294,13 @@ ToggleOverlay() {
 
     ; 타겟 윈도우
     if (vars.target)
-        hwnd := ActivateWindow(vars.target)
+        hwnd := GetTargetHwnd(vars.target)
     else
         WinGet, hwnd, ID, A
     if (!hwnd)
         return
+    
+    WinActivateWait(hwnd)
 
     ; 타겟 창 정보
     GetClientPos(hwnd, x, y)

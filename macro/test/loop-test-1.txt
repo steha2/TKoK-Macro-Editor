@@ -1,0 +1,10 @@
+﻿;note()
+chat, i: %i% a : %a% 
+
+#a:a*2#
+#i:i+1#
+;chat, i: %i% a : %a% 
+#if:a>=1000#
+chat, "BREAK"
+#break#
+#if#

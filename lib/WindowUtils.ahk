@@ -66,6 +66,10 @@ Win_BringToFront(winTitle := "A") {
         , "UInt", 0x0001 | 0x0002)  ; SWP_NOMOVE | SWP_NOSIZE
 }
 
+WinActivateWait(winTitle) {
+    WinActivate, %winTitle%
+    WinWaitActive, %winTitle%,, 0.1
+}
 ;-------------------------------- 마우스 함수 --------------------------------
 
 ClipWindow(force := false) {
@@ -136,7 +140,7 @@ IsAllowedWindow(target) {
     if (target = "" || IsTargetWindow(target))
         return true
     else 
-        return ActivateWindow(target) 
+        return GetTargetHwnd(target) 
 }
 
 IsTargetWindow(target, hwnd := "A") {
@@ -154,57 +158,29 @@ IsTargetWindow(target, hwnd := "A") {
     return InStr(title, target, false) || InStr(class, target, false) || InStr(exe, target, false)
 }
 
-TryActivate(win) {
-    if WinExist(win) {
-        WinActivate, %win%
-        WinWaitActive, %win%,, 1
-        return WinActive(win)
-    }
-    return false
-}
-
-ActivateWindow(target) {
+GetTargetHwnd(target) {
     if (target = "")
         return false
 
-    targetClass := "ahk_class " . target
-    if TryActivate(targetClass)
-        return true
-
-    targetExe := "ahk_exe " . target . ".exe"
-    if TryActivate(targetExe)
-        return true
-
-    if TryActivate(target)
-        return true
-
-    ShowTip("대상 창을 활성화 할 수 없습니다.`n`nTarget : "  target)
+    for index, each in ["ahk_class " . target, "ahk_exe " . target . ".exe", target] {
+        if WinExist(each)
+            return each
+    }
     return false
 }
 
-
-
-GetClientSize(hwnd := "A", ByRef w := "", ByRef h := "") {
-    if (!hwnd) {
-        ;ShowTip("hwnd 없음")
+GetClientSize(hwnd, ByRef w := "", ByRef h := "") {
+    if (!hwnd) 
         return
-    }
-    if (hwnd = "A")
-        WinGet, hwnd, ID, A
-
     VarSetCapacity(rect, 16)
     DllCall("GetClientRect", "ptr", hwnd, "ptr", &rect)
     w := NumGet(rect, 8, "int")
     h := NumGet(rect, 12, "int")
 }
 
-GetClientPos(hwnd := "A", ByRef x:= "", ByRef y := "") {
-    if (!hwnd) {
+GetClientPos(hwnd, ByRef x:= "", ByRef y := "") {
+    if (!hwnd)
         return
-    }
-    if (hwnd = "A")
-        WinGet, hwnd, ID, A
-
     ; 클라이언트 (0,0) → 화면 좌표 변환
     VarSetCapacity(pt, 8, 0)
     NumPut(0, pt, 0, "Int")  ; pt.x = 0
@@ -215,9 +191,9 @@ GetClientPos(hwnd := "A", ByRef x:= "", ByRef y := "") {
     y := NumGet(pt, 4, "Int")
 }
 
-GetMouseRatio(ByRef ratioX, ByRef ratioY, hwnd := "A") {
-     if (hwnd = "A")
-        WinGet, hwnd, ID, A
+GetMouseRatio(hwnd, ByRef ratioX := "", ByRef ratioY := "") {
+    if(!hwnd)
+        return
     GetClientSize(hwnd, w, h)
     MouseGetPos, x, y, , , 2  ; 클라이언트 기준
 
@@ -236,8 +212,8 @@ GetMouseRatio(ByRef ratioX, ByRef ratioY, hwnd := "A") {
 }
 
 GetMonitorSize(hwnd, ByRef w, ByRef h) {
-    if(hwnd = "A")
-        WinGet, hwnd, ID, A
+    if(!hwnd)
+        return
 
     MONITOR_DEFAULTTONEAREST := 2
     hMonitor := DllCall("MonitorFromWindow", "Ptr", hwnd, "UInt", MONITOR_DEFAULTTONEAREST, "Ptr")
@@ -284,3 +260,24 @@ GetWindowDPI(hwnd := "A") {
     return Round(dpi / 96 * 100)  ; 96 DPI가 100%
 }
 
+
+AdjustClientToWindow(ByRef x, ByRef y, win) {
+    WinGet, hwnd, ID, %win%
+    if (!hwnd)
+        return false
+
+    VarSetCapacity(pt, 8, 0)
+    NumPut(x, pt, 0, "Int")
+    NumPut(y, pt, 4, "Int")
+
+    if !DllCall("ClientToScreen", "Ptr", hwnd, "Ptr", &pt)
+        return false
+
+    ; 활성창의 좌상단 좌표 가져오기
+    WinGetPos, wx, wy,,, ahk_id %hwnd%
+
+    ; ControlClick 기준은 윈도우 내부 좌표 → 빼준다
+    x := NumGet(pt, 0, "Int") - wx
+    y := NumGet(pt, 4, "Int") - wy
+    return true
+}

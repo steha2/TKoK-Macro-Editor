@@ -229,7 +229,7 @@ return
 ; -------------------------
 ; 기록 시작/중지
 ToggleRecord:
-    if(runningMacroCount > 0)
+    if(runMacroCount > 0)
         return
 
     DisableShortTime("RecordBtn")

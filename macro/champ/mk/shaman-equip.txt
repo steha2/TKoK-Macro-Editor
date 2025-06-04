@@ -1,5 +1,5 @@
 ﻿#target:Warcraft III#
-Click:L, 0.798, 0.813 #wait:100#
+Click:L, 0.798, 0.813 #delay:400#
 Click:L, 0.624, 0.449 #rep:2#
 Click:L, 0.561, 0.455 #rep:2#
 Click:L, 0.848, 0.797

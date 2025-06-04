@@ -1,0 +1,14 @@
+﻿#send_mode:inactive#
+#target:Warcraft III#
+
+#x:0.201# #y:0.201#
+
+Click:R, %x%, %y%
+
+chat, %x% %y%
+
+#send_mode#
+
+Click:R, %x%, %y%
+
+chat, %x% %y%
