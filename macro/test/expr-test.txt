@@ -1,10 +1,10 @@
-﻿;note()
-#target:Warcraft III#
+﻿note()
+;#target:Warcraft III#
 
 chat, -----------extended tests----------
 
-; 기본값 없이 정의되지 않은 변수
-chat, % unknown %                ; unknown 
+; 정의되지 않은 변수에 빈기본값
+chat, %unknown|%                ; 
 
 ; 기본값 있는 미정의 변수
 chat, % unknown|999 %           ; 999

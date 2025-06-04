@@ -2,7 +2,7 @@
 
 Exec, champ\hydra\warrior-equip
 
-Exec, 스텟창 #spsi:144# #stat:Z#
+Exec, stat-up #spsi:144# #stat:Z#
 
 Chat, -tt #wait:300#
 Click:L, 0.421, 0.405

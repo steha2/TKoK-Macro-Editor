@@ -91,7 +91,7 @@ EvaluateExpr(expr, vars) {
     ; 기본값 문법 처리
     hasDefault := false
     defaultVal := ""
-    if (RegExMatch(expr, "^(.*[^|])?\|([^|].*)$", m)) {
+    if (RegExMatch(expr, "^(.*[^|])\|([^|].*)?$", m)) {
         expr := Trim(m1)
         defaultVal := Trim(m2)
         hasDefault := true

@@ -2,7 +2,7 @@
 
 Exec, champ\hydra\shaman-equip
 
-Exec, 스텟창 #spsi:144# #stat:D#
+Exec, stat-up #spsi:144# #stat:D#
 
 Chat, -tt #wait:300#
 Click:L, 0.282, 0.224
