@@ -15,6 +15,7 @@ https://www.autohotkey.com/
 ---------------------------
 
 프로젝트롤 다운로드 하고 config.ini 에 경로를 알맞게 수정하세요<br>
+[Settings]<br>
 W3_LNK=C:\Warcraft III\w3.lnk <br>
 SAVE_DIR=C:\Warcraft III\TKoK_Save_Files\TKoK_3.5.15 <br><br>
 
