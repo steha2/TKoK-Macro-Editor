@@ -14,8 +14,8 @@ AHK 1.1을 설치하세요
 https://www.autohotkey.com/
 ---------------------------
 
-프로젝트롤 다운로드 하고 config.ini 에 경로를 알맞게 수정하세요
-W3_LNK=C:\Warcraft III\w3.lnk
-SAVE_DIR=C:\Warcraft III\TKoK_Save_Files\TKoK_3.5.15
+프로젝트롤 다운로드 하고 config.ini 에 경로를 알맞게 수정하세요<br>
+W3_LNK=C:\Warcraft III\w3.lnk <br>
+SAVE_DIR=C:\Warcraft III\TKoK_Save_Files\TKoK_3.5.15 <br><br>
 
 Code Loader.ahk 를 실행하세요
