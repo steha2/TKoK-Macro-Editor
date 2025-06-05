@@ -15,6 +15,5 @@ Classic Warcraft III, TKoK_3.5.15 버전에 최적화되어 있습니다.
 2. 이 프로젝트를 다운로드한 후 `config.ini` 파일을 열고 경로를 알맞게 수정하세요<br>
 [Settings]<br>
 W3_LNK=C:\Warcraft III\w3.lnk <br>
-SAVE_DIR=C:\Warcraft III\TKoK_Save_Files\TKoK_3.5.15 <br><br>
-
+SAVE_DIR=C:\Warcraft III\TKoK_Save_Files\TKoK_3.5.15 <br>
 3. `CodeLoader.ahk`를 실행하세요.
