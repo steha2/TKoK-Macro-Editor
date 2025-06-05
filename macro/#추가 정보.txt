@@ -2,35 +2,36 @@
 #hero:warrior# #level:10#
 chat, %hero% %level% 
 
+#if:a>1# 조건 설정~
+#if# ~조건 해제
+
+#force#
+해당 줄 조건 무시 실행
+preset 적용시 해당 줄은 즉시실행 후 복사안함
+
+#break#
+매크로 즉시 중단
+
+SendRaw, text...
+문자열을 보낼때 사용
+
 #dp_mode:round2#     :ceil  :floor
 소수점 아래 2자리 반올림    올림    버림
-
-#limit:2# (기본값: 1000)
-선언 시점 줄 포함 2개의 명령줄만 실행 
-(Send,Chat,Click 등 실행 명령만 카운트)
-
-#limit_mode:repeat#
-줄 수 대신 반복 횟수를 기준으로 실행 제한을 적용
-
-#target:notepad#
-매크로 실행시 notepad 창을 활성화 시키고 못찾으면 중단
 
 #coord_mode:screen# 
 좌표모드:전체화면 (기본값:실행창)
 
+#limit:2# (기본값: 1000)
+선언 시점 줄 포함 2개의 명령줄만 실행 
+Send,Chat,Click 등 실행 명령만 카운트 
+매크로 중첩 실행은 독립된 limit 값을 사용함
+
+#limit_mode:repeat#
+줄 수 대신 반복 횟수를 기준으로 실행 제한을 적용
+
 preset 폴더안의 파일명을 새로 만드는 매크로 이름에 포함시킬 경우 적용됨
 [+ New] > ranger-stats 입력 > preset\stats 파일을 적용
 vars := {rel_path:상대경로,out_dir:상위폴더,part1:"ranger",part2:"stats")
-
-#if:a>1# 조건 설정~
-#if# ~조건 해제
-
-#force# 
-해당 줄 조건 무시 실행
-preset 적용시 해당 줄은 즉시실행 후 복사안함
-
-SendRaw, text...
-문자열을 보낼때 사용
 
 ---다른 매크로 실행---
 Exec, 아이템교체
