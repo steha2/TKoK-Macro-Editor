@@ -58,15 +58,15 @@ return
 
 AptBtn:
     ReadAptFile()
-    if(la != "" && WinExist(w3Win)) {
-        WinActivate, %w3Win%
+    if(la != "" && WinExist(W3_WINTITLE) && !GetKeyState("Shift", "P")) {
+        WinActivate, %W3_WINTITLE%
         Chat(la)
     }
 return
 
 LoadBtn:
-    if(WinExist(w3Win)) {
-        WinActivate, %w3Win%
+    if(WinExist(W3_WINTITLE)) {
+        WinActivate, %W3_WINTITLE%
         SendCodeToW3()
     }
 return

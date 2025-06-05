@@ -48,19 +48,21 @@ for key, _ in heroSet {
     Gui, main:Add, Button, gHeroButtonClick x%x% y%y% w%colWidth% h%rowHeight%, %key%
     index++
 }
-
 savedSquad := GetIniValue("Settings", "savedSquad")
 
-Gui, main:Add, Edit, vResultOutput x300 y10 w390 h150 ReadOnly
-Gui, main:Add, Text, x300 y250 w390 h20,로드 목록
-Gui, main:Add, Edit, x300 y270 w390 h20 vSquadField, %savedSquad%
-Gui, main:Add, Button, x300 y300 w80 h30 gAddHero, 영웅 추가
-Gui, main:Add, Button, x390 y300 w30 h30 gRemoveHero, ❌
-Gui, main:Add, Button, x430 y300 w80 h30 gMultiLoad, 멀티 로드
-Gui, main:Add, Button, x520 y300 w80 h30 gToggleMacroGui, 매크로
-Gui, main:Add, Button, x300 y340 w120 h30 gExecMultiW3, 워3 다중실행
-Gui, main:Add, Button, gLoadBtn vLoadButton x520 y170 w80 h30, Load
-Gui, main:Add, Button, gAptBtn vAptButton x610 y170 w80 h30, Apt
+Gui, main:Add, Edit, vResultOutput x300 y10 w380 h150 ReadOnly
+Gui, main:Add, Button, gLoadBtn vLoadButton x300 y170 w100 h30, Load Hero
+Gui, main:Add, Button, gAptBtn vAptButton x410 y170 w100 h30, APT
+Gui, main:Add, Text, x520 y170 w100 h30 vAptText, APT:`nDEDI:
+
+Gui, main:Add, Text, x300 y250 w380 h20, Load Hero List:
+Gui, main:Add, Edit, x300 y270 w380 h20 vSquadField, %savedSquad%
+Gui, main:Add, Button, x300 y300 w120 h30 gAddHero, Add to List
+Gui, main:Add, Button, x430 y300 w30 h30 gRemoveHero, ❌
+
+Gui, main:Add, Button, x300 y340 w120 h30 gExecMultiW3, W3 Multi-Run
+Gui, main:Add, Button, x430 y340 w120 h30 gMultiLoad, Multi-Load
+Gui, main:Add, Button, x560 y340 w120 h30 gToggleMacroGui, Macro Editor
 
 mainGuiX := GetIniValue("MainGUI", "X", "Center")
 mainGuiY := GetIniValue("MainGUI", "Y", "Center")

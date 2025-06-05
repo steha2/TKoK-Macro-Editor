@@ -18,23 +18,22 @@ SendAptToW3() {
 
 ; Account 파일 중 가장 최신 것에서 -la 코드 추출
 ReadAptFile() {
-    result := GetLatestFile(SAVE_DIR,"Account*.txt")
-    
-    if (result.path != "") {
-        FileRead, content, % result.path
-        if RegExMatch(content, "Code:\s*-la\s+([^\r\n]+)", match) {
+    aptFile := GetLatestFile(SAVE_DIR, "Account*.txt")
+    if (aptFile.path != "") {
+        FileRead, content, % aptFile.path
+        RegExMatch(content, "Code:\s*-la\s+([^\r\n]+)", match)
             la := "-la " match1
-            return result
-            ShowTip(la)
-        } else
-            MsgBox, -la 코드를 찾을수 없습니다.
+        RegExMatch(content, "APT:\s*(\d+)", apt)
+        RegExMatch(content, "DEDI PTS:\s*(\d+)", dedi)
+        GuiControl, main:, AptText, % "APT: " apt1 "`nDEDI: " dedi1
+        return aptFile
     } else
         MsgBox, Account*.txt 파일을 찾을수 없습니다.
 }
 
 LoadHero(selectedHero := "") {
     if(selectedHero = ""){
-        GuiControlGet, squadText, %hMain%:, SquadField
+        GuiControlGet, squadText, main:, SquadField
         StringSplit, squad, squadText, `,
         selectedHero := squad1
     }
@@ -47,11 +46,9 @@ LoadHero(selectedHero := "") {
 }
 
 UpdateHeroInfo(selectedHero) {
-    Gui, Submit, NoHide
-
     heroFolder := SAVE_DIR . "\" . selectedHero
     if !FileExist(heroFolder) {
-        GuiControl, %hMain%:, ResultOutput, 해당 클래스 폴더가 존재하지 않습니다. `n%heroFolder%
+        GuiControl, main:, ResultOutput, 해당 클래스 폴더가 존재하지 않습니다. `n%heroFolder%
         return
     }
 
@@ -63,9 +60,9 @@ UpdateHeroInfo(selectedHero) {
         outputText := HeroInfoToText(info)
         pl1 := info.pl1
         pl2 := info.pl2
-        GuiControl, %hMain%:, ResultOutput, %outputText%
+        GuiControl, main:, ResultOutput, %outputText%
     } else {
-        GuiControl, %hMain%:, ResultOutput, 해당 클래스에 Hero:%selectedHero% 가 포함된 최신 파일이 없습니다.
+        GuiControl, main:, ResultOutput, 해당 클래스에 Hero:%selectedHero% 가 포함된 최신 파일이 없습니다.
     }
 }
 
@@ -101,7 +98,7 @@ LoadSquad(champ := false) {
         MsgBox, 현재 활성화된 창이 Warcraft III가 아닙니다. 실행을 중단합니다.
         return
     }
-    GuiControlGet, squadText, %hMain%:, SquadField
+    GuiControlGet, squadText, main:, SquadField
     StringSplit, squad, squadText, `,
 
     WinGet, w3List, List, %W3_WINTITLE%
@@ -147,7 +144,7 @@ LoadSquad(champ := false) {
 }
 
 LastSaveTimes() {
-    GuiControlGet, squad, %hMain%:, SquadField ; GUI에서 squad 문자열 얻기
+    GuiControlGet, squad, main:, SquadField ; GUI에서 squad 문자열 얻기
     heroInfo := {} ; 클래스명 => { time: ..., exp: ... }
     ; squad 파싱 (쉼표 구분)
     Loop, Parse, squad, `,
@@ -193,6 +190,10 @@ SwapItems() {
 }
 
 MoveOldSaves() {
+    MsgBox, 4, MoveOldSaves, 세이브 파일을 이동하시겠습니까?
+    IfMsgBox, No
+        return
+
     Loop, Files, %SAVE_DIR%\*, D
     {
         folderName := A_LoopFileName
