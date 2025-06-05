@@ -2,7 +2,7 @@
 
 Coad Loader.ahk   
 TKoK orpg 코드 관리 및 Wacraft III 의 창 제어 툴입니다. <br>
-Classic Warcraft III, TKoK_3.5.158b 에 최적화 되있습니다
+Classic Warcraft III, TKoK_3.5.15 에 최적화 되있습니다
 
 Macro Editor.ahk  
 범용 매크로 기록/실행기 입니다. <br>
