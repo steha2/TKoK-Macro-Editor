@@ -293,11 +293,8 @@ ToggleOverlay() {
     lines := PreprocessMacroLines(lines, vars)
 
     ; 타겟 윈도우
-    if (vars.target)
-        hwnd := GetTargetHwnd(vars.target)
-    else
-        WinGet, hwnd, ID, A
-    if (!hwnd)
+    WinGet, hwnd, ID, % vars.target ? GetTargetWin(vars.target) : "A"
+    if(!hwnd)
         return
     
     WinActivateWait(hwnd)
@@ -328,7 +325,7 @@ ToggleOverlay() {
             && !InStr(vars.coordMode, "screen") 
         {
             mx := m2/dpi*100, my := m3/dpi*100
-            CalcCoords(mx, my, vars.coordMode)
+            CalcCoords(hwnd, mx, my, vars.coordMode)
             size := 27/dpi*100
             boxX := mx - Floor(size / 2)
             boxY := my - Floor(size / 2)

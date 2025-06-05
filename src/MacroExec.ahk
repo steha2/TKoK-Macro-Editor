@@ -39,18 +39,21 @@ ExecMacro(scriptText, vars, current_path) {
         }
         if (!CheckAbortAndSleep(vars.wait) || limit <= 0 || vars.HasKey("break"))
             break
+
+        hwnd := WinExist("A")
         if(vars.target) {
-            targetWin := GetTargetHwnd(vars.target)
-            WinGet, winId, Id, %targetWin%
-            if(!targetWin)
+            WinGet, targetHwnd, ID, % GetTargetWin(vars.target)
+            if(!targetHwnd)
                 Break
-            if (vars.send_mode != "inactive" && winId != WinExist("A")){
-                WinActivateWait(targetWin)
+            if (vars.send_mode != "inactive" && hwnd != targetHwnd){
+                WinActivateWait("ahk_id " . targetHwnd)
             }
+            hwnd := targetHwnd
         }
+
         Loop, % vars.rep
         {
-            ExecSingleCommand(cmd, vars, targetWin)
+            ExecSingleCommand(cmd, vars, hwnd)
             if(cmd != "") {
                 if(A_Index = vars.rep || InStr(vars.limit_mode,"repeat"))
                     limit--
@@ -130,17 +133,17 @@ EvaluateExpr(expr, vars) {
 }
 
 
-ExecSingleCommand(command, vars, targetWin := "") {
+ExecSingleCommand(command, vars, hwnd := "") {
     if RegExMatch(command, "i)^Click:(\w+),\s*(\d+),\s*(\d+)$", m) {
-        Click(m2, m3, m1, vars.coord_mode, "fixed", vars.send_mode, targetWin)
+        SmartClick(m2, m3, hwnd, m1, vars.send_mode, vars.coord_mode, "fixed")
     } else if RegExMatch(command, "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)$", m) {
-        Click(m2, m3, m1, vars.coord_mode, "ratio", vars.send_mode, targetWin)
+        SmartClick(m2, m3, hwnd, m1, vars.send_mode, vars.coord_mode, "ratio")
     } else if RegExMatch(command, "i)^SendRaw\s*,?\s*(.*)$", m) {
         SendRaw, %m1% 
     } else if RegExMatch(command, "i)^Send\s*,?\s*(.*)$", m) {
-        SendKey(m1, 0, vars.send_mode, targetWin)
+        SmartSendKey(m1, hwnd, 0, vars.send_mode)
     } else if RegExMatch(command, "i)^Chat\s*,?\s*(.*)$", m) {
-        Chat(m1, vars.send_mode, targetWin)
+        Chat(m1, vars.send_mode, hwnd)
     } else if RegExMatch(command, "i)^(Sleep|Wait|Delay)\s*,?\s*(\d*)", m) {
         if(isDigit(m2))
             vars.delay := m2

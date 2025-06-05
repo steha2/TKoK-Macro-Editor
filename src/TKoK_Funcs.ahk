@@ -115,14 +115,14 @@ LoadSquad(champ := false) {
             Chat("-qs")
             Sleep, 300
             if (thisHero = "Shadowblade") {
-                Click(0.976, 0.879, "R")
-                Click(0.906, 0.879, "R")
+                ClickA(0.976, 0.879, "R")
+                ClickA(0.906, 0.879, "R")
                 Sleep, 500
             } else if (thisHero = "Barbarian") {
-                Click(0.801, 0.953, "R")
+                ClickA(0.801, 0.953, "R")
                 Sleep, 500 
             } else if (thisHero = "Chaotic Knight") {
-                Click(0.797, 0.954, "R")
+                ClickA(0.797, 0.954, "R")
                 Sleep, 500 
             }
         }
@@ -133,9 +133,9 @@ LoadSquad(champ := false) {
             SwitchToMainW3()
     }
     if(squad0 > 1)
-        SendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", 0, "", "", true)
+        SmartSendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", 0, "", "", true)
     else
-        SendKey("^s {F1} ^1", 0, "", "", true)
+        SmartSendKey("^s {F1} ^1", 0, "", "", true)
     if(champ)
         ChampChat() ;!dr -fog -cdist 
     else
@@ -181,12 +181,12 @@ LastSaveTimes() {
 
 
 SwapItems() {
-    Click(0.187, 0.221)
-    Click(0.155, 0.374)
-    Click(0.155, 0.263)
-    Click(0.192, 0.374)
-    Click(0.289, 0.270)
-    Click(0.225, 0.379)
+    ClickA(0.187, 0.221)
+    ClickA(0.155, 0.374)
+    ClickA(0.155, 0.263)
+    ClickA(0.192, 0.374)
+    ClickA(0.289, 0.270)
+    ClickA(0.225, 0.379)
 }
 
 MoveOldSaves() {

@@ -1,6 +1,6 @@
 ﻿#target:Warcraft III#
 
-Exec, champ\카릭스\barb-equip
+Exec, champ\karrix\barb-equip
 
 Exec, stat-up #spsi:88# #stat:Q#
 

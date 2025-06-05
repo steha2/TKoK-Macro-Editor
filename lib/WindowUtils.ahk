@@ -67,8 +67,12 @@ Win_BringToFront(winTitle := "A") {
 }
 
 WinActivateWait(winTitle) {
+    ; winTitle이 숫자(HWND)인지 확인
+    if (winTitle is integer)
+        winTitle := "ahk_id " . winTitle
+
     WinActivate, %winTitle%
-    WinWaitActive, %winTitle%,, 0.1
+    WinWaitActive, %winTitle%,, 0.2
 }
 ;-------------------------------- 마우스 함수 --------------------------------
 
@@ -140,7 +144,7 @@ IsAllowedWindow(target) {
     if (target = "" || IsTargetWindow(target))
         return true
     else 
-        return GetTargetHwnd(target) 
+        return GetTargetWin(target) 
 }
 
 IsTargetWindow(target, hwnd := "A") {
@@ -158,7 +162,7 @@ IsTargetWindow(target, hwnd := "A") {
     return InStr(title, target, false) || InStr(class, target, false) || InStr(exe, target, false)
 }
 
-GetTargetHwnd(target) {
+GetTargetWin(target) {
     if (target = "")
         return false
 
@@ -261,7 +265,7 @@ GetWindowDPI(hwnd := "A") {
 }
 
 
-AdjustClientToWindow(ByRef x, ByRef y, win) {
+AdjustClientToWindow(win, ByRef x, ByRef y) {
     WinGet, hwnd, ID, %win%
     if (!hwnd)
         return false

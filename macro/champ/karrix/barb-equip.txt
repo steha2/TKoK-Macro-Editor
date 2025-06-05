@@ -1,4 +1,4 @@
-﻿Click:L, 0.795, 0.814 #delay:400#
+﻿Click:L, 0.795, 0.814 #delay:500#
 Click:L, 0.589, 0.275 #rep:2#
 Click:L, 0.559, 0.317 #rep:2#
 Click:L, 0.790, 0.881

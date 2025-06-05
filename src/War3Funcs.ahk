@@ -18,13 +18,16 @@ SaveW3Pos() {
     return
 }
 
-RestoreW3Pos() {
+RestoreW3Pos(hwnd := "") {
     savedX := GetIniValue("W3Window","X")
     savedY := GetIniValue("W3Window","Y")
     savedW := GetIniValue("W3Window","W")
     savedH := GetIniValue("W3Window","H")
     mainW3Hwnd := ""
-    activeHwnd := WinExist("A")
+    if(hwnd)
+        activeHwnd := hwnd
+    else
+        activeHwnd := WinExist("A")
     if (activeHwnd) {
         WinGetClass, winClass, ahk_id %activeHwnd%
         if (winClass = W3_WINTITLE) {
@@ -86,11 +89,11 @@ TrySwitchW3() {
 ShareUnit() {
     Sleep, 500
     SendKey("{F11}", 700)
-    Click(0.599,0.204)
+    ClickA(0.599,0.204)
     SendKey("{Enter}")
 }
 
-ExecHostW3(){
+ExecHostW32(){
     ExecW3(W3_LAUNCH_DELAY)
     IfWinNotActive, %W3_WINTITLE%
     {
@@ -110,7 +113,7 @@ ExecHostW3(){
     SendKey("c")
 }
 
-ExecMultiW3(num := 0) {
+ExecMultiW32(num := 0) {
     IfWinExist, ahk_class Warcraft III 
     {
         MsgBox, Warcraft III가 이미 실행 중입니다.
@@ -139,7 +142,7 @@ ExecMultiW3(num := 0) {
             ExecW3()
             SendKey("L", 3100)
             Click(0.4, 0.3)
-            SendKey("J")
+            SendKey("J", 0)
         }
     }
 
@@ -153,14 +156,66 @@ ExecMultiW3(num := 0) {
 
 ExecW3(delay := 3000) {
     Run, *RunAs %W3_LNK%
-
     if (W3_LNK = "" || !FileExist(W3_LNK)) {
         MsgBox, 16, 오류, 실행할 W3_LNK 경로를 찾지 못했습니다.`nconfig.ini 를 수정하세요.
         return false
     }
-
-    WinWait, ahk_class Warcraft III
-    WinActivate, ahk_class Warcraft III
-    WinWaitActive, ahk_class Warcraft III
     Sleep, delay
+    hwnd := WinExist("ahk_class Warcraft III")
+    WinActivateWait(hwnd)
+    return hwnd
 }
+
+ExecHostW3(){
+    hwnd := ExecW3(W3_LAUNCH_DELAY)
+    SendKeyI("L", hwnd, 3000)
+    RestoreW3Pos(hwnd)
+    SendKeyI("c", hwnd, 3000)
+
+    speed := GetIniValue("Settings","speed")
+    if(speed = 0) {
+        ClickBack(0.053, 0.160, hwnd)
+    } else if (speed = 1) {
+        ClickBack(0.192, 0.160, hwnd)
+    }
+    SendKeyI("c", hwnd)
+    return hwnd
+}
+
+ExecMultiW3(num := 0) {
+    IfWinExist, ahk_class Warcraft III 
+    {
+        MsgBox, Warcraft III가 이미 실행 중입니다.
+        return
+    }
+    if(num > 0){
+        numW3 := num
+    } else {
+        numW3 := GetIniValue("Settings","NUM_W3", 3)
+        if !isNatural(numW3) {
+            GuiControlGet, squad, main:, SquadField
+            StringSplit, squadArray, squad, `,
+            numW3 := squadArray0
+        }
+    }
+    Loop, % numW3
+    {
+        if (A_Index = 1) {
+            hostHwnd := ExecHostW3()
+        } else {
+            hwnd := ExecW3()
+            SendKeyI("L", hwnd, 3100)
+            ClickBack(0.4, 0.3, hwnd)
+            SendKeyI("J", hwnd)
+        }
+    }
+
+    if(numW3 > 0)
+        SwitchToMainW3(false)
+    else 
+        Sleep, 2000
+    Sleep, 1000
+    SendKeyI("{alt down}s{alt up}", hostHwnd)
+}
+
+!Numpad5::ExecHostW3()
