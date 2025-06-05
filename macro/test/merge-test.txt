@@ -1,1 +1,12 @@
-﻿
+﻿a #
+a
+
+a #wait:0# #rep:3#
+a
+a
+b
+
+b #rep:6#
+b
+b
+a #rep:5#

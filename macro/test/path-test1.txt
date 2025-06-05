@@ -1,5 +1,4 @@
 ﻿Note()
-
-chat, test1 %target%
-chat, % missing|abc_%name% %    ; abc_홍길동
+#a:1# #b:+# #c:2# #d:-1#
+chat, -----test1----- %abc+d|10%
 Exec, test2
