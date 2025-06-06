@@ -1,0 +1,3 @@
+﻿#move_tele_npc :Click:R, 0.072, 0.872#
+#move_tol_pt   :Click:R, 0.114, 0.818#
+%#move_tele_npc%

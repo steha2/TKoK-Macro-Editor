@@ -58,6 +58,8 @@ for index, btn in buttons {
     xPos := btnX + (index - 1) * btnGap
     Gui, macro:Add, Button, % Format("g{} v{} x{} y{} w{} h{}", btn.g, btn.v, xPos, btnY, btnW, btnH), % btn.text
 }
+Gui, macro:Add, Edit, x767 y10 w50 h30 Number Limit4 vLineEdit, 1
+Gui, macro:Add, Button, x840 y10 w50 h30 gOnJumpBtn vJumpBtn, Jump
 
 macroWinW := GetIniValue("MacroGUI","W")
 
@@ -112,6 +114,8 @@ Gui, macro:Add, Radio, x790 y530 vScreenBtn gOnCoordMode, Screen
 
 Gui, macro:Add, Radio, x850 y510 vRatioBtn Checked Group, Ratio
 Gui, macro:Add, Radio, x850 y530 vFixedBtn, Fixed
+Gui, macro:Add, button, x820 y10 w18 h14 vLineUpBtn gOnLineBtn, ▲
+Gui, macro:Add, button, x820 y26 w18 h14 vLineDownBtn gOnLineBtn, ▼
 
 ReloadTreeView(GetIniValue("MacroGUI", "MACRO_PATH"))
 ToggleMacroGui(isLaunchedByMain ? GetIniValue("MacroGUI","Shown") : true)

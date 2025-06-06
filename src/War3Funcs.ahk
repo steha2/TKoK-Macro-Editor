@@ -166,9 +166,10 @@ ExecW3(delay := 3000) {
     return hwnd
 }
 
+;비활성 명령으로 실행
 ExecHostW3(){
     hwnd := ExecW3(W3_LAUNCH_DELAY)
-    SendKeyI("L", hwnd, 3000)
+    SendKeyI("l", hwnd, 3000)
     RestoreW3Pos(hwnd)
     SendKeyI("c", hwnd, 3000)
 
@@ -182,6 +183,7 @@ ExecHostW3(){
     return hwnd
 }
 
+;비활성 명령으로 실행
 ExecMultiW3(num := 0) {
     IfWinExist, ahk_class Warcraft III 
     {
@@ -204,17 +206,16 @@ ExecMultiW3(num := 0) {
             hostHwnd := ExecHostW3()
         } else {
             hwnd := ExecW3()
-            SendKeyI("L", hwnd, 3100)
+            SendKeyI("l", hwnd, 3100)
             ClickBack(0.4, 0.3, hwnd)
-            SendKeyI("J", hwnd)
+            SendKeyI("j", hwnd)
         }
     }
-
-    if(numW3 > 0)
-        SwitchToMainW3(false)
-    else 
-        Sleep, 2000
-    Sleep, 1000
+    if (numW3 = 1) {
+        Sleep, 3000
+    } else {
+        Win_BringToFront(hostHwnd)
+    }
     SendKeyI("{alt down}s{alt up}", hostHwnd)
 }
 

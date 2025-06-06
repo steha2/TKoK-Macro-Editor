@@ -1,0 +1,25 @@
+﻿Click:R, 0.114, 0.818
+Send, {F2} #rep:2#
+Click:L, 0.399, 0.425
+Click:L, 0.960, 0.882
+Send, {F2} #rep:2#
+Click:R, 0.586, 0.558
+Click:L, 0.665, 0.603
+Click:L, 0.961, 0.890 #rep:4#
+Click:L, 0.670, 0.678
+Click:L, 0.907, 0.877 #rep:2#
+Click:L, 0.655, 0.588
+Click:L, 0.782, 0.792
+Click:L, 0.667, 0.680
+Click:L, 0.946, 0.868 #rep:2#
+Click:L, 0.950, 0.817 #rep:6#
+Send, {F2}
+Click:L, 0.718, 0.963
+Click:L, 0.666, 0.592
+Click:L, 0.898, 0.947 #rep:5#
+Click:L, 0.666, 0.669
+Click:L, 0.855, 0.803 #rep:4#
+Click:L, 0.526, 0.452
+Click:L, 0.843, 0.868
+Send, {F2}
+Click:R, 0.072, 0.872 ;텔레포트

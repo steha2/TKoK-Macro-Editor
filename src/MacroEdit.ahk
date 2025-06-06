@@ -13,15 +13,12 @@ LogKey() {
         if (k = "NumpadLeft" or k = "NumpadRight") and !GetKeyState(k, "P")
             return
         k := StrLen(k) > 1 ? "{" k "}" : k ~= "\w" ? k : "{" vksc "}"
-
-        StringLower, k, k
         LogToEdit("Send, " . k, k)
     }
 }
 
 LogKeyControl(key) {
   k:=InStr(key,"Win") ? key : SubStr(key,2)
-  StringLower, k, k
   LogToEdit("Send, {" . k . " down}", k, true)
   Critical, Off
   KeyWait, %key%
@@ -37,7 +34,6 @@ LogMouseClick(key) {
     btn := SubStr(key, 1, 1)
     LogToEdit("Click:" . btn . ", " . xStr . ", " . yStr, key)
 }
-
 
 LogToEdit(line, k := "", isModifier := false) {
     static lastKey := ""
@@ -75,7 +71,7 @@ LogToEdit(line, k := "", isModifier := false) {
 
 ; 🔁 핫키 등록/해제
 SetHotkey(enable := false) {
-    excludedKeys := "MButton,WheelDown,WheelUp,WheelLeft,WheelRight,Pause"
+    excludedKeys := "MButton,WheelDown,WheelUp,WheelLeft,WheelRight,Pause,ScrollLock"
     mode := enable ? "On" : "Off"
 
     Loop, 254 {
@@ -176,7 +172,6 @@ IsSameMacroLine(line1, line2) {
         return (cmd1 = cmd2)
     }
 }
-
 
 WriteMacroFile(content := "", macroFilePath := "") {
     if (macroFilePath  = "") {
@@ -296,10 +291,7 @@ ToggleOverlay() {
     if(!PrepareTargetWindow(vars))
         return
 
-    if(vars.target_hwnd)
-        hwnd := vars.target_hwnd
-    else
-        hwnd := WinExist("A")
+    hwnd := vars.target_hwnd ? vars.target_hwnd : WinExist("A")
     
     WinActivateWait(hwnd)
 

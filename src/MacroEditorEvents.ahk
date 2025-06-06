@@ -193,7 +193,8 @@ ToggleMacroImpl() {
     if(overlayVisible)
         ToggleOverlay()
     GuiControlGet, content, macro:, EditMacro
-    vars := {base_path:macroPath}
+    GuiControlGet, currentNum, macro:, LineEdit
+    vars := {base_path:macroPath, start_line:currentNum}
     ExecMacro(content, vars, macroPath)
 }
 
@@ -235,6 +236,7 @@ ToggleRecord:
     DisableShortTime("RecordBtn")
     isRecording := !isRecording
     btnText := isRecording ? "■ Stop" : "Record"
+    lastTime := 0
     GuiControl, macro:, RecordBtn, %btnText%
 
     if (isRecording) {
@@ -268,16 +270,23 @@ ConfirmNotSaved() {
     return true
 }
 
-OnOverlayBtn:
-    GuiControlGet, btnText, overlayBtn:, %A_GuiControl%
-    ToggleOverlay()
+JumpToLine(lineNum){
+    GuiControlGet, content, macro:, EditMacro
+    StringSplit, totalLines, content , `n
+    lineNum := Min(lineNum, totalLines0) - 1
+    
     GuiControl, macro:Focus, EditMacro
-    lineNum := btnText -1
     SendKey("^{Home}")
     Loop, %lineNum% {
         SendKey("{Down}")
     }
     SendKey("+{End}")
+}
+
+OnOverlayBtn:
+    GuiControlGet, btnNum, overlayBtn:, %A_GuiControl%
+    ToggleOverlay()
+    JumpToLine(btnNum)
 return
 
 OnCoordMode:
@@ -291,14 +300,36 @@ OnCoordMode:
     }
 return
 
+OnLineBtn:
+    GuiControlGet, btnText, macro:, %A_GuiControl%
+    GuiControlGet, currentNum, macro:, LineEdit
+    d := 1
+    if (GetKeyState("Shift", "P"))
+        d *= 10
+    else if (GetKeyState("Ctrl", "P"))
+        d *= 5
+
+    currentNum += (btnText = "▲") ? d : -d
+    if (currentNum < 1)
+        currentNum := 1
+    GuiControl, macro:, LineEdit, %currentNum%
+return
+
+OnJumpBtn:
+    GuiControlGet, line, macro:, LineEdit
+    JumpToLine(line)
+return
+
 Insert up::Gosub, ToggleMacro
 Pause up::Gosub, ToggleRecord
+ScrollLock up::Gosub, BackMacro
 
 #If !isRecording && runningMacroCount <= 0
 !F1::ToggleOverlay()
 
 !F2::
-    if(GetAdjustedCoords(x,y)) {
+    if(!isRecording && GetAdjustedCoords(x,y)) {
+        lastTime := 0
         LogToEdit("Click:L, " . x . ", " . y)
         if(overlayVisible) {
             ToggleOverlay()
@@ -307,7 +338,7 @@ Pause up::Gosub, ToggleRecord
     }
 return
 
-!F3:: Gosub, BackMacro
+!F3::Gosub, BackMacro
 
 #If IsTargetWindow("Macro Editor")
 ^S:: Gosub, SaveMacro

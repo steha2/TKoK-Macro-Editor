@@ -15,25 +15,32 @@ ExecMacro(scriptText, vars, current_path) {
         vars := {}
     }
     vars.current_path := current_path
+    start_line := vars.start_line + 0
+    vars.Delete("start_line")
     for index, line in lines {
         if(macroAbortRequested)
             break
 
+        ; tempVars에는 조건용 if/force만 추출
         tempVars := Clone(vars)
         ResolveMarker(line, tempVars, ["if","force"])
         vars.if := tempVars.if
         
-        ; test(!tempVars.HasKey("force") , tempVars.if != "" , !Eval(tempVars.if))
-        if (!tempVars.HasKey("force") && tempVars.if != "" && !Eval(tempVars.if)) 
-            continue
+        ;test(!tempVars.HasKey("force"),InStr(vars.skip_mode, "vars") ,A_Index < start_line, tempVars.if != "" , !Eval(tempVars.if), tempVars.if)
+        if (!tempVars.HasKey("force")) {
+            if(InStr(vars.skip_mode, "vars") && A_Index < start_line)
+                continue
+            if(vars.if != "" && !Eval(tempVars.if))
+                continue
+        }
 
+        ; 변수 초기화
         vars.rep := 1
         vars.wait := 0
-        vars.Delete("force")
         vars.dp_mode := "trim"
         vars.delay := isDigit(vars.base_delay) ? vars.base_delay : BASE_DELAY
 
-        ; test(vars)
+        ; 명령어 처리 (vars에서 실제 파싱)
         line := StripComments(line)
         if (line = "")
             continue
@@ -44,16 +51,23 @@ ExecMacro(scriptText, vars, current_path) {
             limit := Floor(vars.limit + 0)
             vars.Delete("limit")
         }
+
+        ; 조건 2: 실행 전 제어 흐름
         if (!CheckAbortAndSleep(vars.wait) || vars.HasKey("break")
            || (!PrepareTargetWindow(vars)) || limit <= 0)
             break
         
+        ; 윈도우 핸들 준비
         hwnd := WinExist("A")
         if (vars.target_hwnd) {
             if (vars.send_mode != "inactive" && hwnd != vars.target_hwnd)
                 WinActivateWait(vars.target_hwnd)
             hwnd := vars.target_hwnd
         }
+
+        ; 조건 3: start_line 이후만 실행 (강제 실행 아닌 경우)
+        if(!tempVars.HasKey("force") && A_Index < start_line)
+            continue
 
         Loop, % vars.rep
         {

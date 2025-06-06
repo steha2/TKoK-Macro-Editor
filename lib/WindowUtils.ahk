@@ -60,17 +60,28 @@ Win_Wait(winTitle, timeout := "") {
 }
 
 Win_BringToFront(winTitle := "A") {
-    WinGet, hWnd, ID, %winTitle%
-    DllCall("SetWindowPos", "UInt", hWnd, "UInt", -1  ; HWND_TOP
+    if (winTitle is integer) {
+        winTitle := "ahk_id " . winTitle
+    }    DllCall("SetWindowPos", "UInt", winTitle, "UInt", -1  ; HWND_TOP
         , "Int", 0, "Int", 0, "Int", 0, "Int", 0
         , "UInt", 0x0001 | 0x0002)  ; SWP_NOMOVE | SWP_NOSIZE
+}
+
+SetWindowTopNoActivate(hwnd) {
+    ; HWND_TOPMOST = -1
+    ; SWP_NOMOVE = 0x0002
+    ; SWP_NOSIZE = 0x0001
+    ; SWP_NOACTIVATE = 0x0010
+    ; SWP_SHOWWINDOW = 0x0040
+    flags := 0x0001 | 0x0002 | 0x0010 | 0x0040
+    DllCall("SetWindowPos", "Ptr", hwnd, "Ptr", -1, "Int", 0, "Int", 0, "Int", 0, "Int", 0, "UInt", flags)
 }
 
 WinActivateWait(winTitle) {
     if (winTitle is integer) {
         winTitle := "ahk_id " . winTitle
     }
-    ShowTip("winwait........:`n" winTitle)
+    ;ShowTip("winwait........:`n" winTitle)
     WinActivate, %winTitle%
     WinWaitActive, %winTitle%,, 0.1
 }
