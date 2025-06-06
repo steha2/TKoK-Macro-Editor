@@ -296,6 +296,7 @@ Pause up::Gosub, ToggleRecord
 
 #If !isRecording && runningMacroCount <= 0
 !F1::ToggleOverlay()
+
 !F2::
     if(GetAdjustedCoords(x,y)) {
         LogToEdit("Click:L, " . x . ", " . y)
@@ -305,6 +306,7 @@ Pause up::Gosub, ToggleRecord
         }
     }
 return
+
 !F3:: Gosub, BackMacro
 
 #If IsTargetWindow("Macro Editor")
@@ -315,4 +317,5 @@ return
     SaveMacroEditorSettings()
     reload
 return
+
 #If

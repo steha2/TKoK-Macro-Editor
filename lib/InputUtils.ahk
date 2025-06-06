@@ -1,16 +1,26 @@
 Chat(text, send_mode := "", hwnd := "") {
+    isValid := StrLen(text) > 0
     if (send_mode = "inactive" && hwnd) {
         SendKeyI("{Enter}", hwnd, -20)
-        SendKeyI(text, hwnd, -20)
+        
+        if (isValid)
+            SendKeyI(text, hwnd, -20)
+        
         SendKeyI("{Enter}", hwnd, 30)
     } else {
-        ClipSaved := ClipboardAll
-        Clipboard := text
-        ClipWait, 0.5
+        if (isValid) {
+            ClipSaved := ClipboardAll
+            Clipboard := text
+            ClipWait, 0.5
+        }
+
         SendKey("{Enter}", -50)
-        SendKey("^v", -50)
+        if (isValid)
+            SendKey("^v", -50)
         SendKey("{Enter}", 50)
-        Clipboard := ClipSaved
+
+        if (isValid)
+            Clipboard := ClipSaved
     }
 }
 
@@ -47,16 +57,15 @@ SendKeyI(key, hwnd, delay:=0){
 }
 
 SendKey(key, delay:=0) {
-    WinGet, hwnd, ID, A
-    SmartSendKey(key, hwnd, delay)
+    SmartSendKey(key, WinExist("A"), delay)
 }
 
 CalcCoords(hwnd, ByRef x, ByRef y, coord_mode := "", coord_type := "") {
-    isClient := !InStr(coord_mode,"screen")
-    isRatio := !InStr(coord_type,"fixed")
-    
     if(!hwnd)
         return
+
+    isClient := !InStr(coord_mode,"screen")
+    isRatio := !InStr(coord_type,"fixed")
 
     CoordMode, Mouse, % isClient ? "Client" : "Screen"
     if(isRatio) {
@@ -103,8 +112,7 @@ Click(x, y, hwnd:="", btn := "L") {
 }
 
 ClickA(x, y, btn := "L") {
-    WinGet, hwnd, ID, A
-    SmartClick(x, y, hwnd, btn)
+    SmartClick(x, y, WinExist("A"), btn)
 }
 
 ClickBack(x, y, targetHwnd, btn := "L") {
