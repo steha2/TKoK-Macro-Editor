@@ -1,4 +1,4 @@
-﻿note() #limit:5# #limit_mode:repeat#
+﻿note() ;#limit:10#
 Send, ^a{delete}
 chat, _LOOP_TEST_
 #a:1# #i:1#

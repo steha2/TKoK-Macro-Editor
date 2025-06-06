@@ -20,7 +20,8 @@ FormatValue(val) {
     if IsObject(val) {
         out := "[Object] {"
         for k, v in val {
-            out .= k ": " v ", "
+            if(!InStr(k, "path"))
+                out .= k ": " v ", "
         }
         return Trim(out, ", ") . "}"
     } else {

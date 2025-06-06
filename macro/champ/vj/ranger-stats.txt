@@ -1,6 +1,6 @@
 ﻿#target:Warcraft III#
 
-Exec, champ\karrix\ranger-equip
+Exec, champ\vj\ranger-equip
 
 Exec, stat-up #spsi:100# #stat:Q#
 

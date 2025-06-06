@@ -1,4 +1,5 @@
-﻿Chat, -tt #delay:300#
+﻿;#target:Warcraft III#
+Chat, -tt #delay:300#
 Click:L, 0.282, 0.222
 Click:L, 0.350, 0.219
 Click:L, 0.423, 0.218

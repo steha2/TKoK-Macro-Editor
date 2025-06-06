@@ -7,7 +7,7 @@ Send, {F1}
 
 chat, Level : %level% num_stat : %num_stat% num_skill : %num_skill%
 
-스텟창.txt #spsi: %(level-1)*4 %# #stat:R#
+exec stat-up #spsi:(level-1)*4# #stat:R#
 
 Chat, -tt #delay:300#
 

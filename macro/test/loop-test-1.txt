@@ -1,10 +1,11 @@
-﻿;note()
-chat, i: %i% a : %a% 
+﻿chat, i: %i% a : %a%
 
-#a:a*2#
-#i:i+1#
-;chat, i: %i% a : %a% 
 #if:a>=1000#
-chat, "BREAK"
+chat, a>=1000 ? %if%  a 가 1000 보다 크다 "BREAK"
 #break#
+
+#if:a>=200# 
+chat, a:%a%  a>=200 ? %if%  a 가 200 보다 크다
 #if#
+
+#a:a*2# #i:i+1#

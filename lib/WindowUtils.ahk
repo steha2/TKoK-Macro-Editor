@@ -67,12 +67,12 @@ Win_BringToFront(winTitle := "A") {
 }
 
 WinActivateWait(winTitle) {
-    ; winTitle이 숫자(HWND)인지 확인
-    if (winTitle is integer)
+    if (winTitle is integer) {
         winTitle := "ahk_id " . winTitle
-
+    }
+    ShowTip("winwait........:`n" winTitle)
     WinActivate, %winTitle%
-    WinWaitActive, %winTitle%,, 0.2
+    WinWaitActive, %winTitle%,, 0.1
 }
 ;-------------------------------- 마우스 함수 --------------------------------
 
@@ -162,16 +162,24 @@ IsTargetWindow(target, hwnd := "A") {
     return InStr(title, target, false) || InStr(class, target, false) || InStr(exe, target, false)
 }
 
-GetTargetWin(target) {
+GetTargetWin(target, timeout := 1000, interval := 100) {
     if (target = "")
         return false
 
-    for index, each in ["ahk_class " . target, "ahk_exe " . target . ".exe", target] {
-        if WinExist(each)
-            return each
+    candidates := ["ahk_class " . target, "ahk_exe " . target . ".exe", target]
+    start := A_TickCount
+
+    while ((A_TickCount - start) < timeout) {
+        for index, each in candidates {
+            if WinExist(each)
+                return each
+        }
+        Sleep, interval
     }
-    return false
+
+    return false  ; 타임아웃까지 못 찾으면 false
 }
+
 
 GetClientSize(hwnd, ByRef w := "", ByRef h := "") {
     if (!hwnd) 

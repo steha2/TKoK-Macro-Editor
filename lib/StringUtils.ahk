@@ -14,6 +14,15 @@ StripComments(line) {
     return line
 }
 
+HasValue(arr, val) {
+    if (!IsObject(arr))
+        return (arr = val)
+    for _, v in arr
+        if (v = val)
+            return true
+    return false
+}
+
 TrimLastToken(str, delim) {
     ; 마지막 구분자 위치 찾기 (뒤에서부터)
     lastDelimPos := InStr(str, delim, false, 0)
@@ -51,14 +60,15 @@ JoinLines(arr) {
 
 ;----------------------------------------------객체 함수-----------------------------------------------
 
-ToKeyLengthSortedArray(object) {
-    ; 복사본 생성
+ToKeyLengthSortedArray(object, ascending := false) {
     arr := ObjectToArray(object)
     count := arr.Length()
     Loop, % count {
         Loop, % count - A_Index {
             i := A_Index
-            if (StrLen(arr[i].key) < StrLen(arr[i+1].key)) {
+            len1 := StrLen(arr[i].key)
+            len2 := StrLen(arr[i+1].key)
+            if (ascending ? (len1 > len2) : (len1 < len2)) {
                 temp := arr[i]
                 arr[i] := arr[i+1]
                 arr[i+1] := temp
@@ -67,6 +77,7 @@ ToKeyLengthSortedArray(object) {
     }
     return arr
 }
+
 
 
 ObjectToArray(obj) {

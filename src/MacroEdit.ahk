@@ -242,8 +242,8 @@ PreprocessMacroLines(lines, vars, isExec := false) {
     processedLines := []
     for index, line in lines {
         line := ResolveExpr(line, vars)
-        cmd := StripComments(cmd)
-        cmd := ResolveMarker(line, vars)
+        cmd := StripComments(line)
+        cmd := ResolveMarker(cmd, vars)
         if (vars.HasKey("force") && isExec) {
             vars.Delete("force")
             ExecSingleCommand(cmd, vars)
@@ -293,9 +293,13 @@ ToggleOverlay() {
     lines := PreprocessMacroLines(lines, vars)
 
     ; 타겟 윈도우
-    WinGet, hwnd, ID, % vars.target ? GetTargetWin(vars.target) : "A"
-    if(!hwnd)
+    if(!PrepareTargetWindow(vars))
         return
+
+    if(vars.target_hwnd)
+        hwnd := vars.target_hwnd
+    else
+        hwnd := WinExist("A")
     
     WinActivateWait(hwnd)
 

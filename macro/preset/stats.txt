@@ -4,6 +4,6 @@ Exec, %out_dir%\%part1%-equip
 
 Exec, stat-up #spsi:100# #stat:Q#
 
-Chat, -tt #wait:300# 
+Chat, -tt #delay:300#
 
 WriteMacroFile("","%out_dir%\%part1%-equip") #force#

@@ -1,6 +1,10 @@
 ExecMacro(scriptText, vars, current_path) {
-    if (scriptText = "" || runMacroCount > 20)
+    if (scriptText = "")
         return
+    if(runMacroCount > 10) {
+        MsgBox, 실행 중인 매크로 수가 10을 초과 합니다.
+        return
+    }
 
     UpdateMacroState(+1)
     lines := StrSplit(scriptText, ["`r`n", "`n", "`r"])
@@ -14,13 +18,15 @@ ExecMacro(scriptText, vars, current_path) {
     for index, line in lines {
         if(macroAbortRequested)
             break
-        ; ----------- 임시 검사 블록 -----------
+
         tempVars := Clone(vars)
-        ResolveMarker(line, tempVars)
+        ResolveMarker(line, tempVars, ["if","force"])
         vars.if := tempVars.if
-        if (!tempVars.HasKey("force") && tempVars.HasKey("if") && tempVars.if = 0)
+        
+        ; test(!tempVars.HasKey("force") , tempVars.if != "" , !Eval(tempVars.if))
+        if (!tempVars.HasKey("force") && tempVars.if != "" && !Eval(tempVars.if)) 
             continue
-        ; -------------------------------------
+
         vars.rep := 1
         vars.wait := 0
         vars.Delete("force")
@@ -30,32 +36,29 @@ ExecMacro(scriptText, vars, current_path) {
         line := StripComments(line)
         if (line = "")
             continue
-        cmd := ResolveMarker(line, vars)
+        cmd := ResolveMarker(line, vars, "", ["if","force"])
         cmd := ResolveExpr(cmd, vars)
 
         if (vars.HasKey("limit")) {
             limit := Floor(vars.limit + 0)
             vars.Delete("limit")
         }
-        if (!CheckAbortAndSleep(vars.wait) || limit <= 0 || vars.HasKey("break"))
+        if (!CheckAbortAndSleep(vars.wait) || vars.HasKey("break")
+           || (!PrepareTargetWindow(vars)) || limit <= 0)
             break
-
+        
         hwnd := WinExist("A")
-        if(vars.target) {
-            WinGet, targetHwnd, ID, % GetTargetWin(vars.target)
-            if(!targetHwnd)
-                Break
-            if (vars.send_mode != "inactive" && hwnd != targetHwnd){
-                WinActivateWait("ahk_id " . targetHwnd)
-            }
-            hwnd := targetHwnd
+        if (vars.target_hwnd) {
+            if (vars.send_mode != "inactive" && hwnd != vars.target_hwnd)
+                WinActivateWait(vars.target_hwnd)
+            hwnd := vars.target_hwnd
         }
 
         Loop, % vars.rep
         {
             ExecSingleCommand(cmd, vars, hwnd)
             if(cmd != "") {
-                if(A_Index = vars.rep || InStr(vars.limit_mode,"repeat"))
+                if(A_Index = 1 || vars.limit_mode != "line")
                     limit--
             }
             if(!CheckAbortAndSleep(vars.delay) || limit <= 0 || vars.HasKey("break"))
@@ -66,7 +69,20 @@ ExecMacro(scriptText, vars, current_path) {
     ; ShowTip("--- Macro End ---`n,실행중인 매크로 수 : " runMacroCount)
 }
 
-ResolveMarker(line, vars) {
+PrepareTargetWindow(vars) {
+    if (vars.HasKey("target") && vars.target) {
+        vars.target_hwnd := WinExist(GetTargetWin(vars.target))
+        if (!vars.target_hwnd) {
+            MsgBox, targetHwnd not found
+            return false
+        }
+        vars.Delete("target")
+        return true
+    }
+    return true  ; target 지정 안 되어 있으면 그대로 통과
+}
+
+ResolveMarker2(line, vars) {
     command := line
     pos := 1
     while (found := RegExMatch(line, "#([^#]+)#", m, pos)) {
@@ -87,21 +103,51 @@ ResolveMarker(line, vars) {
     return Trim(command)
 }
 
+ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
+    command := line
+    pos := 1
+    while (found := RegExMatch(line, "#([^#]+)#", m, pos)) {
+        fullMatch := m
+        inner := Trim(m1)
+
+        ; Match key:val or key=val
+        if RegExMatch(inner, "^\s*(\w+)\s*(([:=])\s*(.*))?$", m) {
+            key := m1
+            sep := m3
+            rawVal := m4
+
+            ; If it's key:value → evaluate expression
+            ; If it's key=value  → assign as literal
+            val := (sep = ":") ? EvaluateExpr(rawVal, vars) : rawVal
+
+            ; key 필터링 조건
+            if ((!allowedKey || HasValue(allowedKey, key))
+             && (!excludedKey || !HasValue(excludedKey, key))) {
+                vars[key] := Trim(val)
+            }
+        }
+
+        ; Remove the #...# from command string
+        command := StrReplace(command, fullMatch, "")
+        pos := found + StrLen(fullMatch)
+    }
+    return Trim(command)
+}
+
+
 ResolveExpr(line, vars) {
     pos := 1
     while (found := RegExMatch(line, "%([^%]+)%", m, pos)) {
         fullMatch := m
         rawExpr := Trim(m1)
-
         result := EvaluateExpr(rawExpr, vars)
-
         line := StrReplace(line, fullMatch, result)
         pos := found + StrLen(result)
     }
     return line
 }
 
-EvaluateExpr(expr, vars) {
+EvaluateExpr2(expr, vars) {
     ; 기본값 문법 처리
     hasDefault := false
     defaultVal := ""
@@ -124,6 +170,61 @@ EvaluateExpr(expr, vars) {
             defaultVal := StrReplace(defaultVal, item.key, item.value)
         }
     }
+
+    ; 키 치환이 없었고, 기본값 문법이 있었다면 기본값 사용
+    if (hasDefault && !isReplaced)
+        expr := defaultVal
+
+    return TryEval(expr, vars.dp_mode ? vars.dp_mode : "trim")
+}
+
+EvaluateExpr3(expr, vars) {
+    ; 기본값 문법 처리
+    hasDefault := false
+    defaultVal := ""
+    if (RegExMatch(expr, "^(.*[^|])?\|([^|].*)?$", m)) {
+        expr := Trim(m1)
+        defaultVal := Trim(m2)
+        hasDefault := true
+    }
+
+    ; vars 객체의 키들을 치환
+    isReplaced := false
+    array := ToKeyLengthSortedArray(vars)
+    Loop % array.Length() {
+        item := array[A_Index]
+        if (InStr(expr, item.key)) {
+            expr := StrReplace(expr, item.key, item.value)
+            isReplaced := true
+        }
+        if (InStr(defaultVal, item.key)) {
+            defaultVal := StrReplace(defaultVal, item.key, item.value)
+        }
+    }
+
+    ; 키 치환이 없었고, 기본값 문법이 있었다면 기본값 사용
+    if (hasDefault && !isReplaced)
+        expr := defaultVal
+
+    return TryEval(expr, vars.dp_mode ? vars.dp_mode : "trim")
+}
+
+EvaluateExpr(expr, vars) {
+    ; 기본값 문법 처리
+    hasDefault := false
+    defaultVal := ""
+    if (RegExMatch(expr, "^(.*[^|])?\|([^|].*)?$", m)) {
+        expr := Trim(m1)
+        defaultVal := Trim(m2)
+        hasDefault := true
+    }
+
+    ; 새 방식으로 키 치환 (안전하게)
+    isReplaced := false
+    expr := ExplodeByKeys(expr, vars, isReplaced)
+
+    ; 기본값에도 동일한 키 치환 적용
+    defaultVal := ExplodeByKeys(defaultVal, vars, isReplacedDefault)
 
     ; 키 치환이 없었고, 기본값 문법이 있었다면 기본값 사용
     if (hasDefault && !isReplaced)
@@ -255,4 +356,35 @@ CheckAbortAndSleep(totalDelay) {
         Sleep, %s%
     }
     return !macroAbortRequested
+}
+
+ExplodeByKeys(expr, vars, ByRef isReplaced) {
+    placeHolder := Chr(0xE000)
+    result := []
+    sorted := ToKeyLengthSortedArray(vars)
+
+    ; Step 1: 키워드(길이 내림차순)를 찾아 dummy로 치환하며 값 저장
+    for i, item in sorted {
+        while (found := RegExMatch(expr, item.key, m)) {
+            isReplaced := true
+            result[found] := item.value
+            expr := StrReplace(expr, m, Dummy(m, placeHolder), , 1)
+        }
+    }
+
+    ; Step 2: 남은 일반 문자열 처리
+    while (found := RegExMatch(expr, "[^" . placeHolder . "]+", m)) {
+        result[found] := m
+        expr := StrReplace(expr, m, Dummy(m, placeHolder), , 1)
+    }
+
+    return StrJoin(result,"")
+}
+
+; Dummy 문자 생성
+Dummy(str, placeHolder) {
+    dummy := ""
+    Loop, % StrLen(str)
+        dummy .= placeHolder
+    return dummy
 }

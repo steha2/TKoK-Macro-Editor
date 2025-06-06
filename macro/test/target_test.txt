@@ -1,16 +1,5 @@
 ﻿#t:notepad#
-
-Run, %t%
-
+Run, %t% ;#delay:100#
 #target:t#
-
-
-#c:a+b# #a:1# #b:2# 
-
-chat, %c%
-
-sendraw, `n`r%c%
-
-#c:a+b# 
-
-chat, %c*3%
+chat, abc
+send, ^a{delete}^w #wait:1000#

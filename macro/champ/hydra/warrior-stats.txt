@@ -4,7 +4,7 @@ Exec, champ\hydra\warrior-equip
 
 Exec, stat-up #spsi:144# #stat:Z#
 
-Chat, -tt #wait:300#
+Chat, -tt #delay:300#
 Click:L, 0.421, 0.405
 Click:L, 0.419, 0.218
 Click:L, 0.419, 0.306

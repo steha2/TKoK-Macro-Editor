@@ -7,9 +7,9 @@ Chat(text, send_mode := "", hwnd := "") {
         ClipSaved := ClipboardAll
         Clipboard := text
         ClipWait, 0.5
-        SendKey("{Enter}", -20)
+        SendKey("{Enter}", -50)
         SendKey("^v", -50)
-        SendKey("{Enter}", 30)
+        SendKey("{Enter}", 50)
         Clipboard := ClipSaved
     }
 }
@@ -120,6 +120,7 @@ ClickBack(x, y, targetHwnd, btn := "L") {
     CoordMode, Mouse, Screen
     MouseGetPos, origX, origY
     Click(x, y, targetHwnd, btn)
+    Sleep, 300
     CoordMode, Mouse, Screen
     MouseMove, %origX%, %origY%, 0
     if (WinExist("ahk_id " . origHwnd)) {

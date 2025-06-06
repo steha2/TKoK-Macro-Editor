@@ -1,6 +1,6 @@
 ﻿#if:stat_open|1#
 Send, {F1}
-Send, n #delay:500#
+Send, n #delay:600#
 Send, {Numpad5}
 Wait, 200
 #if#
