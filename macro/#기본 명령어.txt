@@ -32,5 +32,5 @@ wait, 1000
 ---다른 매크로 실행---
 Exec, 아이템교체
 Exec, stat-up #spsi:100# #stat:Q#
-Exec, skill\ranger.txt #level:23# #stat:R#
+Exec, skill\ranger-skill #level:23# #stat:R#
 ※변수 값을 공유 합니다.
