@@ -123,12 +123,12 @@ F5::Chat("-inv")
 F6::Chat("-tt")
 
 ;마우스 가두기
-F7::ClipWindow()
+F7::ClipMouse()
 
 ;아이템 교체
 !X::
     KeyWait, Alt
-    GuiControlGet, squadText, %hMain%:, SquadField
+    GuiControlGet, squadText, main:, SquadField
     StringSplit, squad, squadText, `,
     WinGet, w3List, List, %W3_WINTITLE%
     loopCount := Min(squad0,w3List)
@@ -139,10 +139,7 @@ F7::ClipWindow()
         Sleep, 200
         SwapItems()
         gosub, F5
-        if (A_Index < loopCount)
-            SwitchW3(false)
-        else    
-            SwitchToMainW3()
+        SwitchNextW3(A_Index = loopCount)
         Sleep, 300
         
     }
@@ -165,12 +162,15 @@ ChampChat() {
 
 ;Alt
 !E::RestoreW3Pos()
-!3::SwitchToMainW3()
-!2::TrySwitchW3()
+!1::SwitchW3(1)
+!2::SwitchW3(2)
+!3::SwitchW3(3)
+!W::TrySwitchNextW3()
 !U::MoveOldSaves()
-!T::LoadSquad()
+!T::LoadSquadI()
+!Y::LoadSquad()
 !H::LoadSquad(true) ;Champion Mode
-
+!L::OpenLogFile()
 
 ;Ctrl+Shift
 ^+K::ExecW3()

@@ -87,14 +87,23 @@ WinActivateWait(winTitle) {
 }
 ;-------------------------------- 마우스 함수 --------------------------------
 
-ClipWindow(force := false) {
-    if (!force && IsMouseClipped()) {
-        DllCall("ClipCursor", "Ptr", 0)
-        isMouseClipped := false
-        return
-    }
 
-    WinGet, hwnd, ID, A
+; force가 false이고 마우스가 이미 클립된 상태면 클립 해제
+; → force: 무조건 클립할지 여부. false일 경우 toggle처럼 동작.
+UnclipMouse() {
+    DllCall("ClipCursor", "Ptr", 0)
+}
+
+ToggleClipMouse(hwnd := "") {
+    if (IsMouseClipped())
+        UnclipMouse()
+    else 
+        ClipMouse(hwnd) ; 무조건 클립 실행
+}
+
+ClipMouse(hwnd := "") {
+    hwnd := hwnd ? hwnd : WinExist("A")
+
     ; 클라이언트 좌표 및 크기 구하기
     VarSetCapacity(rect, 16, 0)
     DllCall("GetClientRect", "ptr", hwnd, "ptr", &rect)
@@ -106,8 +115,8 @@ ClipWindow(force := false) {
     y2 := y1 + NumGet(rect, 12, "Int") ; height
 
     ClipCursor(x1, y1, x2, y2)
-    isMouseClipped := true
 }
+
 
 ClipCursor(x1 := "", y1 := "", x2 := "", y2 := "") {
     if (x1 = "") {
@@ -302,5 +311,22 @@ AdjustClientToWindow(win, ByRef x, ByRef y) {
     ; ControlClick 기준은 윈도우 내부 좌표 → 빼준다
     x := NumGet(pt, 0, "Int") - wx
     y := NumGet(pt, 4, "Int") - wy
+    return true
+}
+
+ToggleMinimize(winTitle, force := "") {
+    ; winTitle이 숫자면 HWND로 간주하고 변환
+    if (winTitle is integer)
+        winTitle := "ahk_id " . winTitle
+
+    if !WinExist(winTitle)
+        return false
+
+    WinGet, style, MinMax, %winTitle%
+    if (force = "min" || (!force && style != 1)) {
+        WinMinimize, %winTitle%
+    } else if (force = "restore" || (!force && style = 1)) {
+        WinRestore, %winTitle%
+    }
     return true
 }

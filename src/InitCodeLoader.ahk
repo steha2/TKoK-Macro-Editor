@@ -1,16 +1,15 @@
 global CONFIG_FILE := A_ScriptDir . "\config.ini"
 
 ;-----------------------Code Loader Const------------------------------
-global W3_LAUNCH_DELAY := 4000 ; 워크래프트3 실행 후 4초간 대기한다
 global W3_WINTITLE := "Warcraft III"
 global SAVE_DIR := GetIniValue("Settings", "SAVE_DIR", A_ScriptDir)
 global W3_LNK := GetIniValue("Settings", "W3_LNK")
+global CLIENT_TITLE := "W3_Client_"
 
 ;-----------------------Code Loader Vars------------------------------
 global pl1 := ""
 global pl2 := ""
 global la := ""
-global mainW3Hwnd := ""
 global yMapped := false
 global switchRunning := 0
 ;----------------------------------------Main Gui---------------------------------------------

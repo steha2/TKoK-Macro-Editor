@@ -1,18 +1,26 @@
 
-SendCodeToW3() {
+SendCodeToW3(hwnd := "") {
     if(pl1 != "" && pl2 != "") {
-        Chat(pl1)
-        Chat(pl2)
+        if(hwnd) {
+            ChatI(pl1,hwnd)
+            ChatI(pl2,hwnd)
+        } else {
+            Chat(pl1)
+            Chat(pl2)
+        }
         Sleep, 1500
-        SendAptToW3()
+        SendAptToW3(hwnd)
     } else {
         MsgBox, 코드를 입력하지 못했습니다.
     }
 }
 
-SendAptToW3() {
+SendAptToW3(hwnd := "") {
     ReadAptFile()
-    Chat(la)
+    if(hwnd)
+        ChatI(la, hwnd)
+    else
+        Chat(la)
 }
 
 
@@ -31,7 +39,7 @@ ReadAptFile() {
         MsgBox, Account*.txt 파일을 찾을수 없습니다.
 }
 
-LoadHero(selectedHero := "") {
+LoadHero(selectedHero := "", hwnd := "") {
     if(selectedHero = ""){
         GuiControlGet, squadText, main:, SquadField
         StringSplit, squad, squadText, `,
@@ -42,7 +50,7 @@ LoadHero(selectedHero := "") {
         return
     }
     UpdateHeroInfo(selectedHero)
-    SendCodeToW3()
+    SendCodeToW3(hwnd)
 }
 
 UpdateHeroInfo(selectedHero) {
@@ -90,8 +98,40 @@ HeroInfoToText(info) {
     return txt
 }
 
+LoadSquadI() {
+    GuiControlGet, squadText, main:, SquadField
+    StringSplit, squad, squadText, `,
+
+    clients := GetClientHwndArray()
+    host := client[1]
+    for index, client in clients {
+        if (index > 1)
+            ShareUnit(client)
+        
+        thisHero := squad%A_Index%
+        LoadHero(thisHero, client)
+        ChatPI("-qs", client)
+        Sleep, 300
+        if (thisHero = "Shadowblade") {
+            ClickBackEx([{x:0.976, y:0.879, btn:"R",hwnd:client},{x:0.906, y:0.879, btn:"R"}])
+        } else if (thisHero = "Barbarian") {
+            ClickBack(0.801, 0.953, client, "R")
+        } else if (thisHero = "Chaotic Knight") {
+            ClickBack(0.797, 0.954, client, "R")
+        }
+    }
+    
+    if(clients.Length() >= 2)
+        SmartSendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", host, 0, "inactive", true)
+    else
+        SmartSendKey("^s {F1} ^1", host, 0, "inactive", true)
+    ChatPI("!dr 10", host)
+    ChatPI("-clear", host)
+    ChatPI("-apt", host)
+}
+
 LoadSquad(champ := false) {
-    SwitchToMainW3()
+    SwitchW3(1)
 
     IfWinNotActive, %W3_WINTITLE%
     {
@@ -127,10 +167,8 @@ LoadSquad(champ := false) {
             }
         }
         
-        if (A_Index < loopCount)
-            SwitchW3(false)
-        else    
-            SwitchToMainW3()
+        if (loopCount >= 2)
+            SwitchNextW3(loopCount = A_Index)
     }
     if(squad0 > 1)
         SmartSendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", 0, "", "", true)
@@ -142,6 +180,7 @@ LoadSquad(champ := false) {
         Chat("!dr 10")
     Chat("-apt")
 }
+
 
 LastSaveTimes() {
     GuiControlGet, squad, main:, SquadField ; GUI에서 squad 문자열 얻기

@@ -1,4 +1,4 @@
-global logFilePath :=  A_Temp "\macro_test_log.txt"
+
 test(a := "", b := "", c := "", d := "", e := "", f := "", isTip := false, writeLog := true) {
     args := [a, b, c, d, e, f]
     output := ""
@@ -7,6 +7,7 @@ test(a := "", b := "", c := "", d := "", e := "", f := "", isTip := false, write
             output .= "Arg" index " : " FormatValue(value) "`n`n"
     }
     if (writeLog) {
+        FileDelete, %logFilePath%
         FileAppend, % output, % logFilePath
     }
 
@@ -40,8 +41,6 @@ test2(a:="", b:="", c:="", d:="", e:="", f:="",isTip:=true,isLog:=true) {
     test(a,b,c,d,e,f,isTip,isLog)
 }
 
-
-
 ShowTip(msg, duration := 1500) {
     Tooltip, %msg%
     SetTimer, RemoveToolTip, -%duration%
@@ -57,6 +56,18 @@ Clone(obj) {
     for k, v in obj
         new[k] := v
     return new
+}
+
+Alert(msg) {
+    MsgBox, %msg%
+}
+
+Confirm(msg, title:="확인") {
+    MsgBox, 4, %title%, %msg%
+    IfMsgBox, No
+        return false
+    
+    return true
 }
 
 Note(newText := "", isAppend := false) {
@@ -90,4 +101,23 @@ Note(newText := "", isAppend := false) {
         Gui, SimpleNote:Destroy
         isCreated := false
     return
+}
+
+RunGetHwnd(path, winTitle := "") {
+    Run, *RunAs %path%
+    hwndR := WaitGetHwnd(winTitle)
+    if (!hwndR)
+        return false
+    return hwndR
+}
+
+WaitGetHwnd(winTitle, interval := 100, maxLoop := 50) {
+    Loop, %maxLoop% {
+        hwnd := WinExist(winTitle)
+        if (hwnd) 
+            return hwnd
+        else 
+            Sleep, %interval%
+    }
+    return false
 }

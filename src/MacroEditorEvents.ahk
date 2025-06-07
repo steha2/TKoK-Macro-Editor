@@ -141,42 +141,47 @@ AddMacro:
         SplitPath, macroPath, , outputDir
 
     if (outputDir != "" && InStr(outputDir, MACRO_DIR)) {
-        macroRelPath := SubStr(outputDir, StrLen(MACRO_DIR) + 2)
-        defaultInput := (macroRelPath != "") ? macroRelPath . "\" : ""
+        relPath := SubStr(outputDir, StrLen(MACRO_DIR) + 2)
+        defaultInput := (relPath != "") ? relPath . "\" : ""
     } else {
         defaultInput := ""
     }
 
-    InputBox, macroRelPath, %EDITOR_TITLE% 
+    InputBox, relPath, %EDITOR_TITLE% 
             ,새 매크로 파일`n 파일 경로\이름을 입력하세요:`n(확장자 제외)
             , , 300, 170, , , , , %defaultInput%
     if (ErrorLevel)
         return
-    macroRelPath := Trim(macroRelPath)
-    macroRelPath := StrReplace(macroRelPath, "/", "\")
-    SplitPath, macroRelPath, fileName, outDir
+    relPath := Trim(relPath)
+    relPath := StrReplace(relPath, "/", "\")
+    SplitPath, relPath, fileName, outDir
 
-    vars := {rel_path:macroRelPath, out_dir:outDir}
+    vars := {rel_path:relPath, out_dir:outDir}
     newContents := LoadPresetForMacro(fileName, vars)
 
-    WriteMacroFile(newContents, macroRelPath)
+    WriteMacroFile(newContents, relPath)
     GuiControl, macro:Focus, EditMacro
 return
 
 SaveMacro:
     GuiControlGet, content, macro:, EditMacro
-    ; 내용을 모두 지운채로도 저장가능
-    if (Trim(content, "`n`t ") = "" && macroPath = "")
+    isEmpty := Trim(content, "`n`t ") = ""
+    isDir := IsDirectory(macroPath)
+
+    ; 내용이 비었고 저장할 경로가 없거나 폴더일 경우 저장하지 않음
+    if (isEmpty && (!macroPath || isDir))
         return
-    if (macroPath = "") {
-    ; 선택된 매크로가 없으면 새 파일 생성
-        WriteMacroFile(content)
+
+    origContent := content
+    ; 내용이 있고 경로가 없거나 폴더인 경우: 새 파일 생성
+    if (!isEmpty && (!macroPath || isDir)) {
+        WriteMacroFile(content) ; 현재 시간으로 새 파일 저장
         return
     }
-    ; 선택된 경로가 있으면 기존 파일 덮어쓰기
+
+    ; 나머지 경우: 기존 파일 덮어쓰기
     FileDelete, %macroPath%
     FileAppend, %content%, %macroPath%
-    origContent := content
     ShowTip("저장 완료: " . macroPath)
 return
 

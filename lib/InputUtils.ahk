@@ -1,4 +1,31 @@
-Chat(text, send_mode := "", hwnd := "") {
+ChatPaste(text, hwnd := "", send_mode := "") {
+    isValid := StrLen(text) > 0
+    
+    if(isValid){
+        ClipSaved := ClipboardAll
+        Clipboard := text
+        ClipWait, 0.5
+    }
+    if (send_mode = "inactive" && hwnd) {
+        SendKeyI("{Enter}", hwnd, -20)
+        if (isValid)
+            SendKeyI("{ctrl down}v{ctrl up}", hwnd, -20)
+        SendKeyI("{Enter}", hwnd, 30)
+    } else {
+        if (isValid) {
+            if (hwnd && hwnd != Win_Exist("A"))
+                WinActivateWait(hwnd)
+        }
+        SendKey("{Enter}", -50)
+        if (isValid)
+            SendKey("^v", -50)
+        SendKey("{Enter}", 50)
+    }
+    if (isValid)
+        Clipboard := ClipSaved
+}
+
+Chat(text, hwnd := "", send_mode := "") {
     isValid := StrLen(text) > 0
     if (send_mode = "inactive" && hwnd) {
         SendKeyI("{Enter}", hwnd, -20)
@@ -9,19 +36,21 @@ Chat(text, send_mode := "", hwnd := "") {
         SendKeyI("{Enter}", hwnd, 30)
     } else {
         if (isValid) {
-            ClipSaved := ClipboardAll
-            Clipboard := text
-            ClipWait, 0.5
+            if (hwnd && hwnd != Win_Exist("A"))
+                WinActivateWait(hwnd)
         }
-
-        SendKey("{Enter}", -50)
-        if (isValid)
-            SendKey("^v", -50)
-        SendKey("{Enter}", 50)
-
-        if (isValid)
-            Clipboard := ClipSaved
+        SendKey("{Enter}", 100)
+        if (isValid) {
+            Suspend, On
+            SendRaw, %text%
+            Suspend, Off
+        }
+        SendKey("{Enter}")
     }
+}
+
+ChatPI(text, hwnd) {
+    ChatPaste(text, hwnd, "inactive")
 }
 
 Chat2(text) {
@@ -115,24 +144,51 @@ ClickA(x, y, btn := "L") {
     SmartClick(x, y, WinExist("A"), btn)
 }
 
-ClickBack(x, y, targetHwnd, btn := "L") {
-    if (!targetHwnd) {
-        ShowTip("targetHwnd not found")
-        return
-    }
+ClickBack(x, y, hwnd, btn := "L") {
+    click := {x: x, y: y, hwnd: hwnd, btn: btn}
+    ClickBackEx(click)
+}
+
+ClickBackEx(clickArray) {
+    static currentHwnd := ""
+    
+    if (!IsObject(clickArray))
+        return ShowTip("clickArray is not an object")
+    if (!clickArray.HasKey(1))  ; 단일 객체일 경우 배열처럼 래핑
+        clickArray := [clickArray]
+    
     BlockInput, On
-    WinGet, origHwnd, ID, A
-    if (origHwnd != targetHwnd) {
-       WinActivateWait(targetHwnd)
-    }
     CoordMode, Mouse, Screen
     MouseGetPos, origX, origY
-    Click(x, y, targetHwnd, btn)
-    Sleep, 300
+    WinGet, origHwnd, ID, A
+    WinGet, winState, MinMax, ahk_id %hwnd%
+    wasMinimized := (winState == 2)
+
+    for index, click in clickArray {
+        ; hwnd가 있으면 currentHwnd 갱신
+        if (click.HasKey("hwnd")) {
+            currentHwnd := click.hwnd
+        }
+        if (!currentHwnd || !WinExist("ahk_id " currentHwnd)) {
+            ShowTip("Invalid hwnd at index " index)
+            continue
+        }
+        if(WinExist("A") != currentHwnd)
+            WinActivateWait(currentHwnd)
+
+        btn := click.HasKey("btn") ? click.btn : "L"
+        Click(click.x, click.y, currentHwnd, btn)
+    }
+
+    ; 마우스 위치 복귀
     CoordMode, Mouse, Screen
     MouseMove, %origX%, %origY%, 0
+    ; 이전 창 복귀
     if (WinExist("ahk_id " . origHwnd)) {
         WinActivate, ahk_id %origHwnd%
+    }
+    if (wasMinimized) {
+        WinMinimize, ahk_id %hwnd%
     }
     BlockInput, Off
 }

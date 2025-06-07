@@ -11,7 +11,7 @@ if not A_IsAdmin
     Run *RunAs "%A_ScriptFullPath%"
     ExitApp
 }
-
+global logFilePath :=  A_Temp "\macro_test_log.txt"
 global isLaunchedByMain := true
 
 #Include %A_ScriptDir%\src\InitCodeLoader.ahk 

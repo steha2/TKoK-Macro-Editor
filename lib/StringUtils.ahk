@@ -58,6 +58,31 @@ JoinLines(arr) {
     return arr.Length() ? arr.Join("`r`n") . "`r`n" : ""
 }
 
+ExtractVar(vars, key, ByRef outVar, type := "") {
+    if (!vars.HasKey(key))
+        return
+
+    val := vars[key]
+    vars.Delete(key)
+    switch type {
+        case "integer":
+            outVar := Floor(val + 0)
+        case "natural":
+            val := Floor(val + 0)
+            outVar := (val > 0) ? val : 1
+        case "nat0", "whole":
+            val := Floor(val + 0)
+            outVar := (val >= 0) ? val : 0
+        case "number":
+            outVar := val + 0
+        case "string":
+            outVar := val . ""
+        case "boolean":
+            outVar := (val = "true" || val = 1 || val = "1") ? true : false
+        default:
+            outVar := val
+    }
+}
 ;----------------------------------------------객체 함수-----------------------------------------------
 
 ToKeyLengthSortedArray(object, ascending := false) {

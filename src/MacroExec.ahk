@@ -15,11 +15,11 @@ ExecMacro(scriptText, vars, current_path) {
         vars := {}
     }
     vars.current_path := current_path
-    start_line := vars.start_line + 0
-    vars.Delete("start_line")
     for index, line in lines {
         if(macroAbortRequested)
             break
+
+        ExtractVar(vars, "start_line", start_line, "natural")
 
         ; tempVars에는 조건용 if/force만 추출
         tempVars := Clone(vars)
@@ -33,6 +33,9 @@ ExecMacro(scriptText, vars, current_path) {
             if(vars.if != "" && !Eval(tempVars.if))
                 continue
         }
+        line := StripComments(line)
+        if (line = "")
+            continue
 
         ; 변수 초기화
         vars.rep := 1
@@ -41,16 +44,10 @@ ExecMacro(scriptText, vars, current_path) {
         vars.delay := isDigit(vars.base_delay) ? vars.base_delay : BASE_DELAY
 
         ; 명령어 처리 (vars에서 실제 파싱)
-        line := StripComments(line)
-        if (line = "")
-            continue
         cmd := ResolveMarker(line, vars, "", ["if","force"])
         cmd := ResolveExpr(cmd, vars)
         ;test(line, vars)
-        if (vars.HasKey("limit")) {
-            limit := Floor(vars.limit + 0)
-            vars.Delete("limit")
-        }
+        ExtractVar(vars, "limit", limit, "nat0")
 
         ; 조건 2: 실행 전 제어 흐름
         if (!CheckAbortAndSleep(vars.wait) || vars.HasKey("break")
@@ -175,7 +172,7 @@ ExecSingleCommand(command, vars, hwnd := "") {
     } else if RegExMatch(command, "i)^Send\s*,?\s*(.*)$", m) {
         SmartSendKey(m1, hwnd, 0, vars.send_mode)
     } else if RegExMatch(command, "i)^Chat\s*,?\s*(.*)$", m) {
-        Chat(m1, vars.send_mode, hwnd)
+        Chat(m1, hwnd, vars.send_mode)
     } else if RegExMatch(command, "i)^(Sleep|Wait|Delay)\s*,?\s*(\d*)", m) {
         if(isDigit(m2))
             vars.delay := m2
@@ -317,3 +314,4 @@ Dummy(str, placeHolder) {
         dummy .= placeHolder
     return dummy
 }
+
