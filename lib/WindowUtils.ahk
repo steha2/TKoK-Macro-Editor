@@ -187,17 +187,11 @@ GetTargetWin(target, timeout := 1000, interval := 100) {
         return false
 
     candidates := ["ahk_class " . target, "ahk_exe " . target . ".exe", target]
-    start := A_TickCount
-
-    while ((A_TickCount - start) < timeout) {
-        for index, each in candidates {
-            if WinExist(each)
-                return each
-        }
-        Sleep, interval
+    for index, each in candidates {
+        if WinExist(each)
+            return each
     }
-
-    return false  ; 타임아웃까지 못 찾으면 false
+    return false
 }
 
 

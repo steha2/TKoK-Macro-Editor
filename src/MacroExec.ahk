@@ -8,72 +8,68 @@ ExecMacro(scriptText, vars, current_path) {
 
     UpdateMacroState(+1)
     lines := StrSplit(scriptText, ["`r`n", "`n", "`r"])
-    limit := BASE_LIMIT
     
     if !IsObject(vars) {
         ShowTip("Warning! : vars is not an object")
         vars := {}
     }
+    
     vars.current_path := current_path
     for index, line in lines {
         if(macroAbortRequested)
             break
-
-        ExtractVar(vars, "start_line", start_line, "natural")
-
-        ; tempVars에는 조건용 if/force만 추출
-        tempVars := Clone(vars)
-        ResolveMarker(line, tempVars, ["if","force"])
-        vars.if := tempVars.if
-        
-        ;test(!tempVars.HasKey("force"),InStr(vars.skip_mode, "vars") ,A_Index < start_line, tempVars.if != "" , !Eval(tempVars.if), tempVars.if)
-        if (!tempVars.HasKey("force")) {
-            if(InStr(vars.skip_mode, "vars") && A_Index < start_line)
-                continue
-            if(vars.if != "" && !Eval(tempVars.if))
-                continue
-        }
         line := StripComments(line)
         if (line = "")
             continue
 
-        ; 변수 초기화
+        ExtractVar(vars, "start_line", start_line, "natural")
+        
+        tempVars := Clone(vars)
+        ResolveMarker(line, tempVars, ["if", "force", "end_if"])
+        if (tempVars.HasKey("end_if")) {
+            vars.Delete("if")
+        } else if(tempVars.HasKey("if")) {
+            vars.if := tempVars.if
+            if((StrLower(tempVars.if) = "false"))
+                tempVars.if := false
+        }
+
+        ; 조건 확인: force가 없고, skip_mode=vars 이며, start_line 전이면 건너뛰기
+        if (!tempVars.HasKey("force")) {
+            if (InStr(vars.skip_mode, "vars") && A_Index < start_line)
+                continue
+            ; if 조건이 거짓이면 건너뛰기
+            if (vars.HasKey("if") && !TryEval(tempVars.if))
+                continue
+        }
+        
+        ; 휘발성 변수 초기화
         vars.rep := 1
         vars.wait := 0
         vars.dp_mode := "trim"
         vars.delay := isDigit(vars.base_delay) ? vars.base_delay : BASE_DELAY
 
         ; 명령어 처리 (vars에서 실제 파싱)
-        cmd := ResolveMarker(line, vars, "", ["if","force"])
+        cmd := ResolveMarker(line, vars, "", ["if","force","end_if"])
         cmd := ResolveExpr(cmd, vars)
-        ;test(line, vars)
-        ExtractVar(vars, "limit", limit, "nat0")
 
         ; 조건 2: 실행 전 제어 흐름
-        if (!CheckAbortAndSleep(vars.wait) || vars.HasKey("break")
-           || (!PrepareTargetWindow(vars)) || limit <= 0)
+        if (ShouldBreak(vars, "wait"))
             break
         
-        ; 윈도우 핸들 준비
-        hwnd := WinExist("A")
-        if (vars.target_hwnd) {
-            if (vars.send_mode != "inactive" && hwnd != vars.target_hwnd)
-                WinActivateWait(vars.target_hwnd)
-            hwnd := vars.target_hwnd
-        }
-
         ; 조건 3: start_line 이후만 실행 (강제 실행 아닌 경우)
         if(!tempVars.HasKey("force") && A_Index < start_line)
             continue
 
+        PrepareTargetHwnd(vars)
         Loop, % vars.rep
         {
-            ExecSingleCommand(cmd, vars, hwnd)
+            ExecSingleCommand(cmd, vars)
             if(cmd != "") {
                 if(A_Index = 1 || vars.limit_mode != "line")
-                    limit--
+                    vars.limit--
             }
-            if(!CheckAbortAndSleep(vars.delay) || limit <= 0 || vars.HasKey("break"))
+            if (ShouldBreak(vars))
                 break
         }
     }
@@ -81,18 +77,50 @@ ExecMacro(scriptText, vars, current_path) {
     ; ShowTip("--- Macro End ---`n,실행중인 매크로 수 : " runMacroCount)
 }
 
-PrepareTargetWindow(vars) {
-    if (vars.HasKey("target") && vars.target) {
-        vars.target_hwnd := WinExist(GetTargetWin(vars.target))
-        if (!vars.target_hwnd) {
-            MsgBox, targetHwnd not found
-            return false
-        }
-        vars.Delete("target")
+ShouldBreak(vars, timeKey := "delay") {
+    if (!CheckAbortAndSleep(vars[timeKey]))
         return true
-    }
-    return true  ; target 지정 안 되어 있으면 그대로 통과
+
+    if (vars.HasKey("limit") && !IsNatural(vars.limit))
+        return true
+
+    if (vars.HasKey("break"))
+        return true
+
+    return false
 }
+
+PrepareTargetHwnd(vars) {
+    ; 타겟이 없고 hwnd 도 없으면 현재 창
+    if (!vars.HasKey("target") && !vars.target_hwnd) {
+        return
+
+    ; 타겟이 변경되었을 경우 새로 검색
+    } else if (vars.target != vars._last_target) {
+        vars._last_target := vars.target
+        if (vars.target) {
+            vars.target_hwnd := WinExist(GetTargetWin(vars.target))
+            return vars.target_hwnd
+        } else {
+            vars.target_hwnd := ""
+            return
+        }
+
+    ; 타겟은 같은데 hwnd 가 없는 경우 → 재검색
+    } else if (!vars.target_hwnd) {
+        vars.target_hwnd := WinExist(GetTargetWin(vars.target))
+        return vars.target_hwnd
+
+    ; 타겟 동일하고 hwnd 있음 → hwnd 유효성 검사 후 반환
+    } else if (WinExist("ahk_id " . vars.target_hwnd)) {
+        return vars.target_hwnd
+    }
+
+    ; hwnd 있었지만 창이 사라졌음 → 재검색 시도
+    vars.target_hwnd := WinExist(GetTargetWin(vars.target))
+    return vars.target_hwnd
+}
+
 
 ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
     command := line
@@ -113,7 +141,7 @@ ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
 
             ; key 필터링 조건
             if ((!allowedKey || HasValue(allowedKey, key))
-             && (!excludedKey || !HasValue(excludedKey, key))) {
+            && (!excludedKey || !HasValue(excludedKey, key))) {
                 vars[key] := val
             }
         }
@@ -162,17 +190,32 @@ EvaluateExpr(expr, vars) {
     return TryEval(expr, vars.dp_mode)
 }
 
-ExecSingleCommand(command, vars, hwnd := "") {
+HandleKeyCommand(key, vars, mode := "") {
+    if (vars.target && !vars.target_hwnd)
+        return
+
+    mode .= vars.send_mode
+
+    if (InStr(mode, "C", 1)) {
+        Chat(key, mode, vars.target_hwnd)
+    } else if (InStr(mode, "R", 1)) {
+        SendRawKey(key, mode, vars.target_hwnd)
+    } else {
+        SendKey(key, mode, vars.target_hwnd)
+    }
+}
+
+ExecSingleCommand(command, vars) {
     if RegExMatch(command, "i)^Click:(\w+),\s*(\d+),\s*(\d+)$", m) {
-        SmartClick(m2, m3, hwnd, m1, vars.send_mode, vars.coord_mode, "fixed")
+        SmartClick(m2, m3, vars.target_hwnd, m1, vars.send_mode, vars.coord_mode, "fixed")
     } else if RegExMatch(command, "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)$", m) {
-        SmartClick(m2, m3, hwnd, m1, vars.send_mode, vars.coord_mode, "ratio")
+        SmartClick(m2, m3, vars.target_hwnd, m1, vars.send_mode, vars.coord_mode, "ratio")
     } else if RegExMatch(command, "i)^SendRaw\s*,?\s*(.*)$", m) {
-        SendRaw, %m1% 
+        HandleKeyCommand(m1, vars, "R")
     } else if RegExMatch(command, "i)^Send\s*,?\s*(.*)$", m) {
-        SmartSendKey(m1, hwnd, 0, vars.send_mode)
+        HandleKeyCommand(m1, vars)
     } else if RegExMatch(command, "i)^Chat\s*,?\s*(.*)$", m) {
-        Chat(m1, hwnd, vars.send_mode)
+        HandleKeyCommand(m1, vars, "C")
     } else if RegExMatch(command, "i)^(Sleep|Wait|Delay)\s*,?\s*(\d*)", m) {
         if(isDigit(m2))
             vars.delay := m2
@@ -261,15 +304,6 @@ UpdateMacroState(delta) {
         ;GuiControl, macro:Enable, RecordBtn
         GuiControl, macro:Text, execBtn, ▶ Run
         macroAbortRequested := false
-    }
-}
-
-TryEval(expr, dp_mode) {
-    if RegExMatch(expr, "^[\d+\-*/.() <>=!&|^~]+$") && RegExMatch(expr, "\d") {
-        ;test("EVAL!",expr,mode,FormatDecimal(Eval(expr), mode))
-        return FormatDecimal(Eval(expr), dp_mode)
-    } else {
-        return expr
     }
 }
 

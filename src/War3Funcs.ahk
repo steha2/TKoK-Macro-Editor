@@ -91,9 +91,9 @@ TrySwitchNextW3() {
 
 ShareUnit(hwnd := "") {
     if(hwnd) {
-        SendKeyI("{F11}", hwnd, 700)
+        SendKey("{F11}", "I", hwnd, 700)
         ClickBack(0.599,0.204, hwnd)
-        SendKeyI("{Enter}", hwnd)
+        SendKey("{Enter}", "I", hwnd)
     } else {
         Sleep, 500
         SendKey("{F11}", 700)
@@ -167,7 +167,7 @@ ExecMultiW3(num := 0) {
     }
 
     Sleep, numW3 = 1 ? 3000 : 1000
-    SendKeyI("{alt down}s{alt up}", hostHwnd)
+    SendKey("{alt down}s{alt up}", "I", hostHwnd)
 }
 
 ;비활성 명령으로 실행
@@ -176,26 +176,26 @@ ExecHostW3() {
     if(!hwnd)
         return
     RestoreW3Pos(hwnd)
-    SendKeyI("l", hwnd, 3000)
-    SendKeyI("c", hwnd, 3000)
+    SendKey("l", "I", hwnd, 3000)
+    SendKey("c", "I", hwnd, 3000)
 
-    speed := GetIniValue("Settings","speed")
+    speed := GetIniValue("Settings", "speed")
     if(speed = 0) {
         ClickBack(0.053, 0.160, hwnd)
     } else if (speed = 1) {
         ClickBack(0.192, 0.160, hwnd)
     }
-    SendKeyI("c", hwnd)
+    SendKey("c", "I", hwnd)
     return hwnd
 }
 
 ExecJoinW3(num := "") {
     hwnd := ExecW3(CLIENT_TITLE . num)
-    SendKeyI("l", hwnd, 3000)
+    SendKey("l", "I", hwnd, 3000)
     ;ClickBack(0.4, 0.3, hwnd)
     Loop, 4
-        SendKeyI("{tab}", hwnd, 100)
-    SendKeyI("j", hwnd)
+        SendKey("{Tab}", "I", hwnd, 100)
+    SendKey("j", "I", hwnd)
 }
 
 CloseAllW3() {
@@ -210,8 +210,8 @@ CloseAllW3() {
     Loop, %list%
     {
         hwnd := list%A_Index%
-        if(hwnd)
-            SendKeyI("x",hwnd)
+        if(WinExist("ahk_id " . hwnd))
+            SendKey("x", "I", hwnd)
     }
 }
 
@@ -269,10 +269,10 @@ GetClientHwndArray() {
 
 !Numpad5::ExecHostW3()
 !Numpad6::ExecJoinW3()
-!Numpad7::SendKeyI("s", WinExist("ahk_class Warcraft III"))
+!Numpad7::SendKey("s", "I", WinExist("ahk_class Warcraft III"))
 !Numpad8::
-SendKeyI("{Enter}", WinExist("ahk_class Warcraft III"),100)
-SendKeyI("asdf", WinExist("ahk_class Warcraft III"),100)
-SendKeyI("{ctrl down}v{ctrl up}", WinExist("ahk_class Warcraft III"),100)
-SendKeyI("{Enter}", WinExist("ahk_class Warcraft III"))
+SendKey("{Enter}", "I", WinExist("ahk_class Warcraft III"),100)
+SendKey("asdf", "I", WinExist("ahk_class Warcraft III"),100)
+SendKey("{ctrl down}v{ctrl up}", "I", WinExist("ahk_class Warcraft III"),100)
+SendKey("{Enter}", "I", WinExist("ahk_class Warcraft III"))
 return

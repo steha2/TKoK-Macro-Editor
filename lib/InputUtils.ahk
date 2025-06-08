@@ -1,95 +1,82 @@
-ChatPaste(text, hwnd := "", send_mode := "") {
+Chat(text, send_mode := "", hwnd := "") {
+   if (InStr(send_mode, "P", 1)) {
+        ChatPaste(text, send_mode, hwnd)
+   } else {
+        ChatRaw(text, send_mode, hwnd)
+   }
+}
+
+ChatPaste(text, send_mode := "", hwnd := "") {
     isValid := StrLen(text) > 0
-    
-    if(isValid){
+    if (isValid) {
         ClipSaved := ClipboardAll
         Clipboard := text
         ClipWait, 0.5
     }
-    if (send_mode = "inactive" && hwnd) {
-        SendKeyI("{Enter}", hwnd, -20)
-        if (isValid)
-            SendKeyI("{ctrl down}v{ctrl up}", hwnd, -20)
-        SendKeyI("{Enter}", hwnd, 30)
-    } else {
-        if (isValid) {
-            if (hwnd && hwnd != Win_Exist("A"))
-                WinActivateWait(hwnd)
-        }
-        SendKey("{Enter}", -50)
-        if (isValid)
-            SendKey("^v", -50)
-        SendKey("{Enter}", 50)
+    SendKey("{Enter}", send_mode, hwnd, -50)
+    if (isValid) {
+        pasteKey := InStr(send_mode, "I", 1) ? "{ctrl down}v{ctrl up}" : "^v"
+        SendKey(pasteKey, send_mode, hwnd, -20)
     }
+    SendKey("{Enter}", send_mode, hwnd, 50)
     if (isValid)
         Clipboard := ClipSaved
 }
 
-Chat(text, hwnd := "", send_mode := "") {
-    isValid := StrLen(text) > 0
-    if (send_mode = "inactive" && hwnd) {
-        SendKeyI("{Enter}", hwnd, -20)
-        
-        if (isValid)
-            SendKeyI(text, hwnd, -20)
-        
-        SendKeyI("{Enter}", hwnd, 30)
-    } else {
-        if (isValid) {
-            if (hwnd && hwnd != Win_Exist("A"))
-                WinActivateWait(hwnd)
-        }
-        SendKey("{Enter}", 100)
-        if (isValid) {
-            Suspend, On
-            SendRaw, %text%
-            Suspend, Off
-        }
-        SendKey("{Enter}")
+ChatRaw(text, send_mode := "", hwnd := "") {
+    SendKey("{Enter}", send_mode, hwnd, 100)
+    if (StrLen(text) > 0) {
+        Suspend, On
+        SendRawKey(text, send_mode, hwnd)
+        Suspend, Off
     }
-}
-
-ChatPI(text, hwnd) {
-    ChatPaste(text, hwnd, "inactive")
-}
-
-Chat2(text) {
-    SendKey("{Enter}", 100)
-    Suspend, On
-    SendRaw, %text%
-    Suspend, Off
-    SendKey("{Enter}")
+    SendKey("{Enter}", send_mode, hwnd)
 }
 
 ;dealy :음/양수 선/후 딜레이
-SmartSendKey(key,  hwnd := "", delay := 0, send_mode := "", ignoreSpace := false) {
-    StringLower, key, key
+SendKey(key, send_mode := "", hwnd := "", delay := 0) {
+    if (StrLen(key) = 0)
+        return
+
+    if (hwnd && !WinExist("ahk_id " . hwnd))
+        return ShowTip("SendKey()`n지정된 창이 없습니다. hwnd :" . hwnd)
+    
+    if(!hwnd)
+        hwnd := WinExist("A")
 
     if (delay < 0)
         Sleep, -delay
 
-    if (ignoreSpace)
+    if (InStr(send_mode, "NS", 1))
         key := StrReplace(key, " ")
 
-    if (send_mode = "inactive" && hwnd) {
-        ControlSend,, %key%, ahk_id %hwnd%
-    }
-    else 
-        Send, {Blind}%key%
+    if (InStr(send_mode, "I", 1)) {
+        if (InStr(send_mode, "R", 1) )
+            ControlSendRaw,, %key%, ahk_id %hwnd%
+        else
+            ControlSend,, %key%, ahk_id %hwnd%
+    } else {
+        if (hwnd && hwnd != WinExist("A"))
+            WinActivateWait(hwnd)
 
+        if (InStr(send_mode, "R", 1) )
+            SendRaw, %key%
+        else
+            Send, {Blind}%key%
+    }
     if (delay > 0)
         Sleep, delay
 }
 
-SendKeyI(key, hwnd, delay:=0){
-    SmartSendKey(key, hwnd, delay, "inactive")
+SendRawKey(key, send_mode := "",  hwnd := "", delay := 0) {
+    SendKey(key, send_mode . "R", hwnd, delay)
 }
 
-SendKey(key, delay:=0) {
-    SmartSendKey(key, WinExist("A"), delay)
+SendKeyA(key, delay := 0) {
+    SendKey(key, "", "", delay)
 }
 
-CalcCoords(hwnd, ByRef x, ByRef y, coord_mode := "", coord_type := "") {
+CalcCoords(ByRef x, ByRef y, hwnd, coord_mode := "", coord_type := "") {
     if(!hwnd)
         return
 
@@ -104,49 +91,61 @@ CalcCoords(hwnd, ByRef x, ByRef y, coord_mode := "", coord_type := "") {
     }
 }
 
-SmartClick(x, y, hwnd := "", btn := "L", send_mode := "", coord_Mode := "", coord_type := "") {
-    if(!hwnd)
-        return
-    
-    CalcCoords(hwnd, x, y, coord_mode, coord_type)
-    if(send_mode = "inactive" && win && !InStr(coord_mode,"screen")) {
-        AdjustClientToWindow(win, x, y)
-        Sleep, 100
-        SetControlDelay -1
-        ControlClick, x%x% y%y%, %win%,, %btn%, , NA
+SmartClick(x, y, hwnd := "", btn := "L", send_mode := "", coord_mode := "", coord_type := "") {
+    if (hwnd && !WinExist("ahk_id " . hwnd))
+        return ShowTip("SmartClick()`n지정된 창이 없습니다. hwnd: " . hwnd)
+
+    if (!hwnd)
+        hwnd := WinExist("A")
+
+    if (InStr(send_mode, "I", true)) {
+        SmartClick_ControlClick(x, y, hwnd, btn, coord_mode, coord_type)
     } else {
-        MouseMove, %x%, %y%
-        Sleep, 60
-        if (btn = "R") {
-            ; 우클릭: 0x08 (Down), 0x10 (Up)
-            DllCall("mouse_event", "UInt", 0x08, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Down
-            Sleep, 45
-            DllCall("mouse_event", "UInt", 0x10, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Up
-        } else {
-            ; 좌클릭: 0x02 (Down), 0x04 (Up)
-            DllCall("mouse_event", "UInt", 0x02, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Down
-            Sleep, 45
-            DllCall("mouse_event", "UInt", 0x04, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Up
-        }
+        if (hwnd != WinExist("A"))
+            WinActivateWait(hwnd)
+
+        if (!WinExist("ahk_id " . hwnd))
+            return ShowTip("SmartClick()`n활성화에 실패했습니다. hwnd: " . hwnd)
+        
+        SmartClick_MouseClick(x, y, hwnd, btn, coord_mode, coord_type)
     }
 }
 
+SmartClick_ControlClick(x, y, hwnd, btn, coord_mode := "", coord_type := "") {
+    CalcCoords(x, y, hwnd, coord_mode, coord_type)
+    AdjustClientToWindow(hwnd, x, y)
+    Sleep, 100
+    ControlClick, x%x% y%y%, ahk_id %hwnd%,, %btn%,, NA
+}
+
+SmartClick_MouseClick(x, y, hwnd, btn, coord_mode := "", coord_type := "") {
+    CalcCoords(x, y, hwnd, coord_mode, coord_type)
+    MouseMove, %x%, %y%
+    Sleep, 60
+
+    if (btn = "R") {
+        DllCall("mouse_event", "UInt", 0x08, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Down
+        Sleep, 45
+        DllCall("mouse_event", "UInt", 0x10, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Up
+    } else {
+        DllCall("mouse_event", "UInt", 0x02, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Down
+        Sleep, 45
+        DllCall("mouse_event", "UInt", 0x04, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Up
+    }
+}
+
+
 ;ControlClick
-ClickI(x, y, hwnd:="", btn:= "L") {
-    SmartClick(x, y, hwnd, btn, "inactive")
+Click(x, y, hwnd:="", btn := "L", send_mode := "") {
+    SmartClick(x, y, hwnd, btn, send_mode)
 }
 
-Click(x, y, hwnd:="", btn := "L") {
-    SmartClick(x, y, hwnd, btn)
-}
-
-ClickA(x, y, btn := "L") {
-    SmartClick(x, y, WinExist("A"), btn)
+ClickA(x, y, btn := "L", send_mode := "") {
+    Click(x, y, WinExist("A"), btn, send_mode)
 }
 
 ClickBack(x, y, hwnd, btn := "L") {
-    click := {x: x, y: y, hwnd: hwnd, btn: btn}
-    ClickBackEx(click)
+    ClickBackEx({x: x, y: y, hwnd: hwnd, btn: btn})
 }
 
 ClickBackEx(clickArray) {

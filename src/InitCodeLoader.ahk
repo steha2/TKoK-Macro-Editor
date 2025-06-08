@@ -11,6 +11,7 @@ global pl1 := ""
 global pl2 := ""
 global la := ""
 global yMapped := false
+global whenSwitchMinimize := GetIniValue("Settings", "whenSwitchMinimize", 1)
 global switchRunning := 0
 ;----------------------------------------Main Gui---------------------------------------------
 global hMain
@@ -89,6 +90,5 @@ SaveCodeLoaderSettings() {
     WinGetPos, x1, y1,,, ahk_id %hMain%
     SetIniValue("MainGUI", "X", x1)
     SetIniValue("MainGUI", "Y", y1)
-
     SetIniValue("Settings", "yMapped", (yMapped ? "true" : "false"))
 }

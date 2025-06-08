@@ -46,15 +46,36 @@ FormatTimeDiff(seconds) {
     return Format("{:02d}h {:02d}m {:02d}s", hours, minutes, secs)
 }
 
-isDigit(val) {
+IsDigit(val) {
     return !!RegExMatch(val, "^\s*-?\d+(\.\d+)?\s*$")
 }
-isNatural(n) {
+IsNatural(n) {
     return RegExMatch(n, "^\d+$") && (n >= 1)
 }
 IsInteger(val) {
     return val is integer
 }
+
+
+TryEval(expr, dp_mode := "trim") {
+    if RegExMatch(expr, "^[\d+\-*/.() <>=!&|^~]+$") && RegExMatch(expr, "\d") {
+        ;test("EVAL!",expr,mode,FormatDecimal(Eval(expr), mode))
+        return FormatDecimal(Eval(expr), dp_mode)
+    } else {
+        return expr
+    }
+}
+
+ForceEval(expr, dp_mode := "trim") {
+    ; 변수/심볼 제거: 알파벳으로 시작하는 단어를 제거
+    ; 단, 숫자나 연산자 등은 유지
+    expr := RegExReplace(expr, "\b[A-Za-z_]\w*\b", "")
+    ; 공백 정리
+    expr := RegExReplace(expr, "\s+", "")
+    
+    return TryEval(expr, dp_mode)
+}
+
 
 Eval(x) {                              ; non-recursive PRE/POST PROCESSING: I/O forms, numbers, ops, ";"
    Local FORM, FormF, FormI, i, W, y, y1, y2, y3, y4

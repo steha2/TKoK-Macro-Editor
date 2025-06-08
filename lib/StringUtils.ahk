@@ -83,6 +83,12 @@ ExtractVar(vars, key, ByRef outVar, type := "") {
             outVar := val
     }
 }
+
+StrLower(text) {
+    StringLower, out, text
+    return out
+}
+
 ;----------------------------------------------객체 함수-----------------------------------------------
 
 ToKeyLengthSortedArray(object, ascending := false) {

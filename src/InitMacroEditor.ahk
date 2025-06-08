@@ -58,10 +58,11 @@ for index, btn in buttons {
     xPos := btnX + (index - 1) * btnGap
     Gui, macro:Add, Button, % Format("g{} v{} x{} y{} w{} h{}", btn.g, btn.v, xPos, btnY, btnW, btnH), % btn.text
 }
-Gui, macro:Add, Edit, x767 y10 w50 h30 Number Limit4 vLineEdit, 1
+
+Gui, macro:Add, Edit, x767 y10 w50 h30 Number Limit4 vLineEdit, % GetIniValue("MacroGUI", "LineNum", 1)
 Gui, macro:Add, Button, x840 y10 w50 h30 gOnJumpBtn vJumpBtn, Jump
 
-macroWinW := GetIniValue("MacroGUI","W")
+macroWinW := GetIniValue("MacroGUI", "W")
 
 Gui, Font, s14
 Gui, macro:Add, TreeView, x10 y50 w270 h490 vMacroList gOnTreeViewClick
@@ -131,6 +132,9 @@ SaveMacroEditorSettings() {
 
     GuiControlGet, isAutoMerge, macro:, AutoMerge
     SetIniValue("MacroGUI", "isAutoMerge", isAutoMerge)
+
+    GuiControlGet, lineNum, macro:, LineEdit
+    SetIniValue("MacroGUI", "LineNum", lineNum)
 
     WinGetPos, x2, y2,,, ahk_id %hMacro%
     if (x2 > 0)

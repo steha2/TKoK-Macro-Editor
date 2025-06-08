@@ -44,7 +44,6 @@ test2(a:="", b:="", c:="", d:="", e:="", f:="",isTip:=true,isLog:=true) {
 ShowTip(msg, duration := 1500) {
     Tooltip, %msg%
     SetTimer, RemoveToolTip, -%duration%
-    return
 }
 
 RemoveToolTip() {

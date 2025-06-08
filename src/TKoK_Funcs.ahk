@@ -2,8 +2,8 @@
 SendCodeToW3(hwnd := "") {
     if(pl1 != "" && pl2 != "") {
         if(hwnd) {
-            ChatI(pl1,hwnd)
-            ChatI(pl2,hwnd)
+            Chat(pl1, "PI", hwnd)
+            Chat(pl2, "PI", hwnd)
         } else {
             Chat(pl1)
             Chat(pl2)
@@ -18,7 +18,7 @@ SendCodeToW3(hwnd := "") {
 SendAptToW3(hwnd := "") {
     ReadAptFile()
     if(hwnd)
-        ChatI(la, hwnd)
+        Chat(la, "I", hwnd)
     else
         Chat(la)
 }
@@ -110,7 +110,7 @@ LoadSquadI() {
         
         thisHero := squad%A_Index%
         LoadHero(thisHero, client)
-        ChatPI("-qs", client)
+        Chat("-qs", "I", client)
         Sleep, 300
         if (thisHero = "Shadowblade") {
             ClickBackEx([{x:0.976, y:0.879, btn:"R",hwnd:client},{x:0.906, y:0.879, btn:"R"}])
@@ -122,12 +122,12 @@ LoadSquadI() {
     }
     
     if(clients.Length() >= 2)
-        SmartSendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", host, 0, "inactive", true)
+        SendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", "I,NS", host)
     else
-        SmartSendKey("^s {F1} ^1", host, 0, "inactive", true)
-    ChatPI("!dr 10", host)
-    ChatPI("-clear", host)
-    ChatPI("-apt", host)
+        SendKey("^s {F1} ^1", "I,NS" host)
+    Chat("!dr 10", "I", host)
+    Chat("-clear", "I", host)
+    Chat("-apt", "I", host)
 }
 
 LoadSquad(champ := false) {
@@ -171,9 +171,9 @@ LoadSquad(champ := false) {
             SwitchNextW3(loopCount = A_Index)
     }
     if(squad0 > 1)
-        SmartSendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", 0, "", "", true)
+        SendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", "NS")
     else
-        SmartSendKey("^s {F1} ^1", 0, "", "", true)
+        SendKey("^s {F1} ^1", "NS")
     if(champ)
         ChampChat() ;!dr -fog -cdist 
     else

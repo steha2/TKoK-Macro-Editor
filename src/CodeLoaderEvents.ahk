@@ -146,7 +146,6 @@ F7::ClipMouse()
 return
 
 ;Ctrl+Shift+C
-^+N::ChampChat()
 ChampChat() {
     Chat("!dr 10")
     Chat("-fog")
@@ -156,11 +155,12 @@ ChampChat() {
     SendAptToW3()
 }
 
+#If !isRecording
+^+N::ChampChat()
 !+W::SaveW3Pos()
 
-#If !isRecording
-
 ;Alt
+!D::Win_Minimize("A")
 !E::RestoreW3Pos()
 !1::SwitchW3(1)
 !2::SwitchW3(2)

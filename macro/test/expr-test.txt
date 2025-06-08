@@ -1,4 +1,5 @@
-﻿note()
+﻿#send_mode=I# #target=AHK Note#
+note() 
 ;#target:Warcraft III#
 
 chat, -----------extended tests----------
