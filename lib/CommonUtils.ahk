@@ -113,7 +113,8 @@ RunGetHwnd(path, winTitle := "") {
 WaitGetHwnd(winTitle, interval := 100, maxLoop := 50) {
     Loop, %maxLoop% {
         hwnd := WinExist(winTitle)
-        if (hwnd) 
+        WinGetClass, w3Class, ahk_id %hwnd%
+        if (hwnd && w3Class = W3_WINTITLE) 
             return hwnd
         else 
             Sleep, %interval%

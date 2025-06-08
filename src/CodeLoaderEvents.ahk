@@ -165,7 +165,7 @@ ChampChat() {
 !1::SwitchW3(1)
 !2::SwitchW3(2)
 !3::SwitchW3(3)
-!W::TrySwitchNextW3()
+!W::SwitchNextW3()
 !U::MoveOldSaves()
 !T::LoadSquadI()
 !Y::LoadSquad()

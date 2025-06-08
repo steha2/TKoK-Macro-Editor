@@ -102,7 +102,7 @@ LoadSquadI() {
     StringSplit, squad, squadText, `,
     clients := GetClientHwndArray()
     for index, client in clients {
-        SwitchW3(index, false, true, true)
+        SwitchW3(index, false, false, true)
         if (index > 1)
             ShareUnit()
         
@@ -125,7 +125,7 @@ LoadSquadI() {
     }
     
     if(clients.Length() >= 2) {
-        SwitchW3(index, true, true, true)
+        SwitchW3(index, true, false, true)
         SendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", "NS") ;Ignore Space
     } else 
         SendKey("^s {F1} ^1", "NS")

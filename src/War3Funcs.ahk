@@ -37,20 +37,43 @@ ActivateBottomW3() {
     WinActivateBottom, ahk_class Warcraft III
 }
 
-SwitchNextW3(isClip := true, minimizePrev := true) {
+SwitchNextW3(isClip := true, minimizePrev := false) {
     currHwnd := WinExist("A")
-    WinGetTitle, prevTitle, ahk_id %currHwnd%
-    WinGetClass, prevClass, ahk_id %currHwnd%
+    currIndex := GetClientIndex(currHwnd)  ; 현재 창이 CLIENT_TITLE_N인 경우 N을 반환
 
-    if (prevClass = W3_WINTITLE && InStr(prevTitle, CLIENT_TITLE)) {
-        ; 현재 창의 클라이언트 넘버 추출
-        clientNum := StrReplace(prevTitle, CLIENT_TITLE) -1
-        
-        if (clientNum < 1) {
-            WinGet, w3Count, List, ahk_class Warcraft III
-            clientNum := w3Count
+    if (currIndex) {
+        clients := GetClientHwndArray()
+        maxIndex := clients.Length()
+        nextIndex := ""
+        Loop, %maxIndex% {
+            i := Mod(currIndex + A_Index - 1, maxIndex) + 1
+            if (clients.HasKey(i) && clients[i]) {
+                nextIndex := i
+                break
+            }
         }
-        SwitchW3(clientNum, isClip, minimizePrev)
+        if (nextIndex != "")
+            SwitchW3(nextIndex, isClip, minimizePrev)
+    } else {
+        ActivateBottomW3()
+    }
+
+    ; 타이머 관리
+    switchRunning--
+    if (switchRunning < 0)
+        switchRunning := 0
+}
+
+
+
+SwitchNextW32(isClip := true, minimizePrev := false) {
+    currHwnd := WinExist("A")
+    currIndex := GetClientIndex(currHwnd)
+    if (currIndex) { ; CLIENT_TITLE_N 인 경우
+        clients := GetClientHwndArray() ; 클라이언트1, 3번이 있으면 [hwnd1] [""] [hwnd3]    
+        For index, client in clients { 
+
+        }
     } else {
         ActivateBottomW3()
     }
@@ -60,7 +83,7 @@ SwitchNextW3(isClip := true, minimizePrev := true) {
         switchRunning := 0
 }
 
-SwitchW3(clientNum := 1, isClip := true, minimizePrev := true, cursorToCenter := false) {
+SwitchW3(clientNum := 1, isClip := true, minimizePrev := false, cursorToCenter := false) {
     currHwnd := WinExist("A")
     nextHwnd := WinExist(CLIENT_TITLE . clientNum)
     WinGetClass, prevClass, ahk_id %currHwnd%
@@ -75,7 +98,7 @@ SwitchW3(clientNum := 1, isClip := true, minimizePrev := true, cursorToCenter :=
             WinMinimize, ahk_id %currHwnd%
         if (isClip)
             isClip := ClipMouse(nextHwnd)
-    } else if (currIsW3) { ; 현재 창이 Wacraft III 기본 타이틀 인 경우
+    } else if (currIsW3 && !GetClientIndex(currHwnd)) { ; 창 제목이 Warcraft III 기본 인경우
         WinSetTitle, ahk_id %currHwnd%,,% CLIENT_TITLE . clientNum
     } else {
         ActivateBottomW3()
@@ -169,8 +192,7 @@ ExecMultiW3(num := 0) {
             ExecJoinW3(A_Index)
         }
     }
-
-    Sleep, numW3 = 1 ? 3000 : 1000
+    Sleep, numW3 = 1 ? 2500 : 1000
     SendKey("{alt down}s{alt up}", "I", hostHwnd)
 }
 
@@ -200,7 +222,7 @@ ExecJoinW3(num := "") {
     Loop, 4
         SendKey("{Tab}", "I", hwnd, 100)
     SendKey("j", "I", hwnd)
-    WinMinimize, ahk_id %hwnd%
+    ;WinMinimize, ahk_id %hwnd%
 }
 
 CloseAllW3() {
@@ -251,6 +273,16 @@ WaitUntilNotWhiteOrBlack(hwnd, timeout := 8000) {
     }
 }
 
+GetClientIndex(hwnd) {
+    WinGetTitle, title, ahk_id %hwnd%
+    if (SubStr(title, 1, StrLen(CLIENT_TITLE)) = CLIENT_TITLE) {
+        indexStr := SubStr(title, StrLen(CLIENT_TITLE) + 1)
+        if (indexStr ~= "^\d+$")
+            return indexStr + 0
+    }
+    return ""
+}
+
 GetClientHwndArray() {
     WinGet, w3List, List, ahk_class Warcraft III
     clients := []
@@ -258,19 +290,13 @@ GetClientHwndArray() {
     Loop, %w3List%
     {
         hwnd := w3List%A_Index%
-        WinGetTitle, title, ahk_id %hwnd%
-
-        ; CLIENT_TITLE로 시작하면 숫자 추출
-        if (SubStr(title, 1, StrLen(CLIENT_TITLE)) = CLIENT_TITLE) {
-            indexStr := SubStr(title, StrLen(CLIENT_TITLE) + 1)
-            if (indexStr ~= "^\d+$") {
-                index := indexStr + 0  ; 문자열을 숫자로
-                clients[index] := hwnd
-            }
-        }
+        index := GetClientIndex(hwnd)
+        if (index != "")
+            clients[index] := hwnd
     }
     return clients
 }
+
 
 !Numpad5::ExecHostW3()
 !Numpad6::ExecJoinW3()
