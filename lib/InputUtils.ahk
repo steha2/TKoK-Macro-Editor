@@ -121,13 +121,13 @@ SmartClick_ControlClick(x, y, hwnd, btn, coord_mode := "", coord_type := "") {
 SmartClick_MouseClick(x, y, hwnd, btn, coord_mode := "", coord_type := "") {
     CalcCoords(x, y, hwnd, coord_mode, coord_type)
     MouseMove, %x%, %y%
-    Sleep, 60
-
     if (btn = "R") {
+        Sleep, 60
         DllCall("mouse_event", "UInt", 0x08, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Down
         Sleep, 45
         DllCall("mouse_event", "UInt", 0x10, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Right Up
-    } else {
+    } else if (btn = "L") {
+        Sleep, 60
         DllCall("mouse_event", "UInt", 0x02, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Down
         Sleep, 45
         DllCall("mouse_event", "UInt", 0x04, "UInt", 0, "UInt", 0, "UInt", 0, "UPtr", 0) ; Left Up
@@ -148,7 +148,7 @@ ClickBack(x, y, hwnd, btn := "L") {
     ClickBackEx({x: x, y: y, hwnd: hwnd, btn: btn})
 }
 
-ClickBackEx(clickArray) {
+ClickBackEx2(clickArray) {
     static currentHwnd := ""
     
     if (!IsObject(clickArray))
@@ -160,8 +160,8 @@ ClickBackEx(clickArray) {
     CoordMode, Mouse, Screen
     MouseGetPos, origX, origY
     WinGet, origHwnd, ID, A
-    WinGet, winState, MinMax, ahk_id %hwnd%
-    wasMinimized := (winState == 2)
+
+    minimizedArray := []
 
     for index, click in clickArray {
         ; hwnd가 있으면 currentHwnd 갱신
@@ -172,6 +172,12 @@ ClickBackEx(clickArray) {
             ShowTip("Invalid hwnd at index " index)
             continue
         }
+
+        WinGet, winState, MinMax, ahk_id %currentHwnd%
+        wasMinimized := (winState == 2)
+
+        if(minimizedArray)
+        
         if(WinExist("A") != currentHwnd)
             WinActivateWait(currentHwnd)
 
@@ -189,5 +195,65 @@ ClickBackEx(clickArray) {
     if (wasMinimized) {
         WinMinimize, ahk_id %hwnd%
     }
+    BlockInput, Off
+}
+
+ClickBackEx(clickArray) {
+    static currentHwnd := ""
+
+    if (!IsObject(clickArray))
+        return ShowTip("clickArray is not an object")
+    if (!clickArray.HasKey(1))  ; 단일 객체일 경우 배열처럼 래핑
+        clickArray := [clickArray]
+
+    BlockInput, On
+    CoordMode, Mouse, Screen
+    MouseGetPos, origX, origY
+    WinGet, origHwnd, ID, A
+
+    minimizedArray := []
+
+    for index, click in clickArray {
+        ; hwnd가 있으면 currentHwnd 갱신
+        if (click.HasKey("hwnd")) {
+            currentHwnd := click.hwnd
+        }
+        if (!currentHwnd || !WinExist("ahk_id " currentHwnd)) {
+            ShowTip("Invalid hwnd at index " index)
+            continue
+        }
+
+        WinGet, winState, MinMax, ahk_id %currentHwnd%
+        wasMinimized := (winState == 2)
+
+        ; 만약 창이 최소화 상태였다면 목록에 추가
+        if (wasMinimized)
+            minimizedArray.push(currentHwnd)
+
+        ; 현재 활성 윈도우가 아니라면 대상 창 활성화
+        if (WinExist("A") != currentHwnd)
+            WinActivateWait(currentHwnd)
+
+        btn := click.HasKey("btn") ? click.btn : "L"
+        Click(click.x, click.y, currentHwnd, btn)
+    }
+
+    ; 마우스 위치 복귀
+    CoordMode, Mouse, Screen
+    MouseMove, %origX%, %origY%, 0
+
+    ; 작업 전 활성화되었던 창 복귀
+    if (WinExist("ahk_id " . origHwnd)) {
+        WinActivate, ahk_id %origHwnd%
+    }
+
+    ; 최소화 상태였던 창들 다시 최소화 처리
+    for index, hwnd in minimizedArray {
+        if (WinExist("ahk_id " hwnd)) {
+            WinMinimize, ahk_id %hwnd%
+        }
+    }
+
+    currentHwnd := ""
     BlockInput, Off
 }

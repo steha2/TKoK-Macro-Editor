@@ -2,11 +2,11 @@
 SendCodeToW3(hwnd := "") {
     if(pl1 != "" && pl2 != "") {
         if(hwnd) {
-            Chat(pl1, "PI", hwnd)
-            Chat(pl2, "PI", hwnd)
+            Chat(pl1, "P,I", hwnd)
+            Chat(pl2, "P,I", hwnd)
         } else {
-            Chat(pl1)
-            Chat(pl2)
+            Chat(pl1, "P")
+            Chat(pl2, "P")
         }
         Sleep, 1500
         SendAptToW3(hwnd)
@@ -18,11 +18,10 @@ SendCodeToW3(hwnd := "") {
 SendAptToW3(hwnd := "") {
     ReadAptFile()
     if(hwnd)
-        Chat(la, "I", hwnd)
+        Chat(la, "P,I", hwnd)
     else
-        Chat(la)
+        Chat(la, "P")
 }
-
 
 ; Account 파일 중 가장 최신 것에서 -la 코드 추출
 ReadAptFile() {
@@ -101,33 +100,38 @@ HeroInfoToText(info) {
 LoadSquadI() {
     GuiControlGet, squadText, main:, SquadField
     StringSplit, squad, squadText, `,
-
     clients := GetClientHwndArray()
-    host := client[1]
     for index, client in clients {
+        SwitchW3(index, false, true, true)
         if (index > 1)
-            ShareUnit(client)
+            ShareUnit()
         
         thisHero := squad%A_Index%
-        LoadHero(thisHero, client)
-        Chat("-qs", "I", client)
+        LoadHero(thisHero)
+        Chat("-qs", "P")
         Sleep, 300
+        
         if (thisHero = "Shadowblade") {
-            ClickBackEx([{x:0.976, y:0.879, btn:"R",hwnd:client},{x:0.906, y:0.879, btn:"R"}])
+            ClickA(0.976, 0.879, "R")
+            ClickA(0.906, 0.879, "R")
+            Sleep, 500
         } else if (thisHero = "Barbarian") {
-            ClickBack(0.801, 0.953, client, "R")
+            ClickA(0.801, 0.953, "R")
+            Sleep, 500 
         } else if (thisHero = "Chaotic Knight") {
-            ClickBack(0.797, 0.954, client, "R")
+            ClickA(0.797, 0.954, "R")
+            Sleep, 500 
         }
     }
     
-    if(clients.Length() >= 2)
-        SendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", "I,NS", host)
-    else
-        SendKey("^s {F1} ^1", "I,NS" host)
-    Chat("!dr 10", "I", host)
-    Chat("-clear", "I", host)
-    Chat("-apt", "I", host)
+    if(clients.Length() >= 2) {
+        SwitchW3(index, true, true, true)
+        SendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", "NS") ;Ignore Space
+    } else 
+        SendKey("^s {F1} ^1", "NS")
+    Chat("!dr 10")
+    Chat("-clear", "P")
+    Chat("-apt", "P")
 }
 
 LoadSquad(champ := false) {

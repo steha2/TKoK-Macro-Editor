@@ -92,13 +92,15 @@ WinActivateWait(winTitle) {
 ; → force: 무조건 클립할지 여부. false일 경우 toggle처럼 동작.
 UnclipMouse() {
     DllCall("ClipCursor", "Ptr", 0)
+    return false
 }
 
+; unclip시 false clip시 true
 ToggleClipMouse(hwnd := "") {
     if (IsMouseClipped())
-        UnclipMouse()
+        return UnclipMouse()
     else 
-        ClipMouse(hwnd) ; 무조건 클립 실행
+        return ClipMouse(hwnd) ; 무조건 클립 실행
 }
 
 ClipMouse(hwnd := "") {
@@ -115,6 +117,7 @@ ClipMouse(hwnd := "") {
     y2 := y1 + NumGet(rect, 12, "Int") ; height
 
     ClipCursor(x1, y1, x2, y2)
+    return true
 }
 
 
