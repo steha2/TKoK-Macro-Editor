@@ -36,7 +36,7 @@ Gui, macro:New, +hwndhMacro
 Gui, Font, s12, Consolas
 
 ; === 버튼 속성 정의 ===
-btnW := 65     ; 버튼 너비
+btnW := 67     ; 버튼 너비
 btnH := 30     ; 버튼 높이
 btnX := 10     ; 시작 X좌표
 btnY := 10     ; Y좌표 고정
@@ -46,7 +46,7 @@ buttons := []  ; 빈 배열 생성
 buttons.Push({text: "▶ Run",   g: "ToggleMacro",   v: "ExecBtn"})
 buttons.Push({text: "Record",   g: "ToggleRecord",  v: "RecordBtn"})
 buttons.Push({text: "✚ New",      g: "AddMacro",      v: "AddBtn"})
-buttons.Push({text: "💾 Save",     g: "SaveMacro",     v: "SaveBtn"})
+buttons.Push({text: "◆ Save",     g: "SaveMacro",     v: "SaveBtn"})
 buttons.Push({text: "Rename",   g: "RenameMacro",   v: "RenameBtn"})
 buttons.Push({text: "Delete",   g: "DeleteMacro",   v: "DeleteBtn"})
 buttons.Push({text: "🡅 Back",     g: "BackMacro",     v: "BackBtn"})

@@ -240,6 +240,7 @@ Run_(mode, path) {
     }
 }
 
+
 ExecFunc(fnName, argsStr) {
     ; 함수 객체 가져오기
     fn := Func(fnName)

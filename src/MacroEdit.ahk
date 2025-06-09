@@ -230,6 +230,15 @@ CoordTracking() {
         }
         GuiControl, macro:, CoordTrack, %coordStr%
     }
+
+    ; 저장 상태 검사: EditMacro 현재 내용과 origContent 비교
+    GuiControlGet, currContent, macro:, EditMacro
+    global origContent  ; origContent는 전역 변수로 선언되어 있어야 함
+    if (currContent != origContent) {
+        GuiControl, macro:, SaveBtn, ◇ Save
+    } else {
+        GuiControl, macro:, SaveBtn, ◆ Save
+    }
     CoordTrackingRunning := false
 }
 
