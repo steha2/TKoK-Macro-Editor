@@ -99,11 +99,11 @@ TrySwitchNextW3() {
 
 ShareUnit(hwnd := "") {
     if(hwnd) {
-        SendKey("{F11}", "C", hwnd, 700)
+        SendKey("{F11}", "C", hwnd, 300)
         ClickBack(0.599,0.204, hwnd)
         SendKey("{Enter}", "C", hwnd)
     } else {
-        Send1("{F11}", 700)
+        Send1("{F11}", 300)
         ClickA(0.599,0.204)
         SendKey("{Enter}")
     }
@@ -144,14 +144,10 @@ ExecMultiW3(num := 0) {
         IfMsgBox Cancel
             return false
         IfMsgBox No 
-        {
-            CloseAllW3()
-            Sleep, 300
-            return true
-        }
-        ; IfMsgBox Yes (또는 아무 처리 없이 아래로 흐름 유지)
+            return CloseAllW3()
+        
         CloseAllW3()
-        Sleep, 300
+        Sleep, 3000
     }
 
     if(num > 0){
@@ -173,7 +169,9 @@ ExecMultiW3(num := 0) {
             ExecJoinW3(A_Index)
         }
     }
-    WinRaiseWithoutFocus(hostHwnd)
+    currHwnd := WinExist("A")
+    WinActivate, ahk_id %hostHwnd%
+    WinActivate, ahk_id %currhwnd%
     Sleep, numW3 = 1 ? 2500 : 1000
     SendKey("{alt down}s{alt up}", "C", hostHwnd)
 }
@@ -209,20 +207,29 @@ ExecJoinW3(num := "") {
 
 CloseAllW3() {
     WinGet, list, List, ahk_class Warcraft III
-    Loop, %list%
-    {
+    w3List := []
+    
+    Loop, %list% {
         hwnd := list%A_Index%
-        if(hwnd)
-            WinClose, ahk_id %hwnd%
+        if (WinExist("ahk_id " . hwnd)) {
+            if (GetClientIndex(hwnd) = 1)
+                w3List.InsertAt(1, hwnd)  ; 제일 앞에 넣기
+            else
+                w3List.Push(hwnd)         ; 뒤에 추가
+        }
     }
-    Sleep, 300
-    Loop, %list%
-    {
-        hwnd := list%A_Index%
-        if(WinExist("ahk_id " . hwnd))
-            SendKey("x", "C", hwnd)
+
+    for index, hwnd in w3List
+        WinClose, ahk_id %hwnd%
+
+    for index, hwnd in w3List {
+        if(WinExist("ahk_id " . hwnd)) {
+            Sleep, 300
+            SendKey("x", "C", hwnd)  ; 강제 종료
+        }
     }
 }
+
 
 WaitUntilNotWhiteOrBlack(hwnd, timeout := 8000) {
     start := A_TickCount

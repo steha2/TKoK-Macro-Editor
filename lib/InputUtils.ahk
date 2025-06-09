@@ -4,7 +4,7 @@ Chat(text, mode := "", hwnd := "") {
         enterMode := m1 + 0
 
     if (InStr(mode, "NS"))
-        text := StrReplace(key, " ")
+        text := StrReplace(text, " ")
 
     ; 앞 Enter
     if (enterMode = 1 || enterMode = 3)
@@ -40,6 +40,9 @@ SendKey(key, mode := "", hwnd := "", delay := 0) {
 
     if (delay < 0)
         Sleep, -delay
+
+    if (InStr(mode, "NS"))
+        key := StrReplace(key, " ")
 
     isControl := InStr(mode, "C")
     isRaw := InStr(mode, "R")

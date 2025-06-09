@@ -8,7 +8,7 @@ SendCodeToW3(hwnd := "") {
             Chat(pl1, "P")
             Chat(pl2, "P")
         }
-        Sleep, 1500
+        Sleep, 1000
         SendAptToW3(hwnd)
     } else {
         MsgBox, 코드를 입력하지 못했습니다.
@@ -109,7 +109,6 @@ LoadSquadI() {
         thisHero := squad%A_Index%
         LoadHero(thisHero)
         Chat("-qs", "P")
-        Sleep, 300
         
         if (thisHero = "Shadowblade") {
             ClickA(0.976, 0.879, "R")
@@ -119,14 +118,15 @@ LoadSquadI() {
             ClickA(0.801, 0.953, "R")
             Sleep, 500 
         } else if (thisHero = "Chaotic Knight") {
-            ClickA(0.797, 0.954, "R")
-            Sleep, 500 
+            ;ClickA(0.797, 0.954, "R")
+            ;Sleep, 500 
         }
     }
     
     if(clients.Length() >= 2) {
         SwitchW3(1, true, false, true)
-        SendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", "NS") ;Ignore Space
+        Sleep, 200
+        SendKey("^s {F1} {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", "NS") ;Ignore Space
     } else 
         SendKey("^s {F1} ^1", "NS")
     Chat("!dr 10")
