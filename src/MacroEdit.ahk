@@ -71,7 +71,7 @@ LogToEdit(line, k := "", isModifier := false) {
 
 ; 🔁 핫키 등록/해제
 SetHotkey(enable := false) {
-    excludedKeys := "MButton,WheelDown,WheelUp,WheelLeft,WheelRight,Pause,ScrollLock"
+    excludedKeys := "MButton,WheelDown,WheelUp,WheelLeft,WheelRight,Pause,ScrollLock,PrintScreen"
     mode := enable ? "On" : "Off"
 
     Loop, 254 {

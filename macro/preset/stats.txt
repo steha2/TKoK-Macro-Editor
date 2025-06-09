@@ -1,4 +1,4 @@
-﻿#target:Warcraft III#
+﻿Exec, coords
 
 Exec, %out_dir%\%part1%-equip
 

@@ -26,8 +26,15 @@ GetLatestFile(folderPath, filePattern := "*", nameRegex := "") {
     return latest
 }
 
-IsFile(path) {
-    return FileExist(path) && !InStr(FileExist(path), "D")
+IsFile(path, ext := "") {
+    if !(FileExist(path) && !InStr(FileExist(path), "D"))
+        return false
+
+    if (ext = "")
+        return true  ; 확장자 검사 없이 존재하는 파일이면 true
+
+    SplitPath, path,,, fileExt
+    return (LTrim(StrLower(ext), ".") = StrLower(fileExt))
 }
 
 IsDirectory(path) {

@@ -1,8 +1,9 @@
-﻿#if:stat_open|1#
+﻿#if:is_open|1#
 Send, {F1}
 Send, n #delay:600#
 Send, {Numpad5}
 Wait, 200
-#if#
+#end_if#
+
 Chat, -spsi %spsi%
 Send, %stat%

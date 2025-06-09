@@ -28,11 +28,12 @@ ExecMacro(scriptText, vars, current_path) {
         ResolveMarker(line, tempVars, ["if", "force", "end_if"])
         if (tempVars.HasKey("end_if")) {
             vars.Delete("if")
-        } else if(tempVars.HasKey("if")) {
+        } else if(tempVars.HasKey("if") && vars.if_mode = "block") {
             vars.if := tempVars.if
-            if((StrLower(tempVars.if) = "false"))
-                tempVars.if := false
         }
+
+        if((StrLower(tempVars.if) = "false"))
+                tempVars.if := false
 
         ; 조건 확인: force가 없고, skip_mode=vars 이며, start_line 전이면 건너뛰기
         if (!tempVars.HasKey("force")) {
@@ -43,7 +44,8 @@ ExecMacro(scriptText, vars, current_path) {
                 continue
         }
         
-        ; 휘발성 변수 초기화
+        ; 단일 라인 변수 초기화
+        
         vars.rep := 1
         vars.wait := 0
         vars.dp_mode := "trim"
@@ -65,11 +67,11 @@ ExecMacro(scriptText, vars, current_path) {
         Loop, % vars.rep
         {
             ExecSingleCommand(cmd, vars)
-            if(cmd != "") {
+            if(cmd != "" && vars.HasKey("limit")) {
                 if(A_Index = 1 || vars.limit_mode != "line")
                     vars.limit--
             }
-            if (ShouldBreak(vars))
+            if (ShouldBreak(vars, "delay"))
                 break
         }
     }
@@ -77,7 +79,7 @@ ExecMacro(scriptText, vars, current_path) {
     ; ShowTip("--- Macro End ---`n,실행중인 매크로 수 : " runMacroCount)
 }
 
-ShouldBreak(vars, timeKey := "delay") {
+ShouldBreak(vars, timeKey) {
     if (!CheckAbortAndSleep(vars[timeKey]))
         return true
 
@@ -159,7 +161,6 @@ ResolveExpr(line, vars) {
         fullMatch := m
         rawExpr := Trim(m1)
         result := EvaluateExpr(rawExpr, vars)
-        ; test(line, fullMatch, result, pos)
         line := StrReplace(line, fullMatch, result)
         pos := found + StrLen(result)
     }
@@ -194,14 +195,10 @@ HandleKeyCommand(key, vars, mode := "") {
     if (vars.target && !vars.target_hwnd)
         return
 
-    mode .= vars.send_mode
-
-    if (InStr(mode, "C", 1)) {
-        Chat(key, mode, vars.target_hwnd)
-    } else if (InStr(mode, "R", 1)) {
-        SendRawKey(key, mode, vars.target_hwnd)
+    if(mode = "H") {
+        Chat(key, vars.send_mode, vars.target_hwnd)
     } else {
-        SendKey(key, mode, vars.target_hwnd)
+        SendKey(key, mode . vars.send_mode, vars.target_hwnd)
     }
 }
 
@@ -215,7 +212,7 @@ ExecSingleCommand(command, vars) {
     } else if RegExMatch(command, "i)^Send\s*,?\s*(.*)$", m) {
         HandleKeyCommand(m1, vars)
     } else if RegExMatch(command, "i)^Chat\s*,?\s*(.*)$", m) {
-        HandleKeyCommand(m1, vars, "C")
+        HandleKeyCommand(m1, vars, "H")
     } else if RegExMatch(command, "i)^(Sleep|Wait|Delay)\s*,?\s*(\d*)", m) {
         if(isDigit(m2))
             vars.delay := m2
@@ -271,8 +268,6 @@ ExecMacroFile(macroFilePath, vars) {
         try1 := GetContainingFolder(vars.current_path) . "\" . macroFilePath
         try2 := GetContainingFolder(vars.base_path) . "\" . macroFilePath
         try3 := MACRO_DIR . "\" . macroFilePath
-
-        ;test(macroFilePath,try1,try2,try3,vars)
 
         if (IsFile(try1))
             fullPath := try1

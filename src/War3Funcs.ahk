@@ -57,26 +57,6 @@ SwitchNextW3(isClip := true, minimizePrev := false) {
     } else {
         ActivateBottomW3()
     }
-
-    ; 타이머 관리
-    switchRunning--
-    if (switchRunning < 0)
-        switchRunning := 0
-}
-
-
-
-SwitchNextW32(isClip := true, minimizePrev := false) {
-    currHwnd := WinExist("A")
-    currIndex := GetClientIndex(currHwnd)
-    if (currIndex) { ; CLIENT_TITLE_N 인 경우
-        clients := GetClientHwndArray() ; 클라이언트1, 3번이 있으면 [hwnd1] [""] [hwnd3]    
-        For index, client in clients { 
-
-        }
-    } else {
-        ActivateBottomW3()
-    }
     ; 타이머 관리
     switchRunning--
     if (switchRunning < 0)
@@ -119,11 +99,11 @@ TrySwitchNextW3() {
 
 ShareUnit(hwnd := "") {
     if(hwnd) {
-        SendKey("{F11}", "I", hwnd, 700)
+        SendKey("{F11}", "C", hwnd, 700)
         ClickBack(0.599,0.204, hwnd)
-        SendKey("{Enter}", "I", hwnd)
+        SendKey("{Enter}", "C", hwnd)
     } else {
-        SendKeyA("{F11}", 700)
+        Send1("{F11}", 700)
         ClickA(0.599,0.204)
         SendKey("{Enter}")
     }
@@ -193,7 +173,7 @@ ExecMultiW3(num := 0) {
         }
     }
     Sleep, numW3 = 1 ? 2500 : 1000
-    SendKey("{alt down}s{alt up}", "I", hostHwnd)
+    SendKey("{alt down}s{alt up}", "C", hostHwnd)
 }
 
 ;비활성 명령으로 실행
@@ -202,8 +182,8 @@ ExecHostW3() {
     if(!hwnd)
         return
     RestoreW3Pos(hwnd)
-    SendKey("l", "I", hwnd, 2500)
-    SendKey("c", "I", hwnd, 2500)
+    SendKey("l", "C", hwnd, 2500)
+    SendKey("c", "C", hwnd, 2500)
 
     speed := GetIniValue("Settings", "speed")
     if(speed = 0) {
@@ -211,17 +191,17 @@ ExecHostW3() {
     } else if (speed = 1) {
         ClickBack(0.192, 0.160, hwnd)
     }
-    SendKey("c", "I", hwnd)
+    SendKey("c", "C", hwnd)
     return hwnd
 }
 
 ExecJoinW3(num := "") {
     hwnd := ExecW3(CLIENT_TITLE . num)
-    SendKey("l", "I", hwnd, 2500)
+    SendKey("l", "C", hwnd, 2500)
     ;ClickBack(0.4, 0.3, hwnd)
     Loop, 4
-        SendKey("{Tab}", "I", hwnd, 100)
-    SendKey("j", "I", hwnd)
+        SendKey("{Tab}", "C", hwnd, 100)
+    SendKey("j", "C", hwnd)
     ;WinMinimize, ahk_id %hwnd%
 }
 
@@ -238,7 +218,7 @@ CloseAllW3() {
     {
         hwnd := list%A_Index%
         if(WinExist("ahk_id " . hwnd))
-            SendKey("x", "I", hwnd)
+            SendKey("x", "C", hwnd)
     }
 }
 
@@ -300,10 +280,10 @@ GetClientHwndArray() {
 
 !Numpad5::ExecHostW3()
 !Numpad6::ExecJoinW3()
-!Numpad7::SendKey("s", "I", WinExist("ahk_class Warcraft III"))
+!Numpad7::SendKey("s", "C", WinExist("ahk_class Warcraft III"))
 !Numpad8::
-SendKey("{Enter}", "I", WinExist("ahk_class Warcraft III"),100)
-SendKey("asdf", "I", WinExist("ahk_class Warcraft III"),100)
-SendKey("{ctrl down}v{ctrl up}", "I", WinExist("ahk_class Warcraft III"),100)
-SendKey("{Enter}", "I", WinExist("ahk_class Warcraft III"))
+SendKey("{Enter}", "C", WinExist("ahk_class Warcraft III"),100)
+SendKey("asdf", "C", WinExist("ahk_class Warcraft III"),100)
+SendKey("{ctrl down}v{ctrl up}", "C", WinExist("ahk_class Warcraft III"),100)
+SendKey("{Enter}", "C", WinExist("ahk_class Warcraft III"))
 return

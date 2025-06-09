@@ -1,4 +1,12 @@
 ; --------------------------------- 문자 함수 ---------------------------------
+
+RemoveChars(text, chars) {
+    Loop, Parse, text
+        text := StrReplace(text, A_LoopField)
+    return text
+}
+
+
 StrCompare(a, b) {
     StringLower, aLower, a
     StringLower, bLower, b
@@ -54,7 +62,6 @@ StrJoin(arr, delim := "`n") {
 }
 
 JoinLines(arr) {
-    test(arr.Length())
     return arr.Length() ? arr.Join("`r`n") . "`r`n" : ""
 }
 

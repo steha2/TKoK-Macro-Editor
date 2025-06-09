@@ -163,8 +163,7 @@ AddMacro:
     GuiControl, macro:Focus, EditMacro
 return
 
-SaveMacro:
-    GuiControlGet, content, macro:, EditMacro
+SaveMacroFile(content, path) {
     isEmpty := Trim(content, "`n`t ") = ""
     isDir := IsDirectory(macroPath)
 
@@ -182,12 +181,17 @@ SaveMacro:
     ; 나머지 경우: 기존 파일 덮어쓰기
     FileDelete, %macroPath%
     FileAppend, %content%, %macroPath%
-    ShowTip("저장 완료: " . macroPath)
+    ShowTip("매크로 저장 완료:`n" . macroPath)
+}
+
+SaveMacro:
+GuiControlGet, content, macro:, EditMacro
+SaveMacroFile(content, macroPath)
 return
 
 ToggleMacro:
     DisableShortTime("ExecBtn")
-    if (runMacroCount > 0) {
+    if (runMacroCount > 0 || isRecording) {
         macroAbortRequested := true
     } else if (runMacroCount < 1) {
         SetTimer, ToggleMacroImpl, -1
@@ -265,15 +269,36 @@ EnableGuiControl(ctrlName, guiName := "macro") {
 ConfirmNotSaved() {
     GuiControlGet, currentText, macro:, EditMacro
     if (currentText != origContent) {
-        MsgBox, 4, 저장되지 않음, 변경 내용을 저장하지 않고 진행합니까?
+        showDiff := GetFirstDiffPreview(origContent, currentText)
+        MsgBox, 4, 저장되지 않음, 변경 내용이 감지되었습니다:`n`n%showDiff%`n`n저장하지 않고 진행합니까?
         IfMsgBox, No
             return false
-        
+
         origContent := ""
-        GuiControl, macro:, EditMacro, 
+        GuiControl, macro:, EditMacro,
     }
     return true
 }
+
+GetFirstDiffPreview(orig, curr, context := 20) {
+    minLen := Min(StrLen(orig), StrLen(curr))
+    loop % minLen {
+        i := A_Index
+        if (SubStr(orig, i, 1) != SubStr(curr, i, 1)) {
+            break
+        }
+    }
+
+    ; 첫 번째 차이점 위치 기준으로 양쪽 일부 텍스트 미리보기
+    i := i ? i : minLen + 1
+    start := Max(1, i - context)
+    preview1 := SubStr(orig, start, context * 2)
+    preview2 := SubStr(curr, start, context * 2)
+
+    ; 보기 쉽게 정리
+    return "원본:`n" preview1 "`n`n현재:`n" preview2
+}
+
 
 JumpToLine(lineNum){
     GuiControlGet, content, macro:, EditMacro
@@ -287,6 +312,11 @@ JumpToLine(lineNum){
     }
     SendKey("+{End}")
 }
+
+OnNoteBtn:
+    GuiControlGet, content, macro:, EditMacro
+    Note(content, macroPath)
+return
 
 OnOverlayBtn:
     GuiControlGet, btnNum, overlayBtn:, %A_GuiControl%
@@ -325,9 +355,36 @@ OnJumpBtn:
     JumpToLine(line)
 return
 
-Insert up::Gosub, ToggleMacro
-Pause up::Gosub, ToggleRecord
+SaveNote() {
+    GuiControlGet, noteContent, SimpleNote:, NoteEdit
+    WinGetTitle, filePath, ahk_id %hNote%
+
+    ; 파일 경로가 없거나 확장자 없으면 다이얼로그
+    if (!IsFile(filePath, "txt")) {
+        FileSelectFile, selectedPath, S16, , 저장할 파일을 선택하세요, 텍스트 파일 (*.txt)
+        if (!selectedPath)
+            return  ; 사용자가 취소함
+
+        filePath := selectedPath
+        AppendExt(filePath)
+        WinSetTitle, ahk_id %hNote%, , %filePath%  ; 창 제목도 갱신
+    }
+    FileDelete, %filePath%
+    FileAppend, %noteContent%, %filePath%
+    ShowTip("Note 저장 완료:`n" . filePath)
+
+    ; 매크로 에디터와 공유된 경우 동기화
+    if (macroPath = filePath) {
+        origContent := noteContent
+        GuiControl, macro:, EditMacro, %noteContent%
+    }
+}
+
+
+
+PrintScreen up::Gosub, ToggleMacro
 ScrollLock up::Gosub, BackMacro
+Pause up::Gosub, ToggleRecord
 
 #If !isRecording && runningMacroCount <= 0
 !F1::ToggleOverlay()
@@ -346,12 +403,17 @@ return
 !F3::Gosub, BackMacro
 
 #If IsTargetWindow("Macro Editor")
-^S:: Gosub, SaveMacro
+^S::Gosub, SaveMacro
+!N::Note()
+
+#If WinActive("ahk_id " hNote)
+^S::SaveNote()
+!N::Note()
 
 #If !isLaunchedByMain
 ^+R::
     SaveMacroEditorSettings()
     reload
 return
-
 #If
+

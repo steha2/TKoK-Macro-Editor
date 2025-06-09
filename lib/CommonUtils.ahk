@@ -69,15 +69,17 @@ Confirm(msg, title:="확인") {
     return true
 }
 
-Note(newText := "", isAppend := false) {
+Note(newText := "", title := "", isAppend := false) {
     static isCreated := false
-    static NoteEdit
+    global NoteEdit
+
     ; GUI 없으면 생성
     if (!isCreated) {
         Gui, SimpleNote: New
-        Gui, SimpleNote: +Resize
+        Gui, SimpleNote: +Resize +HwndhNote  ; << 핸들 저장
         Gui, SimpleNote: Margin, 10, 10
-        Gui, SimpleNote: Add, Edit, vNoteEdit w700 h500 WantTab
+        Gui, SimpleNote: Font, 16s, Consolas
+        Gui, SimpleNote: Add, Edit, vNoteEdit w600 h500 WantTab
         isCreated := true
     }
 
@@ -87,20 +89,20 @@ Note(newText := "", isAppend := false) {
     }
     GuiControl, SimpleNote:, NoteEdit, %newText%
 
-    ; 창이 이미 떠 있지 않다면 띄우기
+    ; 창이 떠있지 않다면 띄우기
     WinGet, existingID, ID, ahk_gui SimpleNote
     if (!existingID) {
-        Gui, SimpleNote: Show,, AHK Note
+        Gui, SimpleNote: Show,, % title ? title : "AHK Note"
     }
-
     return
 
-    ; 닫기 버튼 핸들러
     SimpleNoteGuiClose:
         Gui, SimpleNote:Destroy
         isCreated := false
+        hNote := ""
     return
 }
+
 
 RunGetHwnd(path, winTitle := "") {
     Run, *RunAs %path%

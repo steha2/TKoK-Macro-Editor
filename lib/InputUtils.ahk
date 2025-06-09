@@ -1,78 +1,72 @@
-Chat(text, send_mode := "", hwnd := "") {
-   if (InStr(send_mode, "P", 1)) {
-        ChatPaste(text, send_mode, hwnd)
-   } else {
-        ChatRaw(text, send_mode, hwnd)
-   }
+Chat(text, mode := "", hwnd := "") {
+    enterMode := 3  ; 기본 앞뒤 Enter
+    if (RegExMatch(mode, "E(\d)", m))
+        enterMode := m1 + 0
+
+    if (InStr(mode, "NS"))
+        text := StrReplace(key, " ")
+
+    ; 앞 Enter
+    if (enterMode = 1 || enterMode = 3)
+        SendKey("{Enter}", RemoveChars(mode, "R") , hwnd, 30)
+
+    if (InStr(mode, "R")) {
+        SendKey(text, mode, hwnd)
+    } else {
+        PasteText(text, mode, hwnd)  ;복붙이 기본값
+    }
+    ; 뒤 Enter
+    if (enterMode = 2 || enterMode = 3)
+        SendKey("{Enter}", RemoveChars(mode, "R"), hwnd, -30)
 }
 
-ChatPaste(text, send_mode := "", hwnd := "") {
-    isValid := StrLen(text) > 0
-    if (isValid) {
-        ClipSaved := ClipboardAll
-        Clipboard := text
-        ClipWait, 0.5
-    }
-    SendKey("{Enter}", send_mode, hwnd, -50)
-    if (isValid) {
-        pasteKey := InStr(send_mode, "I", 1) ? "{ctrl down}v{ctrl up}" : "^v"
-        SendKey(pasteKey, send_mode, hwnd, -20)
-    }
-    SendKey("{Enter}", send_mode, hwnd, 50)
-    if (isValid)
-        Clipboard := ClipSaved
-}
-
-ChatRaw(text, send_mode := "", hwnd := "") {
-    SendKey("{Enter}", send_mode, hwnd, 100)
-    if (StrLen(text) > 0) {
-        Suspend, On
-        SendRawKey(text, send_mode, hwnd)
-        Suspend, Off
-    }
-    SendKey("{Enter}", send_mode, hwnd)
-}
-
-;dealy :음/양수 선/후 딜레이
-SendKey(key, send_mode := "", hwnd := "", delay := 0) {
-    if (StrLen(key) = 0)
+PasteText(text, mode := "", hwnd := "") {
+    if (StrLen(text) = 0)
         return
+    ClipSaved := ClipboardAll
+    Clipboard := text
+    ClipWait, 0.5
+    pasteKey := InStr(mode, "C") ? "{Ctrl down}v{Ctrl up}" : "^v"
+    SendKey(pasteKey, RemoveChars(mode, "R"), hwnd, 100)
+    Clipboard := ClipSaved
+}
 
+SendKey(key, mode := "", hwnd := "", delay := 0) {
     if (hwnd && !WinExist("ahk_id " . hwnd))
         return ShowTip("SendKey()`n지정된 창이 없습니다. hwnd :" . hwnd)
-    
-    if(!hwnd)
+
+    if (!hwnd)
         hwnd := WinExist("A")
 
     if (delay < 0)
         Sleep, -delay
 
-    if (InStr(send_mode, "NS", 1))
-        key := StrReplace(key, " ")
+    isControl := InStr(mode, "C")
+    isRaw := InStr(mode, "R")
 
-    if (InStr(send_mode, "I", 1)) {
-        if (InStr(send_mode, "R", 1) )
+    if (isControl) {
+        if (isRaw)
             ControlSendRaw,, %key%, ahk_id %hwnd%
         else
             ControlSend,, %key%, ahk_id %hwnd%
     } else {
         if (hwnd && hwnd != WinExist("A"))
-            WinActivateWait(hwnd)
+            WinActivate, ahk_id %hwnd%
 
-        if (InStr(send_mode, "R", 1) )
+        if (isRaw) {
+            Suspend, On
             SendRaw, %key%
-        else
+            Suspend, Off
+        } else
             Send, {Blind}%key%
     }
+
     if (delay > 0)
         Sleep, delay
 }
 
-SendRawKey(key, send_mode := "",  hwnd := "", delay := 0) {
-    SendKey(key, send_mode . "R", hwnd, delay)
-}
 
-SendKeyA(key, delay := 0) {
+Send1(key, delay := 0) {
     SendKey(key, "", "", delay)
 }
 
@@ -91,14 +85,14 @@ CalcCoords(ByRef x, ByRef y, hwnd, coord_mode := "", coord_type := "") {
     }
 }
 
-SmartClick(x, y, hwnd := "", btn := "L", send_mode := "", coord_mode := "", coord_type := "") {
+SmartClick(x, y, hwnd := "", btn := "L", mode := "", coord_mode := "", coord_type := "") {
     if (hwnd && !WinExist("ahk_id " . hwnd))
         return ShowTip("SmartClick()`n지정된 창이 없습니다. hwnd: " . hwnd)
 
     if (!hwnd)
         hwnd := WinExist("A")
 
-    if (InStr(send_mode, "I", true)) {
+    if (InStr(mode, "I", true)) {
         SmartClick_ControlClick(x, y, hwnd, btn, coord_mode, coord_type)
     } else {
         if (hwnd != WinExist("A"))
@@ -136,12 +130,12 @@ SmartClick_MouseClick(x, y, hwnd, btn, coord_mode := "", coord_type := "") {
 
 
 ;ControlClick
-Click(x, y, hwnd:="", btn := "L", send_mode := "") {
-    SmartClick(x, y, hwnd, btn, send_mode)
+Click(x, y, hwnd:="", btn := "L", mode := "") {
+    SmartClick(x, y, hwnd, btn, mode)
 }
 
-ClickA(x, y, btn := "L", send_mode := "") {
-    Click(x, y, WinExist("A"), btn, send_mode)
+ClickA(x, y, btn := "L", mode := "") {
+    Click(x, y, WinExist("A"), btn, mode)
 }
 
 ClickBack(x, y, hwnd, btn := "L") {

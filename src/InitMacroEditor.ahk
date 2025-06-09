@@ -26,6 +26,7 @@ global overlayVisible := false
 global hOverlayBG
 global hOverlayBtn
 global hMacro
+global hNote
 
 ;-----------------------------------------Macro Gui---------------------------------------------------
 if !FileExist(MACRO_DIR)
@@ -35,11 +36,11 @@ Gui, macro:New, +hwndhMacro
 Gui, Font, s12, Consolas
 
 ; === 버튼 속성 정의 ===
-btnW := 70     ; 버튼 너비
+btnW := 65     ; 버튼 너비
 btnH := 30     ; 버튼 높이
 btnX := 10     ; 시작 X좌표
 btnY := 10     ; Y좌표 고정
-btnGap := 80  ; 버튼 간 간격
+btnGap := 75  ; 버튼 간 간격
 
 buttons := []  ; 빈 배열 생성
 buttons.Push({text: "▶ Run",   g: "ToggleMacro",   v: "ExecBtn"})
@@ -51,6 +52,7 @@ buttons.Push({text: "Delete",   g: "DeleteMacro",   v: "DeleteBtn"})
 buttons.Push({text: "🡅 Back",     g: "BackMacro",     v: "BackBtn"})
 buttons.Push({text: "Clear",    g: "ClearMacro",    v: "ClearBtn"})
 buttons.Push({text: "Merge",     g: "MergeMacro",     v: "MergeBtn"})
+buttons.Push({text: "Note",     g: "OnNoteBtn",     v: "NoteBtn"})
 ;buttons.Push({text: "Spy",     g: "ToggleSpy",     v: "SpyBtn"})
 
 ; === 버튼 추가 루프 ===
@@ -71,9 +73,11 @@ Gui, macro:Add, TreeView, x10 y50 w270 h490 vMacroList gOnTreeViewClick
 if(!macroWinW || macroWinW < 900)
     macroWinW := 900
 editW := macroWinW - 300
+
+Gui, Font, % "s" . GetIniValue("Settings", "EDIT_FONT_SIZE", 14)
 Gui, macro:Add, Edit, x290 y50 w%editW% h410 -Wrap vEditMacro
 
-Gui, Font, , Segoe UI
+Gui, Font, s14, Segoe UI
 
 Gui, macro:Add, Edit, x290 y470 w490 h30 vMacroPath +ReadOnly
 Gui, macro:Add, Edit, x290 y510 w200 h30 vLatestRec +ReadOnly
