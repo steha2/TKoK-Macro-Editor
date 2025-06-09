@@ -56,17 +56,16 @@ IsInteger(val) {
     return val is integer
 }
 
-
-TryEval(expr, dp_mode := "trim") {
-    if RegExMatch(expr, "^[\d+\-*/.() <>=!&|^~]+$") && RegExMatch(expr, "\d") {
-        ;test("EVAL!",expr,mode,FormatDecimal(Eval(expr), mode))
-        return FormatDecimal(Eval(expr), dp_mode)
-    } else {
-        return expr
-    }
+TryEval(expr, dp_mode := "") {
+    return IsLogicExpr(expr) ? FormatDecimal(Eval(expr), dp_mode) : expr
 }
 
-ForceEval(expr, dp_mode := "trim") {
+IsLogicExpr(expr) {
+    ; 숫자, 연산자, 공백만으로 구성되고, 숫자가 반드시 1개 이상 있어야 true 반환
+    return RegExMatch(expr, "^[\d+\-*/.() <>=!&|^~]+$") && RegExMatch(expr, "\d")
+}
+
+ForceEval(expr, dp_mode) {
     ; 변수/심볼 제거: 알파벳으로 시작하는 단어를 제거
     ; 단, 숫자나 연산자 등은 유지
     expr := RegExReplace(expr, "\b[A-Za-z_]\w*\b", "")

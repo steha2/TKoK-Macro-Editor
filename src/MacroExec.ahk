@@ -33,15 +33,22 @@ ExecMacro(scriptText, vars, current_path) {
         }
 
         if((StrLower(tempVars.if) = "false"))
-                tempVars.if := false
+            tempVars.if := false
 
         ; 조건 확인: force가 없고, skip_mode=vars 이며, start_line 전이면 건너뛰기
         if (!tempVars.HasKey("force")) {
             if (InStr(vars.skip_mode, "vars") && A_Index < start_line)
                 continue
-            ; if 조건이 거짓이면 건너뛰기
-            if (vars.HasKey("if") && !TryEval(tempVars.if))
-                continue
+        
+            if (tempVars.HasKey("if")){
+                if(IsLogicExpr(tempVars.if)) {
+                    if(!Eval(tempVars.if))
+                        continue
+                } else {
+                    if(!TryStringLogic(tempVars.if))
+                        continue
+                }
+            }
         }
         
         ; 단일 라인 변수 초기화
@@ -78,6 +85,7 @@ ExecMacro(scriptText, vars, current_path) {
     UpdateMacroState(-1)
     ; ShowTip("--- Macro End ---`n,실행중인 매크로 수 : " runMacroCount)
 }
+
 
 ShouldBreak(vars, timeKey) {
     if (!CheckAbortAndSleep(vars[timeKey]))

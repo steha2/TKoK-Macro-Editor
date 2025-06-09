@@ -120,7 +120,8 @@ ExecW3(roleTitle := "", mini := false) {
         return Alert("Warcraft III 창을 찾을 수 없습니다.")
     WinSet, AlwaysOnTop, On, ahk_id %hwnd%
     success := WaitUntilNotWhiteOrBlack(hwnd, 5000)
-    WinActivate, ahk_id %origHwnd%
+    if(origHwnd)
+        WinActivate, ahk_id %origHwnd%
     WinSet, AlwaysOnTop, Off, ahk_id %hwnd%
     if (success) {
         if (roleTitle)
@@ -172,6 +173,7 @@ ExecMultiW3(num := 0) {
             ExecJoinW3(A_Index)
         }
     }
+    WinRaiseWithoutFocus(hostHwnd)
     Sleep, numW3 = 1 ? 2500 : 1000
     SendKey("{alt down}s{alt up}", "C", hostHwnd)
 }

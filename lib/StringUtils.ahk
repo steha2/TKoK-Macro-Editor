@@ -61,6 +61,32 @@ StrJoin(arr, delim := "`n") {
     return out
 }
 
+TryStringLogic(expr) {
+    expr := Trim(expr)
+    ; 논리 반전 (!)
+    flip := false
+    if (SubStr(expr, 1, 1) = "!") {
+        expr := SubStr(expr, 2)
+        flip := true
+    }
+    ; 비교 연산
+    result := ""
+    if InStr(expr, "!=") {
+        parts := StrSplit(expr, "!=", , 2)
+        result := (Trim(parts[1]) != Trim(parts[2]))
+    } else if InStr(expr, "~=") {
+        parts := StrSplit(expr, "~=", , 2)
+        result := (Trim(parts[1]) ~= Trim(parts[2]))
+    } else if InStr(expr, "=") {
+        parts := StrSplit(expr, "=", , 2)
+        result := (Trim(parts[1]) = Trim(parts[2]))
+    } else {
+        ; 일반 문자열 존재 여부
+        result := (expr != "")
+    }
+    return flip ? !result : result
+}
+
 JoinLines(arr) {
     return arr.Length() ? arr.Join("`r`n") . "`r`n" : ""
 }

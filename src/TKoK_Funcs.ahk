@@ -125,7 +125,7 @@ LoadSquadI() {
     }
     
     if(clients.Length() >= 2) {
-        SwitchW3(index, true, false, true)
+        SwitchW3(1, true, false, true)
         SendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", "NS") ;Ignore Space
     } else 
         SendKey("^s {F1} ^1", "NS")
