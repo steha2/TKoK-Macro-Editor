@@ -1,12 +1,8 @@
-﻿a #
-a
+﻿a #rep=2# #delay:1#
+a #delay=1#
 
-a #wait:0# #rep:3#
-a
-a
+a #wait:0# #rep=5#
 b
 
-b #rep:6#
-b
-b
+b #rep=8#
 a #rep:5#

@@ -1,10 +1,10 @@
 ﻿--- 단축키 목록 ---- src/....Events.ahk 맨 아래에서 변경가능 #limit:0#
-Insert 매크로 실행/중단
+PrintScreen 매크로 실행/중단
 Pause  매크로 기록/중단
 Ctrl+S 매크로 저장
 ALT+F1 매크로 클릭위치 확인 오버레이 토글
 ALT+F2 Click:L 한줄 추가
-ALT+F3 [🡅 Back]
+ALT+F3, ScrollLock [🡅 Back]
 
 Ctrl+Alt+W 워3 창 크기 저장
 Alt+E 저장 된 창 크기로 복원
@@ -32,3 +32,9 @@ Ctrl+Y: F 와 Y 키 기능 전환을 켜고 끕니다.
 F4 Interact  F5 -inv  F6 -tt   
 F7 토글 마우스 가두기
 
+config.ini 에서 명령을 단축키로 지정할 수 있습니다.
+[Macro]
+;Ctrl : ^    Alt : !    Shift : +   Win : #
+^J = exec, swap-acc
++Numpad1 = send, hello #target:notepad#
+!Numpad1 = Run, notepad

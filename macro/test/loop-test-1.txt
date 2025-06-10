@@ -1,11 +1,11 @@
 ﻿chat, i: %i% a : %a%   if: %if%
 
 #if:a>=1000#
-chat, a>=1000 ? %if%  a 가 1000 보다 크다 "BREAK"
+chat, a>=1000 ?  if:%if%  a 가 1000 보다 크다 "BREAK"
 #break#
 
 #if:a>=200# 
-chat, a:%a%  a>=200 ? %if%  a 가 200 보다 크다
+chat, a:%a%  a>=200 ? if:%if%  a 가 200 보다 크다
 #end_if#
 
 #a:a*2# #i:i+1#

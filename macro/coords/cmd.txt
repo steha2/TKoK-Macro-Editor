@@ -1,0 +1,13 @@
+﻿;Right Bottom Panel
+cmd_1         = Click:L, 0.792, 0.808
+cmd_2         = Click:L, 0.852, 0.816
+cmd_3         = Click:L, 0.904, 0.815
+cmd_4         = Click:L, 0.960, 0.802
+cmd_5         = Click:L, 0.799, 0.882
+cmd_6         = Click:L, 0.852, 0.872
+cmd_7         = Click:L, 0.900, 0.881
+cmd_8         = Click:L, 0.956, 0.876
+cmd_9         = Click:L, 0.793, 0.961
+cmd_10        = Click:L, 0.852, 0.951
+cmd_11        = Click:L, 0.903, 0.952
+cmd_12        = Click:L, 0.955, 0.944

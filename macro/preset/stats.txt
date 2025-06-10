@@ -1,4 +1,9 @@
-﻿Exec, coords
+﻿Exec, coords\screen
+PickNewHero(%part1%)
+
+@%move_new_hero% #delay=5000#
+
+@%champ_shop%
 
 Exec, %out_dir%\%part1%-equip
 

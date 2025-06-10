@@ -47,10 +47,6 @@ Win_IsVisible(winTitle := "A") {
     return (style & 0x10000000) != 0 ; WS_VISIBLE
 }
 
-Win_Exist(winTitle := "") {
-    return WinExist(winTitle)
-}
-
 Win_WaitActive(winTitle, timeout := "") {
     WinWaitActive, %winTitle%, , %timeout%
 }
@@ -60,10 +56,8 @@ Win_Wait(winTitle, timeout := "") {
 }
 
 WinActivateWait(winTitle) {
-    if (winTitle is integer) {
+    if winTitle is integer 
         winTitle := "ahk_id " . winTitle
-    }
-    ;ShowTip("winwait........:`n" winTitle)
     WinActivate, %winTitle%
     WinWaitActive, %winTitle%,, 0.1
 }
@@ -82,6 +76,11 @@ WinRaiseWithoutFocus(hwnd) {
         , "Ptr", HWND_TOP
         , "Int", 0, "Int", 0, "Int", 0, "Int", 0
         , "UInt", flags)
+}
+
+ActivateHwnd(hwnd) {
+    if(hwnd && hwnd != WinExist("A") && WinExist("ahk_id " . hwnd))
+        WinActivateWait(hwnd)
 }
 
 ;-------------------------------- 마우스 함수 --------------------------------
@@ -196,7 +195,6 @@ GetTargetWin(target, timeout := 1000, interval := 100) {
     return false
 }
 
-
 GetClientSize(hwnd, ByRef w := "", ByRef h := "") {
     if (!hwnd) 
         return
@@ -309,6 +307,16 @@ AdjustClientToWindow(win, ByRef x, ByRef y) {
     y := NumGet(pt, 4, "Int") - wy
     return true
 }
+
+ClientToScreen(hwnd, ByRef x, ByRef y) {
+    VarSetCapacity(pt, 8, 0)  ; POINT 구조체 (x, y 각각 4바이트)
+    NumPut(x, pt, 0, "Int")
+    NumPut(y, pt, 4, "Int")
+    DllCall("ClientToScreen", "Ptr", hwnd, "Ptr", &pt)
+    x := NumGet(pt, 0, "Int")
+    y := NumGet(pt, 4, "Int")
+}
+
 
 ToggleMinimize(winTitle, force := "") {
     ; winTitle이 숫자면 HWND로 간주하고 변환

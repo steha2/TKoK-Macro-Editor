@@ -1,0 +1,9 @@
+﻿;※screen 좌표는 cdist 에 따라 다르게 작동할 수 있음
+
+;-cdist 2300 기준
+
+;챔피언 모드 시작 위치에서 상점 npc 선택
+champ_shop    = Click:L, 0.399, 0.290 
+
+;새 영웅 밖으로 나가기
+move_new_hero = Click:R, 0.835, 0.586 

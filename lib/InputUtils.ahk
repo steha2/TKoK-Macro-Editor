@@ -23,20 +23,17 @@ Chat(text, mode := "", hwnd := "") {
 PasteText(text, mode := "", hwnd := "") {
     if (StrLen(text) = 0)
         return
-    ClipSaved := ClipboardAll
+    ;ClipSaved := ClipboardAll
     Clipboard := text
     ClipWait, 0.5
     pasteKey := InStr(mode, "C") ? "{Ctrl down}v{Ctrl up}" : "^v"
     SendKey(pasteKey, RemoveChars(mode, "R"), hwnd, 100)
-    Clipboard := ClipSaved
+    ;Clipboard := ClipSaved
 }
 
 SendKey(key, mode := "", hwnd := "", delay := 0) {
     if (hwnd && !WinExist("ahk_id " . hwnd))
         return ShowTip("SendKey()`n지정된 창이 없습니다. hwnd :" . hwnd)
-
-    if (!hwnd)
-        hwnd := WinExist("A")
 
     if (delay < 0)
         Sleep, -delay
@@ -48,14 +45,14 @@ SendKey(key, mode := "", hwnd := "", delay := 0) {
     isRaw := InStr(mode, "R")
 
     if (isControl) {
+        if (!hwnd)
+            hwnd := WinExist("A")
         if (isRaw)
             ControlSendRaw,, %key%, ahk_id %hwnd%
         else
             ControlSend,, %key%, ahk_id %hwnd%
     } else {
-        if (hwnd && hwnd != WinExist("A"))
-            WinActivate, ahk_id %hwnd%
-
+        ActivateHwnd(hwnd)
         if (isRaw) {
             Suspend, On
             SendRaw, %key%
@@ -91,32 +88,20 @@ CalcCoords(ByRef x, ByRef y, hwnd, coord_mode := "", coord_type := "") {
 SmartClick(x, y, hwnd := "", btn := "L", mode := "", coord_mode := "", coord_type := "") {
     if (hwnd && !WinExist("ahk_id " . hwnd))
         return ShowTip("SmartClick()`n지정된 창이 없습니다. hwnd: " . hwnd)
-
-    if (!hwnd)
-        hwnd := WinExist("A")
+    hwnd := hwnd ? hwnd : WinExist("A")
+    CalcCoords(x, y, hwnd, coord_mode, coord_type)
 
     if (InStr(mode, "I", true)) {
-        SmartClick_ControlClick(x, y, hwnd, btn, coord_mode, coord_type)
+        AdjustClientToWindow(hwnd, x, y)
+        Sleep, 100
+        ControlClick, x%x% y%y%, ahk_id %hwnd%,, %btn%,, NA
     } else {
-        if (hwnd != WinExist("A"))
-            WinActivateWait(hwnd)
-
-        if (!WinExist("ahk_id " . hwnd))
-            return ShowTip("SmartClick()`n활성화에 실패했습니다. hwnd: " . hwnd)
-        
-        SmartClick_MouseClick(x, y, hwnd, btn, coord_mode, coord_type)
+        ActivateHwnd(hwnd)
+        PhysClick(x, y, btn)
     }
 }
 
-SmartClick_ControlClick(x, y, hwnd, btn, coord_mode := "", coord_type := "") {
-    CalcCoords(x, y, hwnd, coord_mode, coord_type)
-    AdjustClientToWindow(hwnd, x, y)
-    Sleep, 100
-    ControlClick, x%x% y%y%, ahk_id %hwnd%,, %btn%,, NA
-}
-
-SmartClick_MouseClick(x, y, hwnd, btn, coord_mode := "", coord_type := "") {
-    CalcCoords(x, y, hwnd, coord_mode, coord_type)
+PhysClick(x, y, btn) {
     MouseMove, %x%, %y%
     if (btn = "R") {
         Sleep, 60
@@ -145,59 +130,7 @@ ClickBack(x, y, hwnd, btn := "L") {
     ClickBackEx({x: x, y: y, hwnd: hwnd, btn: btn})
 }
 
-ClickBackEx2(clickArray) {
-    static currentHwnd := ""
-    
-    if (!IsObject(clickArray))
-        return ShowTip("clickArray is not an object")
-    if (!clickArray.HasKey(1))  ; 단일 객체일 경우 배열처럼 래핑
-        clickArray := [clickArray]
-    
-    BlockInput, On
-    CoordMode, Mouse, Screen
-    MouseGetPos, origX, origY
-    WinGet, origHwnd, ID, A
-
-    minimizedArray := []
-
-    for index, click in clickArray {
-        ; hwnd가 있으면 currentHwnd 갱신
-        if (click.HasKey("hwnd")) {
-            currentHwnd := click.hwnd
-        }
-        if (!currentHwnd || !WinExist("ahk_id " currentHwnd)) {
-            ShowTip("Invalid hwnd at index " index)
-            continue
-        }
-
-        WinGet, winState, MinMax, ahk_id %currentHwnd%
-        wasMinimized := (winState == 2)
-
-        if(minimizedArray)
-        
-        if(WinExist("A") != currentHwnd)
-            WinActivateWait(currentHwnd)
-
-        btn := click.HasKey("btn") ? click.btn : "L"
-        Click(click.x, click.y, currentHwnd, btn)
-    }
-
-    ; 마우스 위치 복귀
-    CoordMode, Mouse, Screen
-    MouseMove, %origX%, %origY%, 0
-    ; 이전 창 복귀
-    if (WinExist("ahk_id " . origHwnd)) {
-        WinActivate, ahk_id %origHwnd%
-    }
-    if (wasMinimized) {
-        WinMinimize, ahk_id %hwnd%
-    }
-    BlockInput, Off
-}
-
 ClickBackEx(clickArray) {
-    static currentHwnd := ""
-
     if (!IsObject(clickArray))
         return ShowTip("clickArray is not an object")
     if (!clickArray.HasKey(1))  ; 단일 객체일 경우 배열처럼 래핑
@@ -211,28 +144,25 @@ ClickBackEx(clickArray) {
     minimizedArray := []
 
     for index, click in clickArray {
-        ; hwnd가 있으면 currentHwnd 갱신
-        if (click.HasKey("hwnd")) {
-            currentHwnd := click.hwnd
-        }
-        if (!currentHwnd || !WinExist("ahk_id " currentHwnd)) {
+        currHwnd := click.hwnd
+        
+        if (!currHwnd || !WinExist("ahk_id " currHwnd)) {
             ShowTip("Invalid hwnd at index " index)
             continue
         }
 
-        WinGet, winState, MinMax, ahk_id %currentHwnd%
+        WinGet, winState, MinMax, ahk_id %currHwnd%
         wasMinimized := (winState == 2)
 
         ; 만약 창이 최소화 상태였다면 목록에 추가
         if (wasMinimized)
-            minimizedArray.push(currentHwnd)
+            minimizedArray.push(currHwnd)
 
         ; 현재 활성 윈도우가 아니라면 대상 창 활성화
-        if (WinExist("A") != currentHwnd)
-            WinActivateWait(currentHwnd)
+        ActivateHwnd(hwnd)
 
         btn := click.HasKey("btn") ? click.btn : "L"
-        Click(click.x, click.y, currentHwnd, btn)
+        Click(click.x, click.y, currHwnd, btn)
     }
 
     ; 마우스 위치 복귀
@@ -251,6 +181,6 @@ ClickBackEx(clickArray) {
         }
     }
 
-    currentHwnd := ""
+    currHwnd := ""
     BlockInput, Off
 }

@@ -61,6 +61,10 @@ StrJoin(arr, delim := "`n") {
     return out
 }
 
+SplitLine(scriptText) {
+    return StrSplit(scriptText, ["`r`n", "`n", "`r"])
+}
+
 TryStringLogic(expr) {
     expr := Trim(expr)
     ; 논리 반전 (!)

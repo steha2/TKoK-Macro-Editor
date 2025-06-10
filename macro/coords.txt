@@ -1,7 +1,0 @@
-﻿;고정 좌표가 저장된 매크로 ; Exec, coods
-#target:Warcraft III#
-
-#tele_npc    = Click:R, 0.072, 0.872# ;텔레포트 npc 옆
-#tol_pt      = Click:R, 0.114, 0.818# ;톨캄 포탈 npc 옆
-#champ_shop  = Click:L, 0.399, 0.290# ;챔피언 모드 시작 위치에서 상점 npc 선택
-

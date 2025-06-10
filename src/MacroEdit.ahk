@@ -125,24 +125,35 @@ MergeMacro(content) {
 
 MergeLine(line, count) {
     if (count > 1) {
-        if(RegExMatch(line,"#rep:(\d+)#",m)) {
-            count += m1 -1
+        if (RegExMatch(line, "#rep[:=](\d+)#", m)) {
+            count += m1 - 1
         }
-        line := RegExReplace(line, "\s*#rep:\d+#")
-        line .= " #rep:" . count . "#"
+        ; 기존 #rep:X 또는 #rep=X 제거
+        line := RegExReplace(line, "\s*#rep[:=]\d+#\s*", " ")
+        ; 항상 = 형식으로 붙이기
+        line := RTrim(line) . " #rep=" . count . "#"
     }
     return line
 }
 
 IsSameMacroLine(line1, line2) {
-    pattern := "i)[;%]|#(?!wait:|rep:|delay:)[^#:]+:"
-    if (RegExMatch(line1, pattern) || RegExMatch(line2, pattern))
+    if (RegExMatch(line1, "[;%]") || RegExMatch(line2, "[;%]"))
         return false
 
     vars1 := {}
     vars2 := {}
     cmd1 := ResolveMarker(line1, vars1)
     cmd2 := ResolveMarker(line2, vars2)
+
+    allowed := { "wait": 1, "delay": 1, "rep": 1 }
+    for k in vars1
+        if (!allowed.HasKey(k))
+            return false
+
+    for k in vars2
+        if (!allowed.HasKey(k))
+            return false
+
     wait1 := vars1.wait ? vars1.wait : 0
     wait2 := vars2.wait ? vars2.wait : 0
     delay1 := vars1.delay ? vars1.delay : 0
@@ -218,9 +229,19 @@ GetAdjustedCoords(ByRef x, ByRef y) {
 }
 
 CoordTracking() {
-    if CoordTrackingRunning || GetKeyState("Ctrl", "P")
+    if (CoordTrackingRunning)
         return
+
     CoordTrackingRunning := true
+
+    ; 저장 상태 검사: EditMacro 현재 내용과 origContent 비교
+    GuiControlGet, currContent, macro:, EditMacro
+    if (currContent != origContent) {
+        GuiControl, macro:, SaveBtn, ◇ Save
+    } else {
+        GuiControl, macro:, SaveBtn, ◆ Save
+    }
+
     if (GetAdjustedCoords(x, y)) {
         coordStr := x . ", " . y
         GuiControlGet, isClient, macro:, ClientBtn
@@ -231,23 +252,37 @@ CoordTracking() {
         GuiControl, macro:, CoordTrack, %coordStr%
     }
 
-    ; 저장 상태 검사: EditMacro 현재 내용과 origContent 비교
-    GuiControlGet, currContent, macro:, EditMacro
-    global origContent  ; origContent는 전역 변수로 선언되어 있어야 함
-    if (currContent != origContent) {
-        GuiControl, macro:, SaveBtn, ◇ Save
-    } else {
-        GuiControl, macro:, SaveBtn, ◆ Save
-    }
     CoordTrackingRunning := false
+}
+
+ImportVars(scriptText, vars) {
+    lines := SplitLine(scriptText)
+    for index, line in lines {
+        line := StripComments(line)
+        parts := StrSplit(line, "=",, 2)
+        part1 := Trim(parts[1])
+        part2 := Trim(parts[2])
+        
+        if(part1 && part2)
+            vars[part1] := part2
+    }
 }
 
 PreprocessMacroLines(lines, vars, isExec := false) {
     processedLines := []
+    
+    if(!IsObject(lines))
+        lines := [lines]
+    
     for index, line in lines {
-        line := ResolveExpr(line, vars)
-        cmd := StripComments(line)
-        cmd := ResolveMarker(cmd, vars)
+        if(SubStr(line, 1, 1) = "@")
+            line := SubStr(line, 2)
+        else {
+            line := ResolveExpr(line, vars)
+            cmd := StripComments(line)
+            cmd := ResolveMarker(cmd, vars)
+        }
+
         if (vars.HasKey("force") && isExec) {
             vars.Delete("force")
             ExecSingleCommand(cmd, vars)

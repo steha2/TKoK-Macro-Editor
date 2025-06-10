@@ -7,7 +7,7 @@ global EPSILON_FIXED := 3
 global EPSILON_WAIT := 200
 global MACRO_DIR := A_ScriptDir . "\macro"
 ;global DEFAULT_TARGET := "ahk_class Warcraft III" ;매크로 실행시 활성화 기본 창
-global BASE_DELAY := 10
+global BASE_DELAY := 30
 global BASE_LIMIT := 1000
 global EDITOR_TITLE := "Macro Editor"
 
@@ -97,13 +97,15 @@ Loop, Parse, hotkeyMacros, `n, `r
 {
     if !InStr(A_LoopField, "=")
         continue
-    parts := StrSplit(A_LoopField, "=")
-    hotkey := Trim(parts[1])
+    parts := StrSplit(A_LoopField, "=",, 2)
+    hkey := Trim(parts[1])
     macro := Trim(parts[2])
-    vars := {}
-    cmd := ResolveMarker(macro, vars)
-    fn := Func("ExecMacro").Bind(cmd, vars, "")
-    Hotkey, %hotkey%, % fn
+    if(hkey, macro) {
+        vars := {}
+        cmd := ResolveMarker(macro, vars)
+        fn := Func("ExecMacro").Bind(cmd, vars, "")
+        Hotkey, %hkey%, % fn
+    }
 }
 
 Gui, font, s8

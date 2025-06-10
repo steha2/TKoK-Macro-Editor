@@ -49,7 +49,7 @@ ClearMacro:
     if (Trim(curText) = "")  ; 이미 비어있으면 무시
         return
 
-    MsgBox, 4, %EDITOR_TITLE%, 내용을 모두 지웁니까?
+    MsgBox, 4|4096, %EDITOR_TITLE%, 내용을 모두 지웁니까?
     IfMsgBox, No
         return
     
@@ -201,6 +201,7 @@ return
 ToggleMacroImpl() {
     if(overlayVisible)
         ToggleOverlay()
+    FileDelete, %logFilePath%
     GuiControlGet, content, macro:, EditMacro
     GuiControlGet, currentNum, macro:, LineEdit
     vars := {base_path:macroPath, start_line:currentNum}
@@ -270,7 +271,7 @@ ConfirmNotSaved() {
     GuiControlGet, currentText, macro:, EditMacro
     if (currentText != origContent) {
         showDiff := GetFirstDiffPreview(origContent, currentText)
-        MsgBox, 4, 저장되지 않음, 변경 내용이 감지되었습니다:`n`n%showDiff%`n`n저장하지 않고 진행합니까?
+        MsgBox, 4 , 저장되지 않음, 변경 내용이 감지되었습니다:`n`n%showDiff%`n`n저장하지 않고 진행합니까?
         IfMsgBox, No
             return false
 
@@ -381,7 +382,7 @@ SaveNote() {
 }
 
 
-
+#If macroGuiShown
 PrintScreen up::Gosub, ToggleMacro
 ScrollLock up::Gosub, BackMacro
 Pause up::Gosub, ToggleRecord

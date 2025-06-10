@@ -1,6 +1,4 @@
 ﻿note()
-chat, 10000aa0000a00
-Send, ^a{delete}
 chat, _LOOP_TEST_
-#a:1# #i:1#
+#a=1# #i=1# #if_mode=block#
 Exec, loop-test-1 #delay:500# #rep:20#

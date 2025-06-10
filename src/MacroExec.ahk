@@ -5,9 +5,15 @@ ExecMacro(scriptText, vars, current_path) {
         MsgBox, 실행 중인 매크로 수가 10을 초과 합니다.
         return
     }
+    if(GetKeyState("Alt", "P"))
+        KeyWait, Alt
+    if(GetKeyState("Ctrl", "P"))
+        KeyWait, Ctrl
+    if(GetKeyState("Shift", "P"))
+        KeyWait, Shift
 
     UpdateMacroState(+1)
-    lines := StrSplit(scriptText, ["`r`n", "`n", "`r"])
+    lines := SplitLine(scriptText)
     
     if !IsObject(vars) {
         ShowTip("Warning! : vars is not an object")
@@ -37,7 +43,7 @@ ExecMacro(scriptText, vars, current_path) {
 
         ; 조건 확인: force가 없고, skip_mode=vars 이며, start_line 전이면 건너뛰기
         if (!tempVars.HasKey("force")) {
-            if (InStr(vars.skip_mode, "vars") && A_Index < start_line)
+            if (InStr(vars.skip_mode, "vars") && index < start_line)
                 continue
         
             if (tempVars.HasKey("if")){
@@ -56,7 +62,7 @@ ExecMacro(scriptText, vars, current_path) {
         vars.rep := 1
         vars.wait := 0
         vars.dp_mode := "trim"
-        vars.delay := isDigit(vars.base_delay) ? vars.base_delay : BASE_DELAY
+        vars.delay := vars.HasKey("base_delay") ? vars.base_delay : BASE_DELAY
 
         ; 명령어 처리 (vars에서 실제 파싱)
         cmd := ResolveMarker(line, vars, "", ["if","force","end_if"])
@@ -67,15 +73,19 @@ ExecMacro(scriptText, vars, current_path) {
             break
         
         ; 조건 3: start_line 이후만 실행 (강제 실행 아닌 경우)
-        if(!tempVars.HasKey("force") && A_Index < start_line)
-            continue
+        if(!tempVars.HasKey("force")) {
+            if(InStr(vars.skip_mode, "vars") || !RegExMatch(cmd, "i)^Import,?\s*(.+?)$")) {
+                if(index < start_line)
+                    continue
+            }
+        }
 
         PrepareTargetHwnd(vars)
         Loop, % vars.rep
         {
-            ExecSingleCommand(cmd, vars)
+            ExecSingleCommand(cmd, vars, line, index)
             if(cmd != "" && vars.HasKey("limit")) {
-                if(A_Index = 1 || vars.limit_mode != "line")
+                if(index = 1 || vars.limit_mode != "line")
                     vars.limit--
             }
             if (ShouldBreak(vars, "delay"))
@@ -101,7 +111,7 @@ ShouldBreak(vars, timeKey) {
 }
 
 PrepareTargetHwnd(vars) {
-    ; 타겟이 없고 hwnd 도 없으면 현재 창
+    ; 타겟이 없고 hwnd 도 없으면
     if (!vars.HasKey("target") && !vars.target_hwnd) {
         return
 
@@ -210,11 +220,18 @@ HandleKeyCommand(key, vars, mode := "") {
     }
 }
 
-ExecSingleCommand(command, vars) {
+HandleMouseCommand(x, y, btn, vars, coord_type := "") {
+    if (vars.target && !vars.target_hwnd)
+        return
+
+    SmartClick(x, y, vars.target_hwnd, btn, vars.send_mode, vars.coord_mode, coord_type)
+}
+
+ExecSingleCommand(command, vars, line := "", index := "") {
     if RegExMatch(command, "i)^Click:(\w+),\s*(\d+),\s*(\d+)$", m) {
-        SmartClick(m2, m3, vars.target_hwnd, m1, vars.send_mode, vars.coord_mode, "fixed")
+        HandleMouseCommand(m2, m3, m1, vars, "fixed")
     } else if RegExMatch(command, "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)$", m) {
-        SmartClick(m2, m3, vars.target_hwnd, m1, vars.send_mode, vars.coord_mode, "ratio")
+        HandleMouseCommand(m2, m3, m1, vars, "ratio")
     } else if RegExMatch(command, "i)^SendRaw\s*,?\s*(.*)$", m) {
         HandleKeyCommand(m1, vars, "R")
     } else if RegExMatch(command, "i)^Send\s*,?\s*(.*)$", m) {
@@ -224,15 +241,23 @@ ExecSingleCommand(command, vars) {
     } else if RegExMatch(command, "i)^(Sleep|Wait|Delay)\s*,?\s*(\d*)", m) {
         if(isDigit(m2))
             vars.delay := m2
-    } else if RegExMatch(command, "i)^Exec,?\s*(.+?)(?:\.txt)?$", m) {
+    } else if RegExMatch(command, "^([a-zA-Z0-9_]+)\s*\((.*)\)\s*$", m) {
+        ActivateHwnd(vars.target_hwnd)
+        ExecFunc(m1, m2)
+    } else if RegExMatch(command, "i)^Exec,?\s*(.+?)$", m) {
         ExecMacroFile(m1, vars)
+    } else if RegExMatch(command, "i)^Import,?\s*(.+?)$", m) {
+        scriptText := GetScriptFromFile(m1, vars)
+        ImportVars(scriptText, vars)
     } else if RegExMatch(command, "i)^(Run|RunAs)\s*,?\s*(.*)$", m) {
         Run_(m1,m2)
-    } else if RegExMatch(command, "^([a-zA-Z0-9_]+)\s*\((.*)\)\s*$", m) {
-        ExecFunc(m1, m2)
     } else {
-        if(command != "")
-            ShowTip("경고, 올바른 명령문이 아님 `nCmd: "command "`nLen: " StrLen(command), 4000)
+        if(command && line && index)
+            ShowTip("올바른 명령문이 아님 (로그 확인 Alt+L)"
+                . "`nPath: " StrReplace(vars.current_path, MACRO_DIR)
+                . "`nLine: " index
+                . "`nCmd : " line "`n`n", 5000, true)
+                ;. "`nLen: " StrLen(command), 5000)
     }
 }
 
@@ -267,7 +292,7 @@ ExecFunc(fnName, argsStr) {
     return fn.Call(args*)
 }
 
-ExecMacroFile(macroFilePath, vars) {
+GetScriptFromFile(macroFilePath, vars) {
     AppendExt(macroFilePath)
     macroFilePath := StrReplace(macroFilePath, "/", "\")
 
@@ -295,6 +320,11 @@ ExecMacroFile(macroFilePath, vars) {
         MsgBox, % "파일을 불러오는 데 실패했습니다: " . %fullPath%
         return
     }
+    return scriptText
+}
+
+ExecMacroFile(macroFilePath, vars) {
+    scriptText := GetScriptFromFile(macroFilePath, vars)
     ExecMacro(scriptText, vars, fullPath)
 }
 

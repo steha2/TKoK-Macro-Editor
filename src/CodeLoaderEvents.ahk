@@ -9,7 +9,7 @@ mainGuiClose:
 return
 
 MultiLoad:
-    LoadSquad()
+    MultiLoad()
 return
 
 ExecMultiW3:
@@ -44,7 +44,6 @@ AddHero:
     else
         newSquad := heroNames
     GuiControl, main:, SquadField, %newSquad%
-    SetIniValue("Settings","SavedSquad",newSquad) 
 return
 
 RemoveHero:
@@ -53,7 +52,6 @@ RemoveHero:
         return
     newSquad := TrimLastToken(oldSquad, ",")
     GuiControl, main:, SquadField, %newSquad%
-    SetIniValue("Settings","SavedSquad",newSquad)
 return
 
 AptBtn:
@@ -113,9 +111,9 @@ SendMapped(key) {
 
 ;Interact
 F4::
-    SendKey("n",550)
-    SendKey("{Numpad8}",100)
-    SendKey("i",100)
+    Send1("n",550)
+    Send1("{Numpad8}",100)
+    Send1("i",100)
     MouseClick,L
 return
 
@@ -153,7 +151,14 @@ ChampChat() {
     Chat("-music")
     Chat("-spsi 4")
     SendAptToW3()
+    
 }
+#If WinActive("ahk_id " . hMain)
+^S::
+    GuiControlGet, squadText, main:, SquadField
+    SetIniValue("Settings", "SavedSquad", squadText)
+    ShowTip("Load hero list Saved")
+return
 
 #If !isRecording
 ^+N::ChampChat()
@@ -162,14 +167,17 @@ ChampChat() {
 ;Alt
 !D::Win_Minimize("A")
 !E::RestoreW3Pos()
-!1::SwitchW3(1)
-!2::SwitchW3(2)
-!3::SwitchW3(3)
+!1::SwitchW3(1, true)
+!2::SwitchW3(2, true)
+!3::SwitchW3(3, true)
 !W::SwitchNextW3()
 !U::MoveOldSaves()
-!T::LoadSquadI()
-!Y::LoadSquad()
-!H::LoadSquad(true) ;Champion Mode
+!T::
+    KeyWait, Alt
+    MultiLoad()
+return
+!Y::LoadSquad3()
+!H::PrepareChampMode() ;Champion Mode
 !L::OpenLogFile()
 
 ;Ctrl+Shift

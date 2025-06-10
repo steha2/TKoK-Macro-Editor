@@ -41,6 +41,12 @@ IsDirectory(path) {
     return FileExist(path) && InStr(FileExist(path), "D")
 }
 
+; 파일명에서 확장자 제거하는 도우미
+GetFileNameNoExt(filename) {
+    SplitPath, filename,,,, nameNoExt
+    return nameNoExt
+}
+
 ; 파일 또는 폴더 삭제 함수 (비어있는 폴더만 삭제 가능)
 ; 성공 시 true, 실패 시 false 반환
 DeleteItem(path) {

@@ -63,7 +63,7 @@ SwitchNextW3(isClip := true, minimizePrev := false) {
         switchRunning := 0
 }
 
-SwitchW3(clientNum := 1, isClip := true, minimizePrev := false, cursorToCenter := false) {
+SwitchW3(clientNum := 1, isClip := false, minimizePrev := false, cursorToCenter := false) {
     currHwnd := WinExist("A")
     nextHwnd := WinExist(CLIENT_TITLE . clientNum)
     WinGetClass, prevClass, ahk_id %currHwnd%
@@ -71,18 +71,19 @@ SwitchW3(clientNum := 1, isClip := true, minimizePrev := false, cursorToCenter :
     if(currHwnd = nexthwnd) {
         ; 같은 창 호출시 창 전환 안하고 토글 마우스 가두기
         if (isClip)
-            isClip := ToggleClipMouse(nextHwnd) 
+            ToggleClipMouse(nextHwnd) 
     } else if (nextHwnd) { ; 전환 할 창이 있는 경우
         WinActivate, ahk_id %nextHwnd%
         if (minimizePrev && currHwnd && WinExist("ahk_id " currHwnd) && currIsW3)
             WinMinimize, ahk_id %currHwnd%
         if (isClip)
-            isClip := ClipMouse(nextHwnd)
+            ClipMouse(nextHwnd)
     } else if (currIsW3 && !GetClientIndex(currHwnd)) { ; 창 제목이 Warcraft III 기본 인경우
         WinSetTitle, ahk_id %currHwnd%,,% CLIENT_TITLE . clientNum
     } else {
         ActivateBottomW3()
     }
+    
     if(cursorToCenter) {
         cx := 0.5, cy := 0.5
         CalcCoords(cx, cy, WinExist("A"))
@@ -90,12 +91,12 @@ SwitchW3(clientNum := 1, isClip := true, minimizePrev := false, cursorToCenter :
     }
 }
 
-TrySwitchNextW3() {
-    if (switchRunning >= 3)
-        return
-    SetTimer, SwitchNextW3, % (-200 * switchRunning) - 1
-    switchRunning++
-}
+; TrySwitchNextW3() {
+;     if (switchRunning >= 3)
+;         return
+;     SetTimer, SwitchNextW3, % (-200 * switchRunning) - 1
+;     switchRunning++
+; }
 
 ShareUnit(hwnd := "") {
     if(hwnd) {
@@ -113,23 +114,23 @@ ExecW3(roleTitle := "", mini := false) {
     if (W3_LNK = "" || !FileExist(W3_LNK))
         return Alert("실행할 W3_LNK 경로를 찾지 못했습니다.`nconfig.ini 에서 경로를 수정하세요.")
     
-    origHwnd := Win_Exist("A")
+    origHwnd := WinExist("A")
     ;실행 후 hwnd 을 찾을대까지 기다림
     hwnd := RunGetHwnd(W3_LNK, "Warcraft III")
     if (!hwnd)
         return Alert("Warcraft III 창을 찾을 수 없습니다.")
     WinSet, AlwaysOnTop, On, ahk_id %hwnd%
     success := WaitUntilNotWhiteOrBlack(hwnd, 5000)
+    WinSet, AlwaysOnTop, Off, ahk_id %hwnd%
     if(origHwnd)
         WinActivate, ahk_id %origHwnd%
-    WinSet, AlwaysOnTop, Off, ahk_id %hwnd%
     if (success) {
         if (roleTitle)
             WinSetTitle, ahk_id %hwnd%, , %roleTitle%
         if (mini)
             WinMinimize, ahk_id %hwnd%
         
-        Sleep, 2000 ;UI 로딩 대기
+        Sleep, W3_LAUNCH_DELAY ;UI 로딩 대기
         return hwnd
     } else {
         return Alert("UI 로딩 감지 실패 (흰/검 배경에서 벗어나지 않음")
@@ -137,7 +138,7 @@ ExecW3(roleTitle := "", mini := false) {
 }
 
 ;비활성 명령으로 실행
-ExecMultiW3(num := 0) {
+ExecMultiW3(num := 0, speed := 0) {
     if WinExist("ahk_class Warcraft III") {
         msg := "[Y] 종료 후 다시 실행   [N] 종료만   [Cancel] 취소"
         MsgBox, % 3 | 4096, Warcraft III가 이미 실행 중입니다, %msg%
@@ -160,11 +161,13 @@ ExecMultiW3(num := 0) {
             numW3 := squadArray0, 1
         }
     }
+    if(!num)
+        return
 
-    Loop, % Max(numW3,1)
+    Loop, % Max(numW3, 1)
     {
         if (A_Index = 1) {
-            hostHwnd := ExecHostW3()
+            hostHwnd := ExecHostW3(speed)
         } else {
             ExecJoinW3(A_Index)
         }
@@ -177,7 +180,7 @@ ExecMultiW3(num := 0) {
 }
 
 ;비활성 명령으로 실행
-ExecHostW3() {
+ExecHostW3(speed := 0) {
     hwnd := ExecW3(CLIENT_TITLE . "1")
     if(!hwnd)
         return
@@ -185,10 +188,12 @@ ExecHostW3() {
     SendKey("l", "C", hwnd, 2500)
     SendKey("c", "C", hwnd, 2500)
 
-    speed := GetIniValue("Settings", "speed")
-    if(speed = 0) {
+    if (!speed)
+        speed := GetIniValue("Settings", "speed")
+
+    if (speed = 1) {
         ClickBack(0.053, 0.160, hwnd)
-    } else if (speed = 1) {
+    } else if (speed = 2) {
         ClickBack(0.192, 0.160, hwnd)
     }
     SendKey("c", "C", hwnd)

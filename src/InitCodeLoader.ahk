@@ -1,18 +1,21 @@
 global CONFIG_FILE := A_ScriptDir . "\config.ini"
 
 ;-----------------------Code Loader Const------------------------------
-global W3_WINTITLE := "Warcraft III"
-global SAVE_DIR := GetIniValue("Settings", "SAVE_DIR", A_ScriptDir)
-global W3_LNK := GetIniValue("Settings", "W3_LNK")
 global CLIENT_TITLE := "W3_Client_"
-
+global W3_WINTITLE := "Warcraft III"
+global W3_LNK := GetIniValue("Settings", "W3_LNK")
+global W3_LAUNCH_DELAY := 1300 ; 워크 실행후 검은 화면이 끝나고 UI 로딩까지 대기할 시간
+global SAVE_DIR := GetIniValue("Settings", "SAVE_DIR", A_ScriptDir)
+global NEW_HERO_DELAY := 800 ; 새 영웅 선택시 화살표 누를때 딜레이
+global heroArr := ["Arcanist","Warrior","Cleric","Pyromancer","Hydromancer","Chronowarper","Phantom Stalker","Chaotic Knight","Shadowblade","Ranger","Barbarian","Paladin","Druid","Medicaster","Venomancer","Aeromancer","Earthquaker","Shadow Shaman"]
+global heroImgPos := {x1:0.45, y1:0.838, x2:0.56, y2:0.86}
 ;-----------------------Code Loader Vars------------------------------
 global pl1 := ""
 global pl2 := ""
 global la := ""
 global yMapped := false
 global whenSwitchMinimize := GetIniValue("Settings", "whenSwitchMinimize", 1)
-global switchRunning := 0
+;global switchRunning := 0
 ;----------------------------------------Main Gui---------------------------------------------
 global hMain
 
@@ -48,7 +51,6 @@ for key, _ in heroSet {
     Gui, main:Add, Button, gHeroButtonClick x%x% y%y% w%colWidth% h%rowHeight%, %key%
     index++
 }
-savedSquad := GetIniValue("Settings", "savedSquad")
 
 Gui, main:Add, Edit, vResultOutput x300 y10 w380 h150 ReadOnly
 Gui, main:Add, Button, gLoadBtn vLoadButton x300 y170 w100 h30, Load Hero
@@ -56,7 +58,7 @@ Gui, main:Add, Button, gAptBtn vAptButton x410 y170 w100 h30, APT
 Gui, main:Add, Text, x520 y170 w100 h30 vAptText, APT:`nDEDI:
 
 Gui, main:Add, Text, x300 y250 w380 h20, Load Hero List:
-Gui, main:Add, Edit, x300 y270 w380 h20 vSquadField, %savedSquad%
+Gui, main:Add, Edit, x300 y270 w380 h20 vSquadField, % GetIniValue("Settings", "savedSquad")
 Gui, main:Add, Button, x300 y300 w120 h30 gAddHero, Add to List
 Gui, main:Add, Button, x430 y300 w30 h30 gRemoveHero, ❌
 
@@ -92,3 +94,10 @@ SaveCodeLoaderSettings() {
     SetIniValue("MainGUI", "Y", y1)
     SetIniValue("Settings", "yMapped", (yMapped ? "true" : "false"))
 }
+
+OnExit, ExitRoutine
+if !pToken := Gdip_Startup() {
+    MsgBox, GDI+ 초기화 실패
+    ExitApp
+}
+
