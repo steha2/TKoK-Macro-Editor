@@ -1,9 +1,10 @@
-﻿Exec, coords\screen
+﻿#target=Warcraft III# #w3_ver=classic#
+Import, c_map\classic\screen
 PickNewHero(%part1%)
 
-@%move_new_hero% #delay=5000#
+%move_new_hero%
 
-@%champ_shop%
+%champ_shop%
 
 Exec, %out_dir%\%part1%-equip
 

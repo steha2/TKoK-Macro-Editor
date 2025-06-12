@@ -1,7 +1,10 @@
 ﻿--- 단축키 목록 ---- src/....Events.ahk 맨 아래에서 변경가능 #limit:0#
 PrintScreen 매크로 실행/중단
 Pause  매크로 기록/중단
-Ctrl+S 매크로 저장
+
+Ctrl+S 활성화 된 창의 내용을 저장합니다.
+-Load Hero List -Macro Editor -AHK Note
+
 ALT+F1 매크로 클릭위치 확인 오버레이 토글
 ALT+F2 Click:L 한줄 추가
 ALT+F3, ScrollLock [🡅 Back]
@@ -16,12 +19,13 @@ Alt+U 세이브 파일들 old 폴더로 이동
 Alt+X 창 전환을 하면서 목걸이, 반지2개를 인벤토리 1,2,3번과 스왑
 
 Ctrl+Shift+C 로드 목록에 있는 영웅 최근 세이브 경과 시간보기
-Ctrl+Shift+K 워3 실행
-Ctrl+Shift+W 워3 다중 실행 및 랜 게임 생성
+Ctrl+Shift+K 클래식 워3 실행 
+Ctrl+Shift+W 클래식 워3 다중 실행 및 랜 게임 생성
 
+Ctrl+Shift+I 설정 파일 열기
 Ctrl+Shift+O 스크립트 폴더 열기
 Ctrl+Shift+P TKoK_세이브 폴더 열기
-Ctrl+Shift+I 설정 파일 열기 (매크로 단축키 지정가능)
+
 Ctrl+Shift+R 매크로 재시작
 
 Ctrl+Y: F 와 Y 키 기능 전환을 켜고 끕니다.
@@ -36,5 +40,5 @@ config.ini 에서 명령을 단축키로 지정할 수 있습니다.
 [Macro]
 ;Ctrl : ^    Alt : !    Shift : +   Win : #
 ^J = exec, swap-acc
-+Numpad1 = send, hello #target:notepad#
 !Numpad1 = Run, notepad
+!Numpad2 = Send, hello #target=notepad#

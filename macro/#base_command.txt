@@ -37,7 +37,7 @@ Exec, stat-up #spsi:100# #stat:Q#
 
 ---함수 호출---
 LoadHero(Warrior) 캐릭터 로드
-SendAptToW3() APt 입력
+LoadApt() Apt 입력
 ExecW3() 워3 실행
 ExecMultiW3(2,2) 
 워3 다중실행 후 LAN 게임 생성

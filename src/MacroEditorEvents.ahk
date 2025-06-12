@@ -271,7 +271,7 @@ ConfirmNotSaved() {
     GuiControlGet, currentText, macro:, EditMacro
     if (currentText != origContent) {
         showDiff := GetFirstDiffPreview(origContent, currentText)
-        MsgBox, 4 , 저장되지 않음, 변경 내용이 감지되었습니다:`n`n%showDiff%`n`n저장하지 않고 진행합니까?
+        MsgBox, 4100, 저장되지 않음, 변경 내용이 감지되었습니다:`n`n%showDiff%`n`n저장하지 않고 진행합니까?
         IfMsgBox, No
             return false
 
@@ -299,7 +299,6 @@ GetFirstDiffPreview(orig, curr, context := 20) {
     ; 보기 쉽게 정리
     return "원본:`n" preview1 "`n`n현재:`n" preview2
 }
-
 
 JumpToLine(lineNum){
     GuiControlGet, content, macro:, EditMacro
@@ -356,31 +355,6 @@ OnJumpBtn:
     JumpToLine(line)
 return
 
-SaveNote() {
-    GuiControlGet, noteContent, SimpleNote:, NoteEdit
-    WinGetTitle, filePath, ahk_id %hNote%
-
-    ; 파일 경로가 없거나 확장자 없으면 다이얼로그
-    if (!IsFile(filePath, "txt")) {
-        FileSelectFile, selectedPath, S16, , 저장할 파일을 선택하세요, 텍스트 파일 (*.txt)
-        if (!selectedPath)
-            return  ; 사용자가 취소함
-
-        filePath := selectedPath
-        AppendExt(filePath)
-        WinSetTitle, ahk_id %hNote%, , %filePath%  ; 창 제목도 갱신
-    }
-    FileDelete, %filePath%
-    FileAppend, %noteContent%, %filePath%
-    ShowTip("Note 저장 완료:`n" . filePath)
-
-    ; 매크로 에디터와 공유된 경우 동기화
-    if (macroPath = filePath) {
-        origContent := noteContent
-        GuiControl, macro:, EditMacro, %noteContent%
-    }
-}
-
 
 #If macroGuiShown
 PrintScreen up::Gosub, ToggleMacro
@@ -403,6 +377,9 @@ return
 
 !F3::Gosub, BackMacro
 
+!^F1::TogglePanelOverlayAll("shop")
+!^F2::TogglePanelOverlayAll("skill")
+
 #If IsTargetWindow("Macro Editor")
 ^S::Gosub, SaveMacro
 !N::Note()
@@ -417,4 +394,3 @@ return
     reload
 return
 #If
-

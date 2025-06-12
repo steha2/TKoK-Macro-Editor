@@ -22,6 +22,13 @@ StripComments(line) {
     return line
 }
 
+Dummy(str, placeHolder) {
+    dummy := ""
+    Loop, % StrLen(str)
+        dummy .= placeHolder
+    return dummy
+}
+
 HasValue(arr, val) {
     if (!IsObject(arr))
         return (arr = val)

@@ -9,7 +9,10 @@ global SAVE_DIR := GetIniValue("Settings", "SAVE_DIR", A_ScriptDir)
 global NEW_HERO_DELAY := 800 ; 새 영웅 선택시 화살표 누를때 딜레이
 global heroArr := ["Arcanist","Warrior","Cleric","Pyromancer","Hydromancer","Chronowarper","Phantom Stalker","Chaotic Knight","Shadowblade","Ranger","Barbarian","Paladin","Druid","Medicaster","Venomancer","Aeromancer","Earthquaker","Shadow Shaman"]
 global heroImgPos := {x1:0.45, y1:0.838, x2:0.56, y2:0.86}
+global heroImgPosRefo := {x1:0.455, y1:0.831, x2:0.553, y2:0.85}
+
 ;-----------------------Code Loader Vars------------------------------
+global c_map := {}
 global pl1 := ""
 global pl2 := ""
 global la := ""
@@ -78,7 +81,19 @@ if (GetIniValue("MainGUI", "Minimized", 0))
     Gui, main:Minimize
 
 savedYMapped := GetIniValue("Settings","yMapped")
-ToggleYMapping(savedYMapped ~= "i)^true|1|yes$")
+ToggleYMapping(savedYMapped)
+
+c_map["base"] := LoadMacroContext()
+c_map["refo"] := LoadMacroContext("_reforged")
+
+LoadMacroContext(path := "") {
+    ctx := {}
+    dir := A_ScriptDir . "\macro\c_map" . path
+    Loop, %dir%\*.txt 
+        ImportVars(ReadFile(A_LoopFileFullPath), ctx)
+    
+    return ctx
+}
 
 ; GUI 위치 저장
 SaveCodeLoaderSettings() {
@@ -92,7 +107,7 @@ SaveCodeLoaderSettings() {
     WinGetPos, x1, y1,,, ahk_id %hMain%
     SetIniValue("MainGUI", "X", x1)
     SetIniValue("MainGUI", "Y", y1)
-    SetIniValue("Settings", "yMapped", (yMapped ? "true" : "false"))
+    SetIniValue("Settings", "yMapped", yMapped)
 }
 
 OnExit, ExitRoutine

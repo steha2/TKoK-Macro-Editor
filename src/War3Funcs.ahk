@@ -66,19 +66,17 @@ SwitchNextW3(isClip := true, minimizePrev := false) {
 SwitchW3(clientNum := 1, isClip := false, minimizePrev := false, cursorToCenter := false) {
     currHwnd := WinExist("A")
     nextHwnd := WinExist(CLIENT_TITLE . clientNum)
-    WinGetClass, prevClass, ahk_id %currHwnd%
-    currIsW3 := prevClass = W3_WINTITLE
     if(currHwnd = nexthwnd) {
         ; 같은 창 호출시 창 전환 안하고 토글 마우스 가두기
         if (isClip)
             ToggleClipMouse(nextHwnd) 
     } else if (nextHwnd) { ; 전환 할 창이 있는 경우
         WinActivate, ahk_id %nextHwnd%
-        if (minimizePrev && currHwnd && WinExist("ahk_id " currHwnd) && currIsW3)
+        if (minimizePrev && currHwnd && WinExist("ahk_id " currHwnd) && IsW3(currHwnd))
             WinMinimize, ahk_id %currHwnd%
         if (isClip)
             ClipMouse(nextHwnd)
-    } else if (currIsW3 && !GetClientIndex(currHwnd)) { ; 창 제목이 Warcraft III 기본 인경우
+    } else if (IsW3(currHwnd) && !GetClientIndex(currHwnd)) { ; 창 제목이 Warcraft III 기본 인경우
         WinSetTitle, ahk_id %currHwnd%,,% CLIENT_TITLE . clientNum
     } else {
         ActivateBottomW3()
@@ -89,6 +87,23 @@ SwitchW3(clientNum := 1, isClip := false, minimizePrev := false, cursorToCenter 
         CalcCoords(cx, cy, WinExist("A"))
         MouseMove, %cx%, %cy% , 0
     }
+}
+
+IsW3(hwnd) {
+    return IsTargetWindow("Warcraft III", hwnd)
+}
+
+IsReforged(winTitle) {
+    winTitle := GetTargetWin(winTitle)
+    
+    if(!winTitle)
+        return false
+
+    WinGetClass, winClass, %winTitle%
+    WinGet, exe, ProcessName, %winTitle%
+
+    ; test(StrLen(winClass), exe, (winClass = "OsWindow") && (exe = "Warcarft III.exe"))
+    return (winClass = "OsWindow") && (exe = "Warcraft III.exe")
 }
 
 ; TrySwitchNextW3() {
@@ -104,9 +119,9 @@ ShareUnit(hwnd := "") {
         ClickBack(0.599,0.204, hwnd)
         SendKey("{Enter}", "C", hwnd)
     } else {
-        Send1("{F11}", 300)
+        SendA("{F11}", 300)
         ClickA(0.599,0.204)
-        SendKey("{Enter}")
+        SendA("{Enter}")
     }
 }
 
@@ -139,7 +154,7 @@ ExecW3(roleTitle := "", mini := false) {
 
 ;비활성 명령으로 실행
 ExecMultiW3(num := 0, speed := 0) {
-    if WinExist("ahk_class Warcraft III") {
+    if WinExist("Warcraft III") {
         msg := "[Y] 종료 후 다시 실행   [N] 종료만   [Cancel] 취소"
         MsgBox, % 3 | 4096, Warcraft III가 이미 실행 중입니다, %msg%
         IfMsgBox Cancel
@@ -290,14 +305,4 @@ GetClientHwndArray() {
     }
     return clients
 }
-
-
-!Numpad5::ExecHostW3()
-!Numpad6::ExecJoinW3()
-!Numpad7::SendKey("s", "C", WinExist("ahk_class Warcraft III"))
-!Numpad8::
-SendKey("{Enter}", "C", WinExist("ahk_class Warcraft III"),100)
-SendKey("asdf", "C", WinExist("ahk_class Warcraft III"),100)
-SendKey("{ctrl down}v{ctrl up}", "C", WinExist("ahk_class Warcraft III"),100)
-SendKey("{Enter}", "C", WinExist("ahk_class Warcraft III"))
 return

@@ -83,7 +83,7 @@ return
 ;         Send ^f  ; 그대로
 ; return
 
-#IfWinActive ahk_class Warcraft III
+#If WinActive("ahk_class Warcraft III") || WinActive("Warcraft III")
 ^Y::ToggleYMapping(2)
 
 ; 키 매핑 토글
@@ -111,9 +111,9 @@ SendMapped(key) {
 
 ;Interact
 F4::
-    Send1("n",550)
-    Send1("{Numpad8}",100)
-    Send1("i",100)
+    SendA("n",550)
+    SendA("{Numpad8}",100)
+    SendA("i",100)
     MouseClick,L
 return
 
@@ -149,10 +149,9 @@ ChampChat() {
     Chat("-fog")
     Chat("-cdist 2300")
     Chat("-music")
-    Chat("-spsi 4")
-    SendAptToW3()
-    
+    LoadApt()
 }
+
 #If WinActive("ahk_id " . hMain)
 ^S::
     GuiControlGet, squadText, main:, SquadField
@@ -176,13 +175,13 @@ return
     KeyWait, Alt
     MultiLoad()
 return
-!Y::LoadSquad3()
+;!Y::LoadSquad3()
 !H::PrepareChampMode() ;Champion Mode
 !L::OpenLogFile()
 
 ;Ctrl+Shift
 ^+K::ExecW3()
-^+A::SendAptToW3()
+^+A::LoadApt()
 ^+W::ExecMultiW3()
 ^+H::ExecHostW3()
 ^+C::LastSaveTimes()

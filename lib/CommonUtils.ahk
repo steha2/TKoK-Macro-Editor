@@ -16,17 +16,43 @@ test(a := "", b := "", c := "", d := "", e := "", f := "", isTip := false, write
     else
         MsgBox, % output
 }
+test4(hwnd) {
+    ; 기본 정보 수집
+    WinGetTitle, title, ahk_id %hwnd%
+    WinGetClass, class, ahk_id %hwnd%
+    WinGet, pid, PID, ahk_id %hwnd%
+    WinGet, exe, ProcessName, ahk_id %hwnd%
+    WinGetPos, x, y, w, h, ahk_id %hwnd%
+
+    dpi := GetWindowDPI(hwnd)
+
+    GetClientPos(hwnd, cx, cy)
+    GetClientSize(hwnd, cw, ch)
+
+    ; 문자열 조합 (변수 확장 사용)
+    msg := "HWND         : " hwnd "`n"
+    msg .= "Title        : " title "`n"
+    msg .= "Class        : " class "`n"
+    msg .= "EXE Name     : " exe "`n"
+    msg .= "Window Pos   : x=" x ", y=" y ", w=" w ", h=" h "`n"
+    msg .= "DPI Scale    : " dpi "`n`n"
+    msg .= "Client Pos   : x=" cx ", y=" cy "`n"
+    msg .= "Client Size  : w=" cw ", h=" ch
+
+    MsgBox, 64, HWND 정보, %msg%
+}
+
 
 FormatValue(val) {
     if IsObject(val) {
-        out := "[Object] {"
+        out := "[Object]`n"
         for k, v in val {
             if(!InStr(k, "path"))
-                out .= k ": " v ", "
+                out .= k ": " v "`n"
         }
-        return Trim(out, ", ") . "}"
+        return out . "`n"
     } else {
-        return "[Value] " val
+        return "[Value] " val . "`n"
     }
 }
 
@@ -60,52 +86,28 @@ Clone(obj) {
     return new
 }
 
-Alert(msg) {
-    MsgBox, %msg%
+Alert(msg, title := "알림") {
+    MsgBox, 4096, %title%, %msg%
 }
 
 Confirm(msg, title:="확인") {
-    MsgBox, 4, %title%, %msg%
+    MsgBox, 4100, %title%, %msg%
     IfMsgBox, No
         return false
     
     return true
 }
 
-Note(newText := "", title := "", isAppend := false) {
-    static isCreated := false
-    global NoteEdit
-
-    ; GUI 없으면 생성
-    if (!isCreated) {
-        Gui, SimpleNote: New
-        Gui, SimpleNote: +Resize +HwndhNote  ; << 핸들 저장
-        Gui, SimpleNote: Margin, 10, 10
-        Gui, SimpleNote: Font, 16s, Consolas
-        Gui, SimpleNote: Add, Edit, vNoteEdit w600 h500 WantTab
-        isCreated := true
-    }
-
-    if (isAppend) {
-        GuiControlGet, existingText, SimpleNote:, NoteEdit
-        newText := existingText . (existingText != "" ? "`n" : "") . newText
-    }
-    GuiControl, SimpleNote:, NoteEdit, %newText%
-
-    ; 창이 떠있지 않다면 띄우기
-    WinGet, existingID, ID, ahk_gui SimpleNote
-    if (!existingID) {
-        Gui, SimpleNote: Show,, % title ? title : "AHK Note"
-    }
-    return
-
-    SimpleNoteGuiClose:
-        Gui, SimpleNote:Destroy
-        isCreated := false
-        hNote := ""
-    return
+ModiKeyWait() {
+    if (GetKeyState("Alt", "P"))
+        KeyWait, Alt
+    if (GetKeyState("Ctrl", "P"))
+        KeyWait, Ctrl
+    if (GetKeyState("Shift", "P"))
+        KeyWait, Shift
+    if (GetKeyState("LWin", "P") || GetKeyState("RWin", "P"))
+        KeyWait, LWin
 }
-
 
 RunGetHwnd(path, winTitle := "") {
     Run, *RunAs %path%

@@ -56,8 +56,9 @@ Win_Wait(winTitle, timeout := "") {
 }
 
 WinActivateWait(winTitle) {
-    if winTitle is integer 
-        winTitle := "ahk_id " . winTitle
+    winTitle := GetTargetWin(winTitle)
+    if(!winTitle)
+        return
     WinActivate, %winTitle%
     WinWaitActive, %winTitle%,, 0.1
 }
@@ -183,11 +184,11 @@ IsTargetWindow(target, hwnd := "A") {
     return InStr(title, target, false) || InStr(class, target, false) || InStr(exe, target, false)
 }
 
-GetTargetWin(target, timeout := 1000, interval := 100) {
+GetTargetWin(target) {
     if (target = "")
         return false
 
-    candidates := ["ahk_class " . target, "ahk_exe " . target . ".exe", target]
+    candidates := ["ahk_id " . target, "ahk_class " . target, "ahk_exe " . target . ".exe", target]
     for index, each in candidates {
         if WinExist(each)
             return each
@@ -284,28 +285,6 @@ GetWindowDPI(hwnd := "A") {
     dpi := DllCall("GetDeviceCaps", "Ptr", hdc, "Int", 88)  ; LOGPIXELSX
     DllCall("ReleaseDC", "Ptr", hwnd, "Ptr", hdc)
     return Round(dpi / 96 * 100)  ; 96 DPI가 100%
-}
-
-
-AdjustClientToWindow(win, ByRef x, ByRef y) {
-    WinGet, hwnd, ID, %win%
-    if (!hwnd)
-        return false
-
-    VarSetCapacity(pt, 8, 0)
-    NumPut(x, pt, 0, "Int")
-    NumPut(y, pt, 4, "Int")
-
-    if !DllCall("ClientToScreen", "Ptr", hwnd, "Ptr", &pt)
-        return false
-
-    ; 활성창의 좌상단 좌표 가져오기
-    WinGetPos, wx, wy,,, ahk_id %hwnd%
-
-    ; ControlClick 기준은 윈도우 내부 좌표 → 빼준다
-    x := NumGet(pt, 0, "Int") - wx
-    y := NumGet(pt, 4, "Int") - wy
-    return true
 }
 
 ClientToScreen(hwnd, ByRef x, ByRef y) {

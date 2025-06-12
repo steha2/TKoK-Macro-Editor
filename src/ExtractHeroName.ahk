@@ -1,0 +1,174 @@
+GenerateHeroSamples() {
+    WinActivateWait("Warcraft III")
+    hwnd := WinExist("A")
+    
+    if (!IsTargetWindow("Warcraft III", hwnd)){
+        return Alert("Warcraft III 창이 아닙니다.")
+    }
+
+    GetHeroImgPos(ix, iy, ix2, iy2, iw, ih, imgDir, hwnd)
+    GetClientSize(hwnd, cw, ch)
+
+    if(!IsDirectory(imgDir))
+        FileCreateDir, %imgDir%
+
+    for index, hero in heroArr {
+        Sleep, % NEW_HERO_DELAY + 100
+        file := imgDir . "\" . hero . ".png"
+        CaptureImage(ix, iy, iw, ih, file)
+        SendA("{Right}")
+    }
+
+    ShowTip("Hero Sample Image Saved.`n" imgDir)
+}
+
+ResolveHeroIndex(name) {
+    static heroMap := {}, heroPrefixMap := {}
+
+    ; 초기화: 한 번만 수행
+    if (!heroMap.Count()) {
+        for index, hero in heroArr {
+            nameTrimmed := Trim(hero)
+            initials := ""
+            Loop, Parse, nameTrimmed, %A_Space%
+                initials .= SubStr(A_LoopField, 1, 1)
+
+            nameLower := StrLower(nameTrimmed)
+            heroMap[nameTrimmed] := index
+            heroMap[nameLower] := index
+            heroMap[StrLower(initials)] := index
+
+            ; 앞에서부터 최소 3글자 이상 매핑
+            Loop, % StrLen(nameLower) - 2 {
+                prefix := SubStr(nameLower, 1, A_Index + 2)
+                if (!heroPrefixMap.HasKey(prefix))
+                    heroPrefixMap[prefix] := index
+            }
+        }
+
+        heroMap["sb"] := 9
+        heroMap["eq"] := 17
+    }
+
+    normName := StrLower(name)
+    index := heroMap[normName]
+    if (!index && heroPrefixMap.HasKey(normName))
+        index := heroPrefixMap[normName]
+
+    return index
+}
+
+FindHeroPath(currName, targetName) {
+    currIndex := ResolveHeroIndex(currName)
+    if (!currIndex)
+        return Alert("영웅을 찾을 수 없습니다: " . currName)
+
+    targetIndex := ResolveHeroIndex(targetName)
+    if (!targetIndex)
+        return Alert("영웅을 찾을 수 없습니다: " . targetName)
+
+    if (currIndex = targetIndex)
+        return
+
+    total := heroArr.Length()
+    rightDist := Mod((targetIndex - currIndex + total), total)
+    leftDist  := Mod((currIndex - targetIndex + total), total)
+
+    if (rightDist <= leftDist)
+        return {dir: "{right}", count: rightDist}
+    else
+        return {dir: "{left}", count: leftDist}
+}
+
+GetHeroImgPos(ByRef x1, ByRef y1, ByRef x2, ByRef y2, ByRef iw, ByRef ih, ByRef imgDir, hwnd) {
+    hwnd := hwnd ? hwnd : WinExist("A")
+    
+    isReforged := IsReforged(hwnd)
+
+    x1 := isReforged ? heroImgPosRefo.x1 : heroImgPos.x1
+    y1 := isReforged ? heroImgPosRefo.y1 : heroImgPos.y1
+    x2 := isReforged ? heroImgPosRefo.x2 : heroImgPos.x2
+    y2 := isReforged ? heroImgPosRefo.y2 : heroImgPos.y2
+    
+    CalcCoords(x1, y1, hwnd)
+    CalcCoords(x2, y2, hwnd)
+
+    iw := x2 - x1
+    ih := y2 - y1
+
+    GetClientSize(hwnd, cw, ch)
+    imgDir := A_ScriptDir . "\res\" . (isReforged ? "reforged" : "classic") . "\W" . cw . "H" . ch
+}
+
+GetHeroNameByImg() {
+    GetHeroImgPos(ix, iy, ix2, iy2, iw, ih, imgDir, hwnd)
+
+    if !IsTargetWindow("Warcraft III", WinExist("A")) {
+        return Alert("현재 창이 Warcraft III 이 아닙니다")
+    }
+
+    if (!IsDirectory(imgDir)) {
+        Alert("클라이언트 화면 크기에 맞는 폴더가 없습니다. `nsample image dir : " imgDir)
+        return -1
+    }
+
+    Loop, Files, %imgDir%\*.png  ; PNG 견본만 검사 (필요시 BMP 등 확장자 추가)
+    {
+        imageFile := A_LoopFileFullPath
+        heroName := GetFileNameNoExt(A_LoopFileName)
+        ImageSearch, outX, outY, %ix%, %iy%, %ix2%, %iy2%, *0 %imageFile%
+        if (ErrorLevel = 0) {
+            return heroName
+        }
+    }
+
+    Alert("영웅 선택 화면이 아니거나. 영웅을 찾지 못했습니다.")
+    return -2
+}
+
+PickNewHero(targetHero) {
+    SendA("{right}", NEW_HERO_DELAY)
+
+    currHero := GetHeroNameByImg()
+
+    if (!currHero || currHero = -2)
+        return 
+
+    if (currHero = -1) {
+        msg := "There are no samples for this resolution.`n`n"
+        . "Press the arrow keys to select [ Arcanist ],"
+        . "`nthen press [ Yes ] to generate the sample."
+        
+        MsgBox, 4100, Generate hero samples, %msg%  ; 4 = Yes/No 버튼
+        IfMsgBox, No
+            return
+
+        Sleep, 500
+        GenerateHeroSamples()
+        Sleep, 1000
+        currHero := GetHeroNameByImg()
+    }
+
+    path := FindHeroPath(currHero, targetHero)
+    Loop, % path.count {
+        SendA(path.dir)
+        Sleep, %NEW_HERO_DELAY%
+    }
+    
+    currHero := GetHeroNameByImg()
+    
+    if (GetFullName(targetHero) = currHero) {
+        SendA("{Esc}")
+        Sleep, 500
+    }
+}
+
+GetFullName(shortName) {
+    return heroArr[ResolveHeroIndex(shortName)]
+}
+
+CaptureImage(x, y, w, h, fileOut := "capture.png") {
+    pBitmap := Gdip_BitmapFromScreen(x "|" y "|" w "|" h)
+    Gdip_SaveBitmapToFile(pBitmap, fileOut)
+    Gdip_DisposeImage(pBitmap)
+}

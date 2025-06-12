@@ -4,3 +4,5 @@
 #Include lib\NumberUtils.ahk
 #Include lib\StringUtils.ahk
 #Include lib\WindowUtils.ahk
+#Include lib\ImageUtils.ahk
+#Include lib\JSON.ahk

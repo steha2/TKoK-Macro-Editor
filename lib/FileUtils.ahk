@@ -1,7 +1,8 @@
 
 GetIniValue(section, key, default := "") {
     IniRead, val, % CONFIG_FILE, %section%, %key%, %default%
-    return Trim(val)
+    val := Trim(val)
+    return val
 }
 
 SetIniValue(section, key, value) {
@@ -25,6 +26,29 @@ GetLatestFile(folderPath, filePattern := "*", nameRegex := "") {
     }
     return latest
 }
+
+ImportVars(content, vars) {
+    lines := SplitLine(content)
+    for index, line in lines {
+        line := Trim(line)
+        line := StripComments(line)
+        
+        if (RegExMatch(line, "^\s*\[.*\]\s*$")) ; 섹션 무시
+            continue
+        
+        parts := StrSplit(line, "=",, 2)
+        if (parts.Length() < 2)
+            continue
+        
+        key := Trim(parts[1])
+        val := Trim(parts[2])
+        if (key != "" && val != "")
+            vars[key] := val
+    }
+}
+
+
+
 
 IsFile(path, ext := "") {
     if !(FileExist(path) && !InStr(FileExist(path), "D"))
@@ -78,3 +102,12 @@ IsAbsolutePath(path) {
     return RegExMatch(path, "i)^[a-z]:\\|^\\\\")  ; C:\ or \\network\
 }
 
+
+ReadFile(path) {
+    FileRead, content, %path%
+    if (ErrorLevel) {
+        MsgBox, % "파일을 불러오는 데 실패했습니다: " . %path%
+        return
+    }
+    return content
+}

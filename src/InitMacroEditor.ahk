@@ -23,10 +23,16 @@ global suspendTreeEvents := false
 global macroAbortRequested := false
 global CoordTrackingRunning := false
 global overlayVisible := false
+global panelGuiMap := {}  ; 패널별 GUI 핸들 저장
+
 global hOverlayBG
 global hOverlayBtn
 global hMacro
 global hNote
+
+global panelMap := {}
+FileRead jsonText, %A_ScriptDir%\res\panel_map.json
+panelMap := JSON.Load(jsonText)
 
 ;-----------------------------------------Macro Gui---------------------------------------------------
 if !FileExist(MACRO_DIR)
@@ -113,7 +119,7 @@ Gui, font, s8
 isChecked := GetIniValue("MacroGUI","isTimeGaps") ? "Checked" : ""
 Gui, macro:Add, Checkbox, x790 y470 vTimeGapsCheck gOnTimeGapsCheck %isChecked%, Record Time Gaps
 
-isChecked := GetIniValue("MacroGUI","isAutoMerge") ? "Checked" : ""
+isChecked := GetIniValue("MacroGUI","isAutoMerge",1) ? "Checked" : ""
 Gui, macro:Add, Checkbox, x790 y488 vAutoMerge %isChecked%, Auto Merge
 
 Gui, macro:Add, Radio, x790 y510 vClientBtn gOnCoordMode Checked Group, Client
@@ -142,9 +148,9 @@ SaveMacroEditorSettings() {
     GuiControlGet, lineNum, macro:, LineEdit
     SetIniValue("MacroGUI", "LineNum", lineNum)
 
-    WinGetPos, x2, y2,,, ahk_id %hMacro%
-    if (x2 > 0)
-        SetIniValue("MacroGUI", "X", x2)
-    if (y2 > 0)
-        SetIniValue("MacroGUI", "Y", y2)
+    WinGetPos, x, y, w, h, ahk_id %hMacro%
+    if (x > 0 && w && y > 0 && h) {
+        SetIniValue("MacroGUI", "X", x)
+        SetIniValue("MacroGUI", "Y", y)
+    }
 }

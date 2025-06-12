@@ -5,9 +5,12 @@
 #Include %A_ScriptDir%\src\InitCodeLoader.ahk 
 #Include %A_ScriptDir%\MacroEditor.ahk
 
+#Include %A_ScriptDir%\src\CoordConverter.ahk 
 #Include %A_ScriptDir%\src\CodeLoaderEvents.ahk
 #Include %A_ScriptDir%\src\TKoK_Funcs.ahk
 #Include %A_ScriptDir%\src\War3Funcs.ahk
+#Include %A_ScriptDir%\src\ExtractHeroName.ahk
+#Include %A_ScriptDir%\src\InputExecutor.ahk
 
 #Include %A_ScriptDir%\lib\LibIncludes.ahk
 
