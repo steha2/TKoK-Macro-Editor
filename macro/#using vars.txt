@@ -49,8 +49,16 @@ chat, 내용을 복사 붙여넣기로 입력합 합니다.
 #skip_mode:vars#
 스킵 할때 변수 설정과 명령문을 모두 건너뜁니다.
 
-Import, coords\mode 
-해당 경로의 매크로의 변수값만 읽어옴
+Import, c_map\classic\mode
+해당 경로의 key=value 로 저장된 변수값을 읽어옴
+
+Note 에서 Reforged ↔ Classic 좌표 변환시 클릭 영역을 지정합니다
+Ctrl+Alt+F1, F2로 영역 확인 가능
+#panel=items# 인벤토리와 상점 (inv ~ shop)
+#panel=skill# 스킬창
+#panel=map#   미니맵 
+#panel=cmd#   명령창(move,stop...)
+#panel#       영역끝
 
 preset 폴더안의 파일명을 새로 만드는 매크로 이름에 포함시킬 경우 적용됨
 [+ New] > ranger-stats 입력 > preset\stats 파일을 적용

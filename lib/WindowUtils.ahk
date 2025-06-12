@@ -55,20 +55,31 @@ Win_Wait(winTitle, timeout := "") {
     WinWait, %winTitle%, , %timeout%
 }
 
-WinActivateWait(winTitle, timeout := 0.1) {
-    if(!winTitle)
-        return
+WinActivateWait(winTitleOrHwnd, timeout := 0.1) {
+    if (!winTitleOrHwnd)
+        return false
 
-    hwnd := WinExist(winTitle)
+    ; hwnd 가져오기
+    hwnd := IsInteger(winTitleOrHwnd) ? winTitleOrHwnd : WinExist(winTitleOrHwnd)
 
-    if(!hwnd)
-        winTitle := IsInteger(winTitle) ? "ahk_id " . winTitle : GetTargetWin(winTitle) 
+    ; hwnd가 없고 문자열이라면 보조 탐색 함수 호출
+    if (!hwnd && !IsInteger(winTitleOrHwnd)) {
+        winTitle := GetTargetWin(winTitleOrHwnd)
+        hwnd := WinExist(winTitle)
+    } else {
+        winTitle := "ahk_id " . hwnd
+    }
 
-    if(hwnd && hwnd != WinExist("A") && ) {
+    if (!hwnd)
+        return false
+
+    ; 이미 활성화된 창인지 확인
+    if (hwnd != WinActive("A")) {
         WinActivate, %winTitle%
         WinWaitActive, %winTitle%,, %timeout%
     }
 }
+
 
 WinRaiseWithoutFocus(hwnd) {
     static HWND_TOP := 0

@@ -1,13 +1,11 @@
 GenerateHeroSamples() {
     WinActivateWait("Warcraft III")
-    if (!IsTargetWindow("Warcraft III", WinExist("A"))){
+    if (!IsTargetWindow("Warcraft III", WinActive("A")))
         return Alert("Warcraft III 창이 아닙니다.")
-    }
 
     msg := "There are no samples for this resolution.`n`n"
-        . "Press the arrow keys to select [ Arcanist ]"
-        . "`nthen press [ Yes ] to generate the sample."
-        
+         . "Press the arrow keys to select [ Arcanist ]"
+         . "`nthen press [ Yes ] to generate the sample."
     MsgBox, 4100, Generate hero samples, %msg%  ; 4 = Yes/No 버튼
     IfMsgBox, No
         return
@@ -24,7 +22,7 @@ GenerateHeroSamples() {
         SendA("{Right}")
     }
 
-    ShowTip("Hero Sample Image Saved.`n" imgDir)
+    ShowTip("Hero sample image Saved.`n" imgDir)
 }
 
 ResolveHeroIndex(name) {

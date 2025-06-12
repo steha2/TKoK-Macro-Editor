@@ -156,7 +156,7 @@ ExecW3(roleTitle := "", mini := false) {
 ExecMultiW3(num := 0, speed := 0) {
     if WinExist("ahk_class Warcraft III") {
         msg := "[Y] 종료 후 다시 실행   [N] 종료만   [Cancel] 취소"
-        MsgBox, % 3 | 4096, Warcraft III가 이미 실행 중입니다, %msg%
+        MsgBox, 4099, Warcraft III가 이미 실행 중입니다, %msg%
         IfMsgBox Cancel
             return false
         IfMsgBox No 
@@ -166,20 +166,20 @@ ExecMultiW3(num := 0, speed := 0) {
         Sleep, 3000
     }
 
-    if(num > 0){
-        numW3 := num
-    } else {
+    
+    if(!num) {
         numW3 := GetIniValue("Settings","NUM_W3", 3)
         if !isNatural(numW3) {
             GuiControlGet, squad, main:, SquadField
             StringSplit, squadArray, squad, `,
-            numW3 := squadArray0, 1
+            num := squadArray0
         }
     }
+
     if(!num)
         return
 
-    Loop, % Max(numW3, 1)
+    Loop, % Max(num, 1)
     {
         if (A_Index = 1) {
             hostHwnd := ExecHostW3(speed)
@@ -205,12 +205,11 @@ ExecHostW3(speed := 0) {
 
     if (!speed)
         speed := GetIniValue("Settings", "speed")
-
-    if (speed = 1) {
+    if (speed = 1)
         ClickBack(0.053, 0.160, hwnd)
-    } else if (speed = 2) {
+    else if (speed = 2)
         ClickBack(0.192, 0.160, hwnd)
-    }
+    
     SendKey("c", "C", hwnd)
     return hwnd
 }
@@ -242,10 +241,11 @@ CloseAllW3() {
     for index, hwnd in w3List
         WinClose, ahk_id %hwnd%
 
+    Sleep, 300
     for index, hwnd in w3List {
         if(WinExist("ahk_id " . hwnd)) {
-            Sleep, 300
             SendKey("x", "C", hwnd)  ; 강제 종료
+            Sleep, 300
         }
     }
 }

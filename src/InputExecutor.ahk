@@ -21,7 +21,9 @@ Click(x, y, hwnd:="", btn := "L", mode := "") {
 }
 
 ClickA(x, y, btn := "L", mode := "") {
-    Click(x, y, WinExist("A"), btn, mode)
+    hwnd := WinActive("A")  ; 활성 상태일 때만 HWND를 반환
+    if (hwnd)
+        Click(x, y, hwnd, btn, mode)
 }
 
 ClickW3(coordKey, btn := "L", mode := "", hwnd := "") {
@@ -47,13 +49,12 @@ ClickBackEx(clickCmdArr) {
     if (!clickCmdArr.HasKey(1))  ; 단일 객체일 경우 배열처럼 래핑
         clickCmdArr := [clickCmdArr]
 
-    BlockInput, On
+    ; BlockInput, On
     CoordMode, Mouse, Screen
     MouseGetPos, origX, origY
     WinGet, origHwnd, ID, A
 
     minimizedArray := []
-
     for index, clickCmd in clickCmdArr {
         currHwnd := clickCmd.hwnd
         
@@ -61,7 +62,6 @@ ClickBackEx(clickCmdArr) {
             ShowTip("Invalid hwnd at index " index)
             continue
         }
-
         WinGet, winState, MinMax, ahk_id %currHwnd%
         wasMinimized := (winState == 2)
 
@@ -70,12 +70,9 @@ ClickBackEx(clickCmdArr) {
             minimizedArray.push(currHwnd)
 
         ; 현재 활성 윈도우가 아니라면 대상 창 활성화
-        WinActivateWait(hwnd)
-
         btn := clickCmd.HasKey("btn") ? clickCmd.btn : "L"
         Click(clickCmd.x, clickCmd.y, currHwnd, btn)
     }
-
     ; 마우스 위치 복귀
     CoordMode, Mouse, Screen
     MouseMove, %origX%, %origY%, 0
@@ -84,16 +81,15 @@ ClickBackEx(clickCmdArr) {
     if (WinExist("ahk_id " . origHwnd)) {
         WinActivate, ahk_id %origHwnd%
     }
-
     ; 최소화 상태였던 창들 다시 최소화 처리
     for index, hwnd in minimizedArray {
         if (WinExist("ahk_id " hwnd)) {
             WinMinimize, ahk_id %hwnd%
         }
     }
-
+    ; BlockInput, Off
     currHwnd := ""
-    BlockInput, Off
+
 }
 
 Chat(text, mode := "", hwnd := "") {
