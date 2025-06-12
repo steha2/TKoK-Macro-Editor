@@ -138,7 +138,7 @@ PrepareTargetHwnd(vars) {
 
 CheckClickCommand(command, vars) {
     if (vars.target && !vars.target_hwnd)
-        return false
+        return true
 
     if RegExMatch(command, "i)^Click:(\w+),(.+)$", m) 
         btn := SubStr(m1,1,1), coords := Trim(m2)
@@ -159,7 +159,7 @@ CheckClickCommand(command, vars) {
 
 CheckKeyCommand(command, vars) {
     if (vars.target && !vars.target_hwnd)
-        return false
+        return true
 
     if RegExMatch(command, "i)^(SendRaw|Send|Chat)\s*,?\s*(.*)$", m) {
         cmdType := StrLower(m1), key := m2
@@ -256,7 +256,7 @@ ExecSingleCommand(command, vars, line := "", index := "") {
     }
 
     if RegExMatch(command, "^([a-zA-Z0-9_]+)\s*\((.*)\)\s*$", m) {
-        ActivateHwnd(vars.target_hwnd)
+        WinActivateWait(vars.target_hwnd)
         ExecFunc(m1, m2)
         return
     }

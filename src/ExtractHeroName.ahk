@@ -4,6 +4,14 @@ GenerateHeroSamples() {
         return Alert("Warcraft III 창이 아닙니다.")
     }
 
+    msg := "There are no samples for this resolution.`n`n"
+        . "Press the arrow keys to select [ Arcanist ]"
+        . "`nthen press [ Yes ] to generate the sample."
+        
+    MsgBox, 4100, Generate hero samples, %msg%  ; 4 = Yes/No 버튼
+    IfMsgBox, No
+        return
+
     GetHeroImgPos(ix, iy, ix2, iy2, iw, ih, imgDir)
 
     if(!IsDirectory(imgDir))
@@ -137,17 +145,7 @@ PickNewHero(targetHero) {
         return 
 
     if (currHero = -1) {
-        msg := "There are no samples for this resolution.`n`n"
-        . "Press the arrow keys to select [ Arcanist ]"
-        . "`nthen press [ Yes ] to generate the sample."
-        
-        MsgBox, 4100, Generate hero samples, %msg%  ; 4 = Yes/No 버튼
-        IfMsgBox, No
-            return
-
-        Sleep, 500
         GenerateHeroSamples()
-        Sleep, 500
         currHero := GetHeroNameByImg()
     }
 

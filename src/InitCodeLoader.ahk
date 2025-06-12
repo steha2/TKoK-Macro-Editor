@@ -80,15 +80,14 @@ Gui, main:Show, x%mainGuiX% y%mainGuiY%, TKoK_Code_Loader
 if (GetIniValue("MainGUI", "Minimized", 0))
     Gui, main:Minimize
 
-savedYMapped := GetIniValue("Settings","yMapped")
-ToggleYMapping(savedYMapped)
+yMapped := GetIniValue("Settings","yMapped")
 
-c_map["base"] := LoadMacroContext()
-c_map["refo"] := LoadMacroContext("_reforged")
+c_map["classic"] := LoadMacroContext("classic")
+c_map["reforged"] := LoadMacroContext("reforged")
 
 LoadMacroContext(path := "") {
     ctx := {}
-    dir := A_ScriptDir . "\macro\c_map" . path
+    dir := A_ScriptDir . "\macro\c_map\" . path
     Loop, %dir%\*.txt 
         ImportVars(ReadFile(A_LoopFileFullPath), ctx)
     

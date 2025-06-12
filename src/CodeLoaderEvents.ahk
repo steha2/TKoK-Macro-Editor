@@ -92,7 +92,7 @@ ToggleYMapping(force := 2) {
         yMapped := !!force
     else
         yMapped := !yMapped
-    ShowTip(yMapped ? "🟢 y↔f 매핑 켜짐" : "🔴 y↔f 매핑 꺼짐")
+    ShowTip(yMapped ? "🟢 y↔f 매핑 켜짐" : "❌ y↔f 매핑 꺼짐", 1000, false)
 }
 
 ; 실제 전송 함수 (Shift, Ctrl 등 고려)

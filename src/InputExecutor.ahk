@@ -10,7 +10,7 @@ SmartClick(x, y, hwnd := "", btn := "L", mode := "", coord_mode := "", coord_typ
         Sleep, 100
         ControlClick, x%x% y%y%, ahk_id %hwnd%,, %btn%,, NA
     } else {
-        ActivateHwnd(hwnd)
+        WinActivateWait(hwnd)
         PhysClick(x, y, btn)
     }
 }
@@ -70,7 +70,7 @@ ClickBackEx(clickCmdArr) {
             minimizedArray.push(currHwnd)
 
         ; 현재 활성 윈도우가 아니라면 대상 창 활성화
-        ActivateHwnd(hwnd)
+        WinActivateWait(hwnd)
 
         btn := clickCmd.HasKey("btn") ? clickCmd.btn : "L"
         Click(clickCmd.x, clickCmd.y, currHwnd, btn)
@@ -150,7 +150,7 @@ SendKey(key, mode := "", hwnd := "", delay := 0) {
         else
             ControlSend,, %key%, ahk_id %hwnd%
     } else {
-        ActivateHwnd(hwnd)
+        WinActivateWait(hwnd)
 
         if (isRaw) {
             Suspend, On

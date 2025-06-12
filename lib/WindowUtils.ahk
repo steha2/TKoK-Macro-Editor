@@ -55,12 +55,19 @@ Win_Wait(winTitle, timeout := "") {
     WinWait, %winTitle%, , %timeout%
 }
 
-WinActivateWait(winTitle) {
-    winTitle := GetTargetWin(winTitle)
+WinActivateWait(winTitle, timeout := 0.1) {
     if(!winTitle)
         return
-    WinActivate, %winTitle%
-    WinWaitActive, %winTitle%,, 0.1
+
+    hwnd := WinExist(winTitle)
+
+    if(!hwnd)
+        winTitle := IsInteger(winTitle) ? "ahk_id " . winTitle : GetTargetWin(winTitle) 
+
+    if(hwnd && hwnd != WinExist("A") && ) {
+        WinActivate, %winTitle%
+        WinWaitActive, %winTitle%,, %timeout%
+    }
 }
 
 WinRaiseWithoutFocus(hwnd) {
@@ -77,11 +84,6 @@ WinRaiseWithoutFocus(hwnd) {
         , "Ptr", HWND_TOP
         , "Int", 0, "Int", 0, "Int", 0, "Int", 0
         , "UInt", flags)
-}
-
-ActivateHwnd(hwnd) {
-    if(hwnd && hwnd != WinExist("A") && WinExist("ahk_id " . hwnd))
-        WinActivateWait(hwnd)
 }
 
 ;-------------------------------- 마우스 함수 --------------------------------
@@ -169,13 +171,14 @@ IsAllowedWindow(target) {
         return GetTargetWin(target) 
 }
 
-IsTargetWindow(target, hwnd := "A") {
+IsTargetWindow(target, hwnd := "") {
     if (target = "")
         return false
 
-    hwnd := (hwnd = "A") ? WinExist("A") : hwnd
+    hwnd := hwnd ? hwnd : WinExist("A")
+
     if (!hwnd)
-        return false
+        return
 
     WinGetTitle, title, ahk_id %hwnd%
     WinGetClass, class, ahk_id %hwnd%
@@ -188,10 +191,11 @@ GetTargetWin(target) {
     if (target = "")
         return false
 
-    candidates := ["ahk_id " . target, "ahk_class " . target, "ahk_exe " . target . ".exe", target]
+    candidates := ["ahk_class " . target, "ahk_exe " . target . ".exe", target]
     for index, each in candidates {
-        if WinExist(each)
+        if WinExist(each) {
             return each
+        }
     }
     return false
 }

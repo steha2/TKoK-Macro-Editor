@@ -69,7 +69,7 @@ test2(a:="", b:="", c:="", d:="", e:="", f:="",isTip:=true,isLog:=true) {
 
 ShowTip(msg, duration := 1500, writeLog := true) {
     if (writeLog) {
-        FileAppend, % msg, % logFilePath
+        FileAppend, `n%msg%, % logFilePath
     }
     Tooltip, %msg%
     SetTimer, RemoveToolTip, -%duration%
