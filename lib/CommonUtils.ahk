@@ -67,7 +67,7 @@ test2(a:="", b:="", c:="", d:="", e:="", f:="",isTip:=true,isLog:=true) {
     test(a,b,c,d,e,f,isTip,isLog)
 }
 
-ShowTip(msg, duration := 1500, writeLog := false) {
+ShowTip(msg, duration := 1500, writeLog := true) {
     if (writeLog) {
         FileAppend, % msg, % logFilePath
     }
@@ -86,7 +86,10 @@ Clone(obj) {
     return new
 }
 
-Alert(msg, title := "알림") {
+Alert(msg, title := "알림", writeLog := true) {
+     if (writeLog) {
+        FileAppend, % msg, % logFilePath
+    }
     MsgBox, 4096, %title%, %msg%
 }
 

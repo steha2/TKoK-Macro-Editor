@@ -1,13 +1,10 @@
 GenerateHeroSamples() {
     WinActivateWait("Warcraft III")
-    hwnd := WinExist("A")
-    
-    if (!IsTargetWindow("Warcraft III", hwnd)){
+    if (!IsTargetWindow("Warcraft III", WinExist("A"))){
         return Alert("Warcraft III 창이 아닙니다.")
     }
 
-    GetHeroImgPos(ix, iy, ix2, iy2, iw, ih, imgDir, hwnd)
-    GetClientSize(hwnd, cw, ch)
+    GetHeroImgPos(ix, iy, ix2, iy2, iw, ih, imgDir)
 
     if(!IsDirectory(imgDir))
         FileCreateDir, %imgDir%
@@ -61,11 +58,11 @@ ResolveHeroIndex(name) {
 FindHeroPath(currName, targetName) {
     currIndex := ResolveHeroIndex(currName)
     if (!currIndex)
-        return Alert("영웅을 찾을 수 없습니다: " . currName)
+        return ShowTip("FindHeroPath`n영웅을 찾을 수 없습니다: " . currName)
 
     targetIndex := ResolveHeroIndex(targetName)
     if (!targetIndex)
-        return Alert("영웅을 찾을 수 없습니다: " . targetName)
+        return ShowTip("FindHeroPath`n영웅을 찾을 수 없습니다: " . targetName)
 
     if (currIndex = targetIndex)
         return
@@ -80,9 +77,11 @@ FindHeroPath(currName, targetName) {
         return {dir: "{left}", count: leftDist}
 }
 
-GetHeroImgPos(ByRef x1, ByRef y1, ByRef x2, ByRef y2, ByRef iw, ByRef ih, ByRef imgDir, hwnd) {
-    hwnd := hwnd ? hwnd : WinExist("A")
-    
+GetHeroImgPos(ByRef x1, ByRef y1, ByRef x2, ByRef y2, ByRef iw, ByRef ih, ByRef imgDir) {
+    hwnd := WinExist("A")
+    if(!IsTargetWindow("Warcraft III", hwnd))
+        return ShowTip("워크래프트 3창이 아닙니다")
+
     isReforged := IsReforged(hwnd)
 
     x1 := isReforged ? heroImgPosRefo.x1 : heroImgPos.x1
@@ -92,7 +91,10 @@ GetHeroImgPos(ByRef x1, ByRef y1, ByRef x2, ByRef y2, ByRef iw, ByRef ih, ByRef 
     
     CalcCoords(x1, y1, hwnd)
     CalcCoords(x2, y2, hwnd)
-
+    
+    ClientToScreen(hwnd, x1, y1)
+    ClientToScreen(hwnd, x2, y2)
+    
     iw := x2 - x1
     ih := y2 - y1
 
@@ -101,14 +103,14 @@ GetHeroImgPos(ByRef x1, ByRef y1, ByRef x2, ByRef y2, ByRef iw, ByRef ih, ByRef 
 }
 
 GetHeroNameByImg() {
-    GetHeroImgPos(ix, iy, ix2, iy2, iw, ih, imgDir, hwnd)
+    GetHeroImgPos(ix, iy, ix2, iy2, iw, ih, imgDir)
 
     if !IsTargetWindow("Warcraft III", WinExist("A")) {
-        return Alert("현재 창이 Warcraft III 이 아닙니다")
+        return ShowTip("현재 창이 Warcraft III 이 아닙니다")
     }
 
     if (!IsDirectory(imgDir)) {
-        Alert("클라이언트 화면 크기에 맞는 폴더가 없습니다. `nsample image dir : " imgDir)
+        ShowTip("클라이언트 화면 크기에 맞는 폴더가 없습니다. `nThe folder does not exist: " imgDir)
         return -1
     }
 
@@ -122,7 +124,7 @@ GetHeroNameByImg() {
         }
     }
 
-    Alert("영웅 선택 화면이 아니거나. 영웅을 찾지 못했습니다.")
+    Alert("영웅 선택 화면이 아니거나. 영웅을 찾지 못했습니다.`nDelete the sample folder and try again")
     return -2
 }
 
@@ -136,7 +138,7 @@ PickNewHero(targetHero) {
 
     if (currHero = -1) {
         msg := "There are no samples for this resolution.`n`n"
-        . "Press the arrow keys to select [ Arcanist ],"
+        . "Press the arrow keys to select [ Arcanist ]"
         . "`nthen press [ Yes ] to generate the sample."
         
         MsgBox, 4100, Generate hero samples, %msg%  ; 4 = Yes/No 버튼
@@ -145,7 +147,7 @@ PickNewHero(targetHero) {
 
         Sleep, 500
         GenerateHeroSamples()
-        Sleep, 1000
+        Sleep, 500
         currHero := GetHeroNameByImg()
     }
 
@@ -164,7 +166,7 @@ PickNewHero(targetHero) {
 }
 
 GetFullName(shortName) {
-    return heroArr[ResolveHeroIndex(shortName)]
+    return heroArr[ResolveHeroIndex(StrLower(shortName))]
 }
 
 CaptureImage(x, y, w, h, fileOut := "capture.png") {

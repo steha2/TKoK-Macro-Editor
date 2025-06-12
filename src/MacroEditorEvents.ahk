@@ -377,8 +377,9 @@ return
 
 !F3::Gosub, BackMacro
 
-!^F1::TogglePanelOverlayAll("shop")
-!^F2::TogglePanelOverlayAll("skill")
+!^F1::TogglePanelOverlayAll("shop inv")
+!^F2::TogglePanelOverlayAll("skill inv")
+!^F3::TogglePanelOverlayAll("skill shop")
 
 #If IsTargetWindow("Macro Editor")
 ^S::Gosub, SaveMacro

@@ -154,7 +154,7 @@ ExecW3(roleTitle := "", mini := false) {
 
 ;비활성 명령으로 실행
 ExecMultiW3(num := 0, speed := 0) {
-    if WinExist("Warcraft III") {
+    if WinExist("ahk_class Warcraft III") {
         msg := "[Y] 종료 후 다시 실행   [N] 종료만   [Cancel] 취소"
         MsgBox, % 3 | 4096, Warcraft III가 이미 실행 중입니다, %msg%
         IfMsgBox Cancel

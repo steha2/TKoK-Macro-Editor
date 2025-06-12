@@ -83,7 +83,7 @@ return
 ;         Send ^f  ; 그대로
 ; return
 
-#If WinActive("ahk_class Warcraft III") || WinActive("Warcraft III")
+#If IsTargetWindow("Warcraft III", WinExist("A"))
 ^Y::ToggleYMapping(2)
 
 ; 키 매핑 토글
@@ -119,9 +119,6 @@ return
 
 F5::Chat("-inv")
 F6::Chat("-tt")
-
-;마우스 가두기
-F7::ClipMouse()
 
 ;아이템 교체
 !X::
@@ -188,6 +185,8 @@ return
 ^+I:: Run, notepad.exe "%CONFIG_FILE%"
 ^+O:: Run, %A_ScriptDir%
 ^+P:: Run, %SAVE_DIR%
+
+F7::ToggleClipMouse()
 
 #If
 ;매크로 재시작
