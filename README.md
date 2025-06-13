@@ -2,7 +2,7 @@
 
 ## CodeLoader.ahk
 TKoK ORPG 코드 관리 및 Warcraft III 창 제어 도구입니다.  
-Classic Warcraft III, TKoK_3.5.15 버전에 최적화되어 있습니다.
+TKoK_3.5.15 버전에 최적화되어 있습니다.
 
 ## MacroEditor.ahk
 범용 매크로 기록/실행기입니다.  
