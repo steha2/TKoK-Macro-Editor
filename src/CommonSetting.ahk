@@ -3,7 +3,7 @@ SendMode Input
 SetWorkingDir, %A_ScriptDir%
 #SingleInstance Force
 FileEncoding, UTF-8
-SetTitleMatchMode, 2
+SetTitleMatchMode, 3
 SetKeyDelay, -1, 60
 SetControlDelay, -1
 CoordMode, Pixel, Screen

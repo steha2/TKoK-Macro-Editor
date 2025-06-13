@@ -1,4 +1,12 @@
 ﻿global isLaunchedByMain := true
+; Start gdi+
+if !pToken := Gdip_Startup() {
+	MsgBox, 48, gdiplus error!, Gdiplus failed to start. Please ensure you have gdiplus on your system
+	ExitApp
+}
+OnExit, Exit
+
+;CaptureImage(100, 100, 200, 200, "c:\capture.png")
 
 #Include %A_ScriptDir%\src\CommonSetting.ahk 
 
@@ -16,6 +24,7 @@
 
 #Include %A_ScriptDir%\lib\Gdip_All.ahk
 
-ExitRoutine:
+Exit:
+; gdi+ may now be shutdown on exiting the program
 Gdip_Shutdown(pToken)
 ExitApp

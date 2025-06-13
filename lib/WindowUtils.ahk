@@ -60,23 +60,15 @@ WinActivateWait(winTitleOrHwnd, timeout := 0.1) {
         return false
 
     ; hwnd 가져오기
-    hwnd := IsInteger(winTitleOrHwnd) ? winTitleOrHwnd : WinExist(winTitleOrHwnd)
-
-    ; hwnd가 없고 문자열이라면 보조 탐색 함수 호출
-    if (!hwnd && !IsInteger(winTitleOrHwnd)) {
-        winTitle := GetTargetWin(winTitleOrHwnd)
-        hwnd := WinExist(winTitle)
-    } else {
-        winTitle := "ahk_id " . hwnd
-    }
+    hwnd := IsInteger(winTitleOrHwnd) ? winTitleOrHwnd : GetTargetHwnd(winTitleOrHwnd)
 
     if (!hwnd)
         return false
 
     ; 이미 활성화된 창인지 확인
     if (hwnd != WinActive("A")) {
-        WinActivate, %winTitle%
-        WinWaitActive, %winTitle%,, %timeout%
+        WinActivate, ahk_id %hwnd%
+        WinWaitActive, ahk_id %hwnd%,, %timeout%
     }
 }
 
@@ -175,18 +167,18 @@ IsMouseClipped() {
 
 ; ------------------------------- 화면 함수 ---------------------------------
 
-IsAllowedWindow(target) {
-    if (target = "" || IsTargetWindow(target))
-        return true
-    else 
-        return GetTargetWin(target) 
-}
+; IsAllowedWindow(target) {
+;     if (target = "" || IsTargetWindow(target))
+;         return true
+;     else 
+;         return GetTargetHwnd(target) 
+; }
 
 IsTargetWindow(target, hwnd := "") {
     if (target = "")
         return false
 
-    hwnd := hwnd ? hwnd : WinExist("A")
+    hwnd := hwnd ? hwnd : WinActive("A")
 
     if (!hwnd)
         return
@@ -198,15 +190,15 @@ IsTargetWindow(target, hwnd := "") {
     return InStr(title, target, false) || InStr(class, target, false) || InStr(exe, target, false)
 }
 
-GetTargetWin(target) {
-    if (target = "")
+GetTargetHwnd(target) {
+    if (!target)
         return false
 
-    candidates := ["ahk_class " . target, "ahk_exe " . target . ".exe", target]
+    candidates := ["ahk_id " . target, "ahk_class " . target, "ahk_exe " . target . ".exe", target]
     for index, each in candidates {
-        if WinExist(each) {
-            return each
-        }
+        findHwnd := WinExist(each)
+        if(findHwnd)
+            return findHwnd
     }
     return false
 }
@@ -327,4 +319,9 @@ ToggleMinimize(winTitle, force := "") {
         WinRestore, %winTitle%
     }
     return true
+}
+
+GetClientRect(hwnd, ByRef x, ByRef y, ByRef w, ByRef h) {
+    GetClientPos(hwnd, x, y)
+    GetClientSize(hwnd, w, h)
 }

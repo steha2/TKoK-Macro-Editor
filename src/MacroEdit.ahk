@@ -228,7 +228,7 @@ PreprocessMacroLines(lines, vars, isExec := false) {
             cmd := StripComments(line)
             cmd := ResolveMarker(cmd, vars)
         }
-
+        
         if (vars.HasKey("force") && isExec) {
             vars.Delete("force")
             ExecSingleCommand(cmd, vars)

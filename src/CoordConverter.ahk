@@ -68,7 +68,7 @@ ParseCoords(coords) {
     }
 }
 
-AdjustClientToWindow(win, ByRef x, ByRef y) {
+AdjustWindowToClient(win, ByRef x, ByRef y) {
     WinGet, hwnd, ID, %win%
     if (!hwnd)
         return false
@@ -89,8 +89,7 @@ AdjustClientToWindow(win, ByRef x, ByRef y) {
     return true
 }
 
-ConvertScriptMode(scriptText, from) {
-    to := (from = "classic") ? "reforged" : "classic"
+ConvertScriptMode(scriptText, from, to) {
     out := ""
     vars := {}
     for index, line in SplitLine(scriptText) {
@@ -114,8 +113,8 @@ ConvertScriptMode(scriptText, from) {
 }
 
 ConvertCoords(x, y, fromMode, toMode, panelName) {
-    from := panelMap[fromMode][panelName]
-    to   := panelMap[toMode][panelName]
+    from := uiRegions[fromMode][panelName]
+    to   := uiRegions[toMode][panelName]
 
     ; 영역 밖 검사
     if (x < from.x1 || x > from.x2 || y < from.y1 || y > from.y2)

@@ -52,6 +52,26 @@ GetLastPart(str, delim) {
     return parts[parts.MaxIndex()]
 }
 
+ImportVars(content, vars) {
+    lines := SplitLine(content)
+    for index, line in lines {
+        line := Trim(line)
+        line := StripComments(line)
+        
+        if (RegExMatch(line, "^\s*\[.*\]\s*$")) ; 섹션 무시
+            continue
+        
+        parts := StrSplit(line, "=",, 2)
+        if (parts.Length() < 2)
+            continue
+        
+        key := Trim(parts[1])
+        val := Trim(parts[2])
+        if (key != "" && val != "")
+            vars[key] := val
+    }
+}
+
 AppendExt(ByRef path, ext := "txt") {
     if !RegExMatch(path, "i)\." . ext . "$")
         path .= "." . ext

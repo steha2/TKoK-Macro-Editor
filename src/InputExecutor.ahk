@@ -6,7 +6,7 @@ SmartClick(x, y, hwnd := "", btn := "L", mode := "", coord_mode := "", coord_typ
     CalcCoords(x, y, hwnd, coord_mode, coord_type)
 
     if (InStr(mode, "C", true)) {
-        AdjustClientToWindow(hwnd, x, y)
+        AdjustWindowToClient(hwnd, x, y)
         Sleep, 100
         ControlClick, x%x% y%y%, ahk_id %hwnd%,, %btn%,, NA
     } else {

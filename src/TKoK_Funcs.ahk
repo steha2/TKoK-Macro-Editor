@@ -130,7 +130,7 @@ PrepareChampMode(macroPath := "") {
     Loop, %count% {
         idx := count - A_Index + 1
         SwitchW3(idx, false, false, true)
-        if(idx != count)
+        if(idx != 1)
             ShareUnit()
         else
             ChampChat()

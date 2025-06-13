@@ -16,7 +16,7 @@ test(a := "", b := "", c := "", d := "", e := "", f := "", isTip := false, write
     else
         MsgBox, % output
 }
-test4(hwnd) {
+hwndInfo(hwnd) {
     ; 기본 정보 수집
     WinGetTitle, title, ahk_id %hwnd%
     WinGetClass, class, ahk_id %hwnd%
@@ -25,9 +25,7 @@ test4(hwnd) {
     WinGetPos, x, y, w, h, ahk_id %hwnd%
 
     dpi := GetWindowDPI(hwnd)
-
-    GetClientPos(hwnd, cx, cy)
-    GetClientSize(hwnd, cw, ch)
+    GetClientRect(w3hwnd, cx, cy, cw, ch)
 
     ; 문자열 조합 (변수 확장 사용)
     msg := "HWND         : " hwnd "`n"
@@ -39,7 +37,7 @@ test4(hwnd) {
     msg .= "Client Pos   : x=" cx ", y=" cy "`n"
     msg .= "Client Size  : w=" cw ", h=" ch
 
-    MsgBox, 64, HWND 정보, %msg%
+    return msg
 }
 
 
@@ -65,6 +63,15 @@ OpenLogFile() {
 
 test2(a:="", b:="", c:="", d:="", e:="", f:="",isTip:=true,isLog:=true) {
     test(a,b,c,d,e,f,isTip,isLog)
+}
+
+testj(data) {
+    if(IsObject(data)) {
+        json := JSON.Dump(data,, 2)
+        MsgBox, -------------JSON------------`n%json%
+    } else {
+        MsgBox, 오브젝트가 아님`n%data%
+    }
 }
 
 ShowTip(msg, duration := 1500, writeLog := true) {

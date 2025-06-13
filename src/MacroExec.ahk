@@ -1,10 +1,9 @@
 ExecMacro(scriptText, vars, current_path) {
     if (scriptText = "")
         return
-    if (runMacroCount > 10) {
-        MsgBox, 실행 중인 매크로 수가 10을 초과 합니다.
-        return
-    }
+    if (runMacroCount > 10)
+        return Alert("실행 중인 매크로 수가 10을 초과 합니다.")
+    
     ModiKeyWait()
 
     UpdateMacroState(+1)
@@ -77,6 +76,7 @@ ExecMacro(scriptText, vars, current_path) {
         }
 
         PrepareTargetHwnd(vars)
+
         Loop, % vars.rep
         {
             ExecSingleCommand(cmd, vars, line, index)
@@ -114,7 +114,7 @@ PrepareTargetHwnd(vars) {
     } else if (vars.target != vars._last_target) {
         vars._last_target := vars.target
         if (vars.target) {
-            vars.target_hwnd := WinExist(GetTargetWin(vars.target))
+            vars.target_hwnd := GetTargetHwnd(vars.target)
             return vars.target_hwnd
         } else {
             vars.target_hwnd := ""
@@ -123,7 +123,7 @@ PrepareTargetHwnd(vars) {
 
     ; 타겟은 같은데 hwnd 가 없는 경우 → 재검색
     } else if (!vars.target_hwnd) {
-        vars.target_hwnd := WinExist(GetTargetWin(vars.target))
+        vars.target_hwnd := GetTargetHwnd(vars.target)
         return vars.target_hwnd
 
     ; 타겟 동일하고 hwnd 있음 → hwnd 유효성 검사 후 반환
@@ -132,48 +132,8 @@ PrepareTargetHwnd(vars) {
     }
 
     ; hwnd 있었지만 창이 사라졌음 → 재검색 시도
-    vars.target_hwnd := WinExist(GetTargetWin(vars.target))
+    vars.target_hwnd := GetTargetHwnd(vars.target)
     return vars.target_hwnd
-}
-
-CheckClickCommand(command, vars) {
-    if (vars.target && !vars.target_hwnd)
-        return true
-
-    if RegExMatch(command, "i)^Click:(\w+),(.+)$", m) 
-        btn := SubStr(m1,1,1), coords := Trim(m2)
-    else 
-        return false
-    
-    if(vars.HasKey(coords))
-        coords := vars[coords]
-
-    coords := ParseCoords(coords)
-
-    if(!coords)
-        return false
-
-    SmartClick(coords.x, coords.y, vars.target_hwnd, btn, vars.send_mode, vars.coord_mode, coords.type)
-    return true
-}
-
-CheckKeyCommand(command, vars) {
-    if (vars.target && !vars.target_hwnd)
-        return true
-
-    if RegExMatch(command, "i)^(SendRaw|Send|Chat)\s*,?\s*(.*)$", m) {
-        cmdType := StrLower(m1), key := m2
-        if(cmdType = "chat")
-            Chat(key, vars.send_mode, vars.target_hwnd)
-        else if(cmdType = "sendraw")
-            SendKey(key, vars.send_mode . "R", vars.target_hwnd)
-        else
-            SendKey(key, vars.send_mode, vars.target_hwnd)
-        
-        return true
-    }
-
-    return false
 }
 
 ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
@@ -244,41 +204,50 @@ EvaluateExpr(expr, vars) {
 }
 
 ExecSingleCommand(command, vars, line := "", index := "") {
-    if (CheckClickCommand(command, vars))
-        return
+    if RegExMatch(command, "i)^Click:(\w+),(.+)$", m) {
+        if(vars.target && !vars.target_hwnd)
+            return ShowTip("대상 창이 없습니다.`n" vars.target)
 
-    if (CheckKeyCommand(command, vars))
-        return
-
-    if RegExMatch(command, "i)^(Sleep|Wait|Delay)\s*,?\s*(\d*)", m) {
-        vars.delay := m2
-        return
+        btn := SubStr(m1,1,1), coords := Trim(m2)
+        
+        if(vars.HasKey(coords))
+            coords := vars[coords]
+        
+        coords := ParseCoords(coords)
+        if(coords)
+            SmartClick(coords.x, coords.y, vars.target_hwnd, btn, vars.send_mode, vars.coord_mode, coords.type)
     }
+    else if RegExMatch(command, "i)^(SendRaw|Send|Chat)\s*,?\s*(.*)$", m) {
+        if(vars.target && !vars.target_hwnd)
+            return ShowTip("대상 창이 없습니다." vars.target)
 
-    if RegExMatch(command, "^([a-zA-Z0-9_]+)\s*\((.*)\)\s*$", m) {
+        cmdType := StrLower(m1), key := m2
+        if(cmdType = "chat")
+            Chat(key, vars.send_mode, vars.target_hwnd)
+        else if(cmdType = "sendraw")
+            SendKey(key, vars.send_mode . "R", vars.target_hwnd)
+        else
+            SendKey(key, vars.send_mode, vars.target_hwnd)
+    }
+    else if RegExMatch(command, "i)^(Sleep|Wait|Delay)\s*,?\s*(\d*)", m) {
+        vars.delay := m2
+    }
+    else if RegExMatch(command, "^([a-zA-Z0-9_]+)\s*\((.*)\)\s*$", m) {
         WinActivateWait(vars.target_hwnd)
         ExecFunc(m1, m2)
-        return
     }
-
-    if RegExMatch(command, "i)^Exec,?\s*(.+?)$", m) {
+    else if RegExMatch(command, "i)^Exec,?\s*(.+?)$", m) {
         ExecMacroFile(m1, vars)
-        return
     }
-
-    if RegExMatch(command, "i)^Import,?\s*(.+?)$", m) {
+    else if RegExMatch(command, "i)^Import,?\s*(.+?)$", m) {
         fullPath := ResolveMacroFilePath(m1, vars)
         if (fullPath)
             ImportVars(ReadFile(fullPath), vars)
-        return
     }
-
-    if RegExMatch(command, "i)^(Run|RunAs)\s*,?\s*(.*)$", m) {
+    else if RegExMatch(command, "i)^(Run|RunAs)\s*,?\s*(.*)$", m) {
         Run_(m1, m2)
-        return
     }
-
-    if (command && line && index) {
+    else if (command && line && index) {
         ShowTip("올바른 명령문이 아님 (로그 확인 Alt+L)"
             . "`nPath: " StrReplace(vars.current_path, MACRO_DIR)
             . "`nLine: " index

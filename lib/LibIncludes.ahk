@@ -1,3 +1,4 @@
+#Include lib\JSON.ahk
 #Include lib\InputUtils.ahk
 #Include lib\FileUtils.ahk
 #Include lib\CommonUtils.ahk
@@ -5,4 +6,3 @@
 #Include lib\StringUtils.ahk
 #Include lib\WindowUtils.ahk
 #Include lib\ImageUtils.ahk
-#Include lib\JSON.ahk

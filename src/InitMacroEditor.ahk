@@ -23,17 +23,21 @@ global suspendTreeEvents := false
 global macroAbortRequested := false
 global CoordTrackingRunning := false
 global overlayVisible := false
-global panelGuiMap := {}  ; 패널별 GUI 핸들 저장
 
 global hOverlayBG
 global hOverlayBtn
 global hMacro
 global hNote
 
-global panelMap := {}
-FileRead jsonText, %A_ScriptDir%\res\panel_map.json
-panelMap := JSON.Load(jsonText)
+global uiRegions := {}
+global panelGuiMap := {}  ; 패널별 GUI 핸들 저장
+global selectedGui        ; 크기조정할 선택된패널
 
+FileRead jsonText, %A_ScriptDir%\res\ui_regions.json
+uiRegions := JSON.Load(jsonText)
+
+; test(IsObject(uiRegions), uiRegions)
+; testj(uiRegions)
 ;-----------------------------------------Macro Gui---------------------------------------------------
 if !FileExist(MACRO_DIR)
     FileCreateDir, %MACRO_DIR%
@@ -51,13 +55,13 @@ btnGap := 75  ; 버튼 간 간격
 buttons := []  ; 빈 배열 생성
 buttons.Push({text: "▶ Run",   g: "ToggleMacro",   v: "ExecBtn"})
 buttons.Push({text: "Record",   g: "ToggleRecord",  v: "RecordBtn"})
-buttons.Push({text: "✚ New",      g: "AddMacro",      v: "AddBtn"})
-buttons.Push({text: "◆ Save",     g: "SaveMacro",     v: "SaveBtn"})
+buttons.Push({text: "✚ New",   g: "AddMacro",      v: "AddBtn"})
+buttons.Push({text: "◆ Save",  g: "SaveMacro",     v: "SaveBtn"})
 buttons.Push({text: "Rename",   g: "RenameMacro",   v: "RenameBtn"})
 buttons.Push({text: "Delete",   g: "DeleteMacro",   v: "DeleteBtn"})
-buttons.Push({text: "🡅 Back",     g: "BackMacro",     v: "BackBtn"})
+buttons.Push({text: "🡅 Back",  g: "BackMacro",     v: "BackBtn"})
 buttons.Push({text: "Clear",    g: "ClearMacro",    v: "ClearBtn"})
-buttons.Push({text: "Merge",     g: "MergeMacro",     v: "MergeBtn"})
+buttons.Push({text: "Merge",    g: "MergeMacro",     v: "MergeBtn"})
 buttons.Push({text: "Note",     g: "OnNoteBtn",     v: "NoteBtn"})
 ;buttons.Push({text: "Spy",     g: "ToggleSpy",     v: "SpyBtn"})
 
@@ -67,15 +71,14 @@ for index, btn in buttons {
     Gui, macro:Add, Button, % Format("g{} v{} x{} y{} w{} h{}", btn.g, btn.v, xPos, btnY, btnW, btnH), % btn.text
 }
 
-Gui, macro:Add, Edit, x767 y10 w50 h30 Number Limit4 vLineEdit, % GetIniValue("MacroGUI", "LineNum", 1)
+lineNum := GetIniValue("MacroGUI", "LineNum")
+Gui, macro:Add, Edit, x767 y10 w50 h30 Number Limit4 vLineEdit, % !lineNum ? 1 : lineNum
 Gui, macro:Add, Button, x840 y10 w50 h30 gOnJumpBtn vJumpBtn, Jump
-
-macroWinW := GetIniValue("MacroGUI", "W")
 
 Gui, Font, s14
 Gui, macro:Add, TreeView, x10 y50 w270 h490 vMacroList gOnTreeViewClick
 
-
+macroWinW := GetIniValue("MacroGUI", "W")
 if(!macroWinW || macroWinW < 900)
     macroWinW := 900
 editW := macroWinW - 300
@@ -119,7 +122,7 @@ Gui, font, s8
 isChecked := GetIniValue("MacroGUI","isTimeGaps") ? "Checked" : ""
 Gui, macro:Add, Checkbox, x790 y470 vTimeGapsCheck gOnTimeGapsCheck %isChecked%, Record Time Gaps
 
-isChecked := GetIniValue("MacroGUI","isAutoMerge",1) ? "Checked" : ""
+isChecked := GetIniValue("MacroGUI","isAutoMerge") = 0 ? "" : "Checked"
 Gui, macro:Add, Checkbox, x790 y488 vAutoMerge %isChecked%, Auto Merge
 
 Gui, macro:Add, Radio, x790 y510 vClientBtn gOnCoordMode Checked Group, Client

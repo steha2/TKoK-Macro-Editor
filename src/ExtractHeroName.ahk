@@ -1,8 +1,4 @@
 GenerateHeroSamples() {
-    WinActivateWait("Warcraft III")
-    if (!IsTargetWindow("Warcraft III", WinActive("A")))
-        return Alert("Warcraft III 창이 아닙니다.")
-
     msg := "There are no samples for this resolution.`n`n"
          . "Press the arrow keys to select [ Arcanist ]"
          . "`nthen press [ Yes ] to generate the sample."
@@ -10,7 +6,11 @@ GenerateHeroSamples() {
     IfMsgBox, No
         return
 
-    GetHeroImgPos(ix, iy, ix2, iy2, iw, ih, imgDir)
+    WinActivateWait(W3_WINTITLE)
+    if !IsW3(WinActive("A"))
+        return Alert("Warcraft III 창이 아닙니다.")
+
+    GetNamePlatePos(ix, iy, ix2, iy2, iw, ih, imgDir)
 
     if(!IsDirectory(imgDir))
         FileCreateDir, %imgDir%
@@ -83,17 +83,18 @@ FindHeroPath(currName, targetName) {
         return {dir: "{left}", count: leftDist}
 }
 
-GetHeroImgPos(ByRef x1, ByRef y1, ByRef x2, ByRef y2, ByRef iw, ByRef ih, ByRef imgDir) {
-    hwnd := WinExist("A")
-    if(!IsTargetWindow("Warcraft III", hwnd))
-        return ShowTip("워크래프트 3창이 아닙니다")
+GetNamePlatePos(ByRef x1, ByRef y1, ByRef x2, ByRef y2, ByRef iw, ByRef ih, ByRef imgDir) {
+    hwnd := GetTargetHwnd(W3_WINTITLE)
+    w3_ver := GetW3_Ver(hwnd)
+    
+    if(!w3_ver)
+        return ShowTip("GetNamePlatePos()`n워크래프트 3창이 아닙니다")
 
-    isReforged := IsReforged(hwnd)
-
-    x1 := isReforged ? heroImgPosRefo.x1 : heroImgPos.x1
-    y1 := isReforged ? heroImgPosRefo.y1 : heroImgPos.y1
-    x2 := isReforged ? heroImgPosRefo.x2 : heroImgPos.x2
-    y2 := isReforged ? heroImgPosRefo.y2 : heroImgPos.y2
+    nameplate := uiRegions[w3_ver]["nameplate"]
+    x1 := nameplate.x1
+    y1 := nameplate.y1
+    x2 := nameplate.x2
+    y2 := nameplate.y2
     
     CalcCoords(x1, y1, hwnd)
     CalcCoords(x2, y2, hwnd)
@@ -105,11 +106,11 @@ GetHeroImgPos(ByRef x1, ByRef y1, ByRef x2, ByRef y2, ByRef iw, ByRef ih, ByRef 
     ih := y2 - y1
 
     GetClientSize(hwnd, cw, ch)
-    imgDir := A_ScriptDir . "\res\" . (isReforged ? "reforged" : "classic") . "\W" . cw . "H" . ch
+    imgDir := A_ScriptDir . "\res\" . w3_ver . "\W" . cw . "H" . ch
 }
 
 GetHeroNameByImg() {
-    GetHeroImgPos(ix, iy, ix2, iy2, iw, ih, imgDir)
+    GetNamePlatePos(ix, iy, ix2, iy2, iw, ih, imgDir)
 
     if !IsTargetWindow("Warcraft III", WinExist("A")) {
         return ShowTip("현재 창이 Warcraft III 이 아닙니다")

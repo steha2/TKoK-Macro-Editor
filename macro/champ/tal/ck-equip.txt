@@ -1,0 +1,16 @@
+﻿Click:L, 0.799, 0.808 #delay=400#
+Click:L, 0.525, 0.356 #rep=2#
+Click:L, 0.523, 0.311 #rep=2#
+Click:L, 0.962, 0.815
+Click:L, 0.592, 0.488 #rep=2#
+Click:L, 0.560, 0.494 #rep=2#
+Click:L, 0.626, 0.452 #rep=2#
+Click:L, 0.561, 0.447 #rep=2#
+Click:L, 0.621, 0.349 #rep=2#
+Click:L, 0.555, 0.266 #rep=2#
+Click:L, 0.797, 0.879
+Click:L, 0.453, 0.351 #rep=2#
+Click:L, 0.560, 0.314 #rep=2#
+Click:L, 0.491, 0.402 #rep=2#
+Click:L, 0.840, 0.881
+Click:L, 0.523, 0.220 #rep=2#

@@ -1,63 +1,3 @@
-
-ToggleOverlay() {
-    if (overlayVisible) {
-        Gui, overlayBG:Destroy
-        Gui, overlayBtn:Destroy
-        overlayVisible := false
-        return
-    }
-
-    ; 매크로 내용 가져오기
-    vars := {}
-    GuiControlGet, currentText, macro:, EditMacro
-    lines := StrSplit(currentText, ["`r`n", "`n", "`r"])
-    lines := PreprocessMacroLines(lines, vars)
-
-    ; 타겟 윈도우
-    PrepareTargetHwnd(vars)
-    hwnd := vars.target_hwnd ? vars.target_hwnd : WinExist("A")
-    
-    WinActivateWait(hwnd)
-
-    ; 타겟 창 정보
-    GetClientPos(hwnd, x, y)
-    GetClientSize(hwnd, w, h)
-    dpi := GetWindowDPI(hwnd)
-    w := w/dpi*100
-    h := h/dpi*100
-
-    ; 1. 어두운 배경 GUI
-    Gui, overlayBG:+AlwaysOnTop -Caption +ToolWindow +E0x20 +HwndhOverlayBG
-    Gui, overlayBG:Color, 0x222244
-    Gui, overlayBG:Show, x%x% y%y% w%w% h%h% NoActivate
-    WinSet, Transparent, 100, ahk_id %hOverlayBG%
-
-    ; 2. 버튼 전용 GUI (투명 배경)
-    Gui, overlayBtn:+AlwaysOnTop -Caption +ToolWindow +HwndhOverlayBtn
-    Gui, overlayBtn:Color, 0x123456
-    Gui, overlayBtn:Font, s10 Bold, Segoe UI
-
-    vars := {}
-    Loop, % lines.Length()
-    {
-        ResolveMarker(lines[A_Index], vars)
-        if RegExMatch(lines[A_Index], "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)", m)
-            && !InStr(vars.coordMode, "screen") 
-        {
-            mx := m2/dpi*100, my := m3/dpi*100
-            CalcCoords(mx, my, hwnd, vars.coordMode)
-            size := 27/dpi*100
-            boxX := mx - Floor(size / 2)
-            boxY := my - Floor(size / 2)
-            Gui, overlayBtn:Add, Button, x%boxX% y%boxY% w%size% h%size% cRed gOnOverlayBtn, %A_Index%
-        }
-    }
-    Gui, overlayBtn:Show, x%x% y%y% w%w% h%h% NoActivate
-    WinSet, TransColor, 0x123456 200, ahk_id %hOverlayBtn%
-
-    overlayVisible := true
-}
-
 Note(newText := "", title := "", isAppend := false) {
     static isCreated := false
     global NoteEdit
@@ -68,9 +8,10 @@ Note(newText := "", title := "", isAppend := false) {
         Gui, SimpleNote: +Resize +HwndhNote  ; << 핸들 저장
         Gui, SimpleNote: Margin, 10, 10
         Gui, SimpleNote: Font, 16s, Consolas
-        Gui, SimpleNote: Add, Text, x10 y10 w80, Convet To
-        Gui, SimpleNote: Add, Button, x95 y10 w80 h20 gOnConvertBtn, reforged
-        Gui, SimpleNote: Add, Button, x180 y10 w80 h20 gOnConvertBtn, classic
+        Gui, SimpleNote: Add, Text, x10 y10 w90, Convet To
+        Gui, SimpleNote: Add, Button, x100 y10 w90 h20 gOnConvertBtn, reforged
+        Gui, SimpleNote: Add, Button, x200 y10 w90 h20 gOnConvertBtn, classic
+        Gui, SimpleNote: Add, Button, x300 y10 w90 h20 gOnConvertBtn, custom
         Gui, SimpleNote: Add, Edit, vNoteEdit x10 y40 w600 h500 WantTab
         isCreated := true
     }
@@ -91,17 +32,39 @@ Note(newText := "", title := "", isAppend := false) {
 
     OnConvertBtn:
         GuiControlGet, to, SimpleNote:, %A_GuiControl%
-        from := (to = "reforged") ? "classic" : "reforged"
-        msg := "스크립트의 w3_ver 을 [ " from " ] 에서 [ " to " ] 로 바꿉니다.`n`n"
+        GuiControlGet, noteContent, SimpleNote:, NoteEdit
+
+        vars := {}
+        for index, line in SplitLine(noteContent)
+            ResolveMarker(line, vars, "w3_ver")
+
+        if !(vars.HasKey("w3_ver")) {
+            ShowTip("noteContent에 'w3_ver' 값이 없습니다.", 1500, false)
+            return
+        }
+        
+        from := vars.w3_ver
+        if !(uiRegions.HasKey(from)) {
+            ShowTip("'" from "'는 UI 영역 정의에 없습니다.", 1500, false)
+            return
+        }
+
+        if (from = to) {
+            ShowTip("w3_ver 이 같습니다.", 1500, false)
+            return
+        }
+
+        msg := "스크립트의 #w3_ver=" from "# 을"
+             . "`n #w3_ver=" to "# 으로 바꿉니다.`n`n"
              . "Import 경로 및 대상 패널의 비율 좌표를 변환합니다.`n`n"
-             . "#panel=shop#  or  #panel=skill#`nClick, 0.100, 0.200`nClick, 0.100, 0.200`n#panel#"
+             . "Import, c_map\" from "\mode`n"
+             . "#panel=items# | #panel=skill#`nClick, 0.100, 0.200`nClick, 0.100, 0.200"
              
-        MsgBox, 4100, Convert o %to%, %msg%
+        MsgBox, 4100, Convert to %to%, %msg%
             IfMsgBox, No
                 return
-
-        GuiControlGet, noteContent, SimpleNote:, NoteEdit
-        converted := ConvertScriptMode(noteContent, from)
+        
+        converted := ConvertScriptMode(noteContent, from, to)
         GuiControl, SimpleNote:, NoteEdit, %converted%
     return
 
@@ -111,63 +74,6 @@ Note(newText := "", title := "", isAppend := false) {
         hNote := ""
     return
 }
-
-TogglePanelOverlayAll(ignore := "") {
-    static shown := false
-    if shown {
-        ; 이미 띄워졌다면 닫기
-        for key, hGui in panelGuiMap {
-            Gui, %key%:Destroy
-        }
-        panelGuiMap := {}
-        shown := false
-        return
-    }
-    
-    hwnd := WinExist("A")
-    if (!IsTargetWindow("Warcraft III", hwnd))
-        return
-    
-    isReforged := IsReforged(hwnd)
-
-    ; 새로 띄우기
-    GetClientPos(hwnd, clientX, clientY)
-    GetClientSize(hwnd, clientW, clientH)
-    scale := GetWindowDPI(hwnd) / 100
-
-    for mode, pMap in panelMap {
-        for panelName, p in pMap {
-            if (isReforged && mode = "classic") 
-            || (!isReforged && mode = "reforged")
-            || (InStr(ignore, panelName, true))
-                continue
-
-            x1 := p.x1, y1 := p.y1
-            x2 := p.x2, y2 := p.y2
-
-            guiX := Round(clientX + x1 * clientW)
-            guiY := Round(clientY + y1 * clientH)
-            guiW := (x2 - x1) * clientW / scale
-            guiH := (y2 - y1) * clientH / scale
-
-            guiID := "Panel_" . mode . "_" . panelName
-
-
-            Gui, %guiID%:New, +AlwaysOnTop +ToolWindow -Caption
-            Gui, %guiID%:Color, AEFFDD
-            Gui, %guiID%:Margin, 0, 0
-            Gui, %guiID%:+HwndhGui
-            Gui, %guiID%:Add, Text, , %guiID%
-            Gui, %guiID%:Show, x%guiX% y%guiY% w%guiW% h%guiH%
-            WinSet, Transparent, 120, ahk_id %hGui%
-
-            panelGuiMap[guiID] := hGui
-        }
-    }
-    shown := true
-}
-
-
 
 SaveNote() {
     GuiControlGet, noteContent, SimpleNote:, NoteEdit
@@ -195,5 +101,263 @@ SaveNote() {
         
         origContent := noteContent
         GuiControl, macro:, EditMacro, %noteContent%
+    }
+}
+
+ToggleOverlay() {
+    if (overlayVisible) {
+        Gui, overlayBG:Destroy
+        Gui, overlayBtn:Destroy
+        overlayVisible := false
+        return
+    }
+
+    ; 매크로 내용 가져오기
+    vars := {}
+    GuiControlGet, currentText, macro:, EditMacro
+    lines := StrSplit(currentText, ["`r`n", "`n", "`r"])
+    lines := PreprocessMacroLines(lines, vars)
+
+    ; 타겟 윈도우
+    PrepareTargetHwnd(vars)
+    hwnd := vars.target_hwnd ? vars.target_hwnd : WinExist("A")
+    
+    WinActivateWait(hwnd)
+
+    ; 타겟 창 정보
+    GetClientRect(hwnd, cx, cy, cw, ch)
+    dpi := GetWindowDPI(hwnd)
+    cw := cw/dpi*100
+    ch := ch/dpi*100
+
+    ; 1. 어두운 배경 GUI
+    Gui, overlayBG:+AlwaysOnTop -Caption +ToolWindow +E0x20 +HwndhOverlayBG
+    Gui, overlayBG:Color, 0x222244
+    Gui, overlayBG:Show, x%cx% y%cy% w%cw% h%ch% NoActivate
+    WinSet, Transparent, 100, ahk_id %hOverlayBG%
+
+    ; 2. 버튼 전용 GUI (투명 배경)
+    Gui, overlayBtn:+AlwaysOnTop -Caption +ToolWindow +HwndhOverlayBtn
+    Gui, overlayBtn:Color, 0x123456
+    Gui, overlayBtn:Font, s10 Bold, Segoe UI
+
+    vars := {}
+    Loop, % lines.Length()
+    {
+        ResolveMarker(lines[A_Index], vars)
+        if RegExMatch(lines[A_Index], "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)", m)
+            && !InStr(vars.coordMode, "screen") 
+        {
+            mx := m2/dpi*100, my := m3/dpi*100
+            CalcCoords(mx, my, hwnd, vars.coordMode)
+            size := 27/dpi*100
+            boxX := mx - Floor(size / 2)
+            boxY := my - Floor(size / 2)
+            Gui, overlayBtn:Add, Button, x%boxX% y%boxY% w%size% h%size% cRed gOnOverlayBtn, %A_Index%
+        }
+    }
+    Gui, overlayBtn:Show, x%cx% y%cy% w%cw% h%ch% NoActivate
+    WinSet, TransColor, 0x123456 200, ahk_id %hOverlayBtn%
+
+    overlayVisible := true
+}
+
+SaveOverlayRegions(w3hwnd) {
+    if(!WinExist("ahk_id " . w3hwnd))
+        return
+
+    GetClientRect(w3hwnd, cx, cy, cw, ch)
+
+    for guiID, hGui in panelGuiMap {
+        WinGetPos, x, y, w, h, ahk_id %hGui%
+        ; client 기준 상대 좌표 환산
+        x1 := Round( (x - cx) / cw , 3 )
+        y1 := Round( (y - cy) / ch , 3 )
+        x2 := Round( (x + w - cx) / cw , 3 )
+        y2 := Round( (y + h - cy) / ch , 3 )
+
+        w3_ver := StrSplit(guiID, "_")[1]
+        panelName := StrSplit(guiID, "_")[2]
+
+        uiRegions[w3_ver][panelName] := { x1:x1, y1:y1, x2:x2, y2:y2 }
+    }
+    SaveJSON("res/ui_regions.json", JSON.Dump(uiRegions,,2))
+    ShowTip("UI 영역 저장 완료!", 1500, false)
+}
+
+ScreenToClient(hwnd, ByRef x, ByRef y) {
+    VarSetCapacity(pt, 8)
+    NumPut(x, pt, 0, "Int")
+    NumPut(y, pt, 4, "Int")
+    DllCall("ScreenToClient", "Ptr", hwnd, "Ptr", &pt)
+    x := NumGet(pt, 0, "Int")
+    y := NumGet(pt, 4, "Int")
+}
+
+TogglePanelOverlayAll() {
+    static shown := false, w3hwnd, w3_ver
+    static OverlayControlGui := "OverlayCtrl"
+
+    if (shown)
+        GoTo, OverlayCtrlGuiClose
+
+    w3hwnd := GetTargetHwnd("Warcraft III")
+    w3_ver := GetW3_Ver(w3hwnd)
+
+    if (!w3_ver)
+        return Alert("워크래프트3 창이 아닙니다")
+
+    WinActivateWait(w3hwnd)
+    panelMap := uiRegions[w3_ver]
+
+    Gui, %OverlayControlGui%:New, +AlwaysOnTop +ToolWindow
+    Gui, %OverlayControlGui%:Default
+    Gui, Font, s10 Bold
+
+    Gui, Add, Text, x10 y10, 표시
+    Gui, Add, Text, x110 y10, 크기조절
+    Gui, Add, Text, x200 y10, Shift:*10 Ctrl:감소
+
+    yPos := 40  ; 체크박스와 라디오 시작 Y 위치
+    for panelName in panelMap {
+        Gui, Add, CheckBox, Checked gOverlayCtrl_Chk x10 y%yPos%, %panelName%
+        yPos += 30
+    }
+
+    idx := 1
+    yPos := 40
+    for panelName in panelMap {
+        if (idx = 1) {
+            Gui, Add, Radio, gOverlayCtrl_Select Checked Group x110 y%yPos%, %panelName%
+            selectedGui := w3_ver . "_" . panelName
+        } else {
+            Gui, Add, Radio, gOverlayCtrl_Select x110 y%yPos%, %panelName%
+        }
+        guiList.Push(panelName)
+        yPos += 30
+        idx++
+    }
+
+    ; 방향 버튼 가로 정렬
+    Gui, Add, Button, gOverlayCtrl_North x240 y40 w30 h30, ↑
+    Gui, Add, Button, gOverlayCtrl_South x240 y100 w30 h30, ↓
+    Gui, Add, Button, gOverlayCtrl_West  x210 y70 w30 h30, ←
+    Gui, Add, Button, gOverlayCtrl_East  x270 y70 w30 h30, →
+
+    Gui, Add, Button, gOverlayCtrl_Save x210 y150 w90 h30, UI 영역 저장
+
+    Gui, Show, x100 y100 AutoSize, Overlay 패널 제어
+
+    for panelName in panelMap
+        ShowOrHidePanelOverlay(w3_ver, panelName, w3hwnd)
+
+    shown := true
+    return
+
+    ; 방향 조절 핸들러
+    OverlayCtrl_North: 
+        AdjustOverlay("North")
+    return
+
+    OverlayCtrl_South:
+        AdjustOverlay("South")
+    return
+
+    OverlayCtrl_East: 
+        AdjustOverlay("East")
+    return
+
+    OverlayCtrl_West:
+        AdjustOverlay("West")
+    return
+
+    ; 라디오 선택
+    OverlayCtrl_Select:
+        selectedGui := w3_ver . "_" . A_GuiControl
+    return
+
+    ; 체크박스 토글
+    OverlayCtrl_Chk:
+        GuiControlGet, btnVal, %OverlayControlGui%:, %A_GuiControl%
+        ShowOrHidePanelOverlay(w3_ver, A_GuiControl, w3hwnd, btnVal)
+    return
+
+    OverlayCtrl_Save:
+        SaveOverlayRegions(w3hwnd)
+    return
+
+    ; 종료
+    OverlayCtrlGuiClose:
+        for key, hGui in panelGuiMap {
+            Gui, %key%:Destroy
+        }
+        Gui, %OverlayControlGui%:Destroy
+        panelGuiMap := {}
+        guiList := []
+        shown := false
+    return
+}
+
+AdjustOverlay(direction) {
+    if (!panelGuiMap.HasKey(selectedGui)) {
+        return Alert("선택된 패널이 없습니다.`n" . selectedGui)
+    }
+    hGui := panelGuiMap[selectedGui]
+    shift := GetKeyState("Shift", "P")
+    ctrl  := GetKeyState("Ctrl", "P")
+
+    amount := ctrl ? (shift ? -5 : -1) : (shift ? 5 : 1)
+    WinGetPos, x, y, w, h, ahk_id %hGui%
+
+    if (direction = "North")
+        y -= amount, h += amount
+    else if (direction = "South")
+        h += amount * +1
+    else if (direction = "East")
+        w += amount
+    else if (direction = "West")
+        x -= amount, w += amount
+
+    WinMove, ahk_id %hGui%, , x, y, w, h
+}
+
+ShowOrHidePanelOverlay(w3_ver, panelName, w3hwnd, show := true) {
+    key := w3_ver . "_" . panelName
+    if (show) {
+        ; 이미 존재하면 중복 생성 방지
+        if (panelGuiMap.HasKey(key))
+            return
+
+        if (!WinExist("ahk_id " . w3hwnd))
+            return Alert("워크래프트3 창이 없습니다.")
+
+        rect := uiRegions[w3_ver][panelName]
+        GetClientRect(w3hwnd, cx, cy, cw, ch)
+        scale := GetWindowDPI(w3hwnd) / 100
+
+        x1 := rect.x1, y1 := rect.y1
+        x2 := rect.x2, y2 := rect.y2
+
+        guiX := Round(cx + x1 * cw)
+        guiY := Round(cy + y1 * ch)
+        guiW := (x2 - x1) * cw / scale
+        guiH := (y2 - y1) * ch / scale
+
+        Gui, %key%:New, +AlwaysOnTop +ToolWindow -Caption -Disabled
+        Gui, Font, s12 Bold
+        Gui, %key%:Color, AEFFDD
+        Gui, %key%:Margin, 0, 0
+        Gui, %key%:+HwndhGui
+        Gui, %key%:Add, Text, , UI_%key%
+        Gui, %key%:Show, x%guiX% y%guiY% w%guiW% h%guiH%
+        WinSet, Transparent, 120, ahk_id %hGui%
+
+        panelGuiMap[key] := hGui
+    } else {
+        ; 숨기기
+        if (panelGuiMap.HasKey(key)) {
+            Gui, %key%:Destroy
+            panelGuiMap.Delete(key)
+        }
     }
 }

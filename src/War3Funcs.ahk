@@ -26,7 +26,7 @@ RestoreW3Pos(hwnd := "") {
     if(hwnd)
         activeHwnd := hwnd
     else
-        activeHwnd := WinExist("A")
+        activeHwnd := WinActive("A")
     if (activeHwnd) {
         WinMove, ahk_id %activeHwnd%, , %savedX%, %savedY%, %savedW%, %savedH%
         ;ShowTip("현재 창을 mainW3Hwnd : " mainW3Hwnd "`nX:" savedX " Y:" savedY " W:" savedW " H:" savedH)
@@ -38,7 +38,7 @@ ActivateBottomW3() {
 }
 
 SwitchNextW3(isClip := true, minimizePrev := false) {
-    currHwnd := WinExist("A")
+    currHwnd := WinActive("A")
     currIndex := GetClientIndex(currHwnd)  ; 현재 창이 CLIENT_TITLE_N인 경우 N을 반환
 
     if (currIndex) {
@@ -64,7 +64,7 @@ SwitchNextW3(isClip := true, minimizePrev := false) {
 }
 
 SwitchW3(clientNum := 1, isClip := false, minimizePrev := false, cursorToCenter := false) {
-    currHwnd := WinExist("A")
+    currHwnd := WinActive("A")
     nextHwnd := WinExist(CLIENT_TITLE . clientNum)
     if(currHwnd = nexthwnd) {
         ; 같은 창 호출시 창 전환 안하고 토글 마우스 가두기
@@ -84,7 +84,7 @@ SwitchW3(clientNum := 1, isClip := false, minimizePrev := false, cursorToCenter 
     
     if(cursorToCenter) {
         cx := 0.5, cy := 0.5
-        CalcCoords(cx, cy, WinExist("A"))
+        CalcCoords(cx, cy, WinActive("A"))
         MouseMove, %cx%, %cy% , 0
     }
 }
@@ -93,17 +93,37 @@ IsW3(hwnd) {
     return IsTargetWindow("Warcraft III", hwnd)
 }
 
-IsReforged(winTitle) {
-    winTitle := GetTargetWin(winTitle)
+IsReforged(target) {
+    hwnd := GetTargetHwnd(target)
     
-    if(!winTitle)
+    if (!hwnd)
         return false
 
-    WinGetClass, winClass, %winTitle%
-    WinGet, exe, ProcessName, %winTitle%
+    WinGetClass, winClass, ahk_id %hwnd%
+    WinGet, exe, ProcessName, ahk_id %hwnd%
 
-    ; test(StrLen(winClass), exe, (winClass = "OsWindow") && (exe = "Warcarft III.exe"))
     return (winClass = "OsWindow") && (exe = "Warcraft III.exe")
+}
+
+GetW3_Ver(target) {
+    hwnd := GetTargetHwnd(target)
+    if (!IsW3(hwnd))
+        return ""  ; 찾기 실패
+
+    if(!IsReforged(hwnd))
+        return "classic"
+
+    GetClientRect(w3hwnd, cx, cy, cw, ch)
+
+    ; 16:9 비율 체크 (0.5625 ± 0.02 허용 오차)
+    ratio := cw / ch
+    tolerance := 0.02
+    is16by9 := (ratio > 0.5625 - tolerance) && (ratio < 0.5625 + tolerance)
+
+    if (is16by9)
+        return "reforged"
+    else
+        return "custom"
 }
 
 ; TrySwitchNextW3() {

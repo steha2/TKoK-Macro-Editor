@@ -8,8 +8,6 @@ global W3_LAUNCH_DELAY := 1300 ; 워크 실행후 검은 화면이 끝나고 UI 
 global SAVE_DIR := GetIniValue("Settings", "SAVE_DIR", A_ScriptDir)
 global NEW_HERO_DELAY := 800 ; 새 영웅 선택시 화살표 누를때 딜레이
 global heroArr := ["Arcanist","Warrior","Cleric","Pyromancer","Hydromancer","Chronowarper","Phantom Stalker","Chaotic Knight","Shadowblade","Ranger","Barbarian","Paladin","Druid","Medicaster","Venomancer","Aeromancer","Earthquaker","Shadow Shaman"]
-global heroImgPos := {x1:0.45, y1:0.838, x2:0.56, y2:0.86}
-global heroImgPosRefo := {x1:0.455, y1:0.831, x2:0.553, y2:0.85}
 
 ;-----------------------Code Loader Vars------------------------------
 global c_map := {}
@@ -108,10 +106,3 @@ SaveCodeLoaderSettings() {
     SetIniValue("MainGUI", "Y", y1)
     SetIniValue("Settings", "yMapped", yMapped)
 }
-
-OnExit, ExitRoutine
-if !pToken := Gdip_Startup() {
-    MsgBox, GDI+ 초기화 실패
-    ExitApp
-}
-

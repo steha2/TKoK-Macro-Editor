@@ -377,8 +377,7 @@ return
 
 !F3::Gosub, BackMacro
 
-!^F1::TogglePanelOverlayAll("items")
-!^F2::TogglePanelOverlayAll("skill")
+!Numpad9::TogglePanelOverlayAll()
 
 #If IsTargetWindow("Macro Editor")
 ^S::Gosub, SaveMacro
