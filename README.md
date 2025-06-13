@@ -11,11 +11,9 @@ TKoK ORPG 코드 관리 및 Warcraft III 창 제어 도구입니다. <br>
 ## 설치 방법
 1. **AutoHotkey 1.1**을 설치하세요.  
    https://www.autohotkey.com
-
 2. 이 프로젝트를 다운로드한 후 `config.ini` 파일을 열고 경로를 알맞게 수정하세요<br>
 [Settings]<br>
 W3_LNK=C:\Warcraft III\w3.lnk <br>
 SAVE_DIR=C:\Warcraft III\TKoK_Save_Files\TKoK_3.5.15
-<br>
-4. `CodeLoader.ahk`를 실행하세요.
+3. `CodeLoader.ahk`를 실행하세요.
 
