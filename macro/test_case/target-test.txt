@@ -1,0 +1,18 @@
+﻿#send_mode=I,P# #target=AHK Note#
+note()
+Chat: ---------target test----------
+Chat: %target% %target_hwnd% 1
+
+#target=notepad# #send_mode:P#
+
+Chat: P 는 복사 붙여넣기 모드
+
+Chat: %target% %target_hwnd% 4
+
+#send_mode=I#
+
+Chat: I 는 비활성 명령 모드
+
+;---------target test----------
+
+;AHK Note 0x1b90604

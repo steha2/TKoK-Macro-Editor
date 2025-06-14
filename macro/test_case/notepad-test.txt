@@ -1,0 +1,9 @@
+﻿;#text=from out macro#
+
+Run: Notepad #delay:200#
+
+#text:text|here notepad-test#
+
+Chat: Text::--- %text%
+
+Send: ^a{Delete}^w #wait:1000#

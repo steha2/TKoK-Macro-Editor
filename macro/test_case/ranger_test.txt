@@ -1,16 +1,16 @@
 ﻿#target=Warcraft III#
 #level:23# #dp_mode:floor#
 
-Send, {F1} 
+Send: {F1} 
 
 #num_stat : %(level-1)*4% #
 #num_skill : %level / 2 + 2% #
 
-chat, Level : %level% num_stat : %num_stat% num_skill : %num_skill%
+Chat: Level : %level% num_stat : %num_stat% num_skill : %num_skill%
 
-exec stat-up #spsi:(level-1)*4# #stat:R#
+exec stat-up #spsi:(level-1)*4# #stat=R#
 
-Chat, -tt #delay:300#
+Chat: -tt #delay:300#
 
 #limit:%level / 2 + 2%# 
 

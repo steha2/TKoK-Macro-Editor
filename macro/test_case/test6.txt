@@ -1,0 +1,15 @@
+﻿note()
+; 정의되지 않은 변수에 빈기본값
+#cc:5|1#
+
+Chat: %cc%  
+
+Chat: % %  
+
+Chat: %unknown|%  
+
+Chat: %unknown|%  
+
+
+Chat: %unknown% 
+Chat: %aa|!%

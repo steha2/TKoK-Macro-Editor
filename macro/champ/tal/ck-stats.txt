@@ -1,5 +1,12 @@
-﻿#target=Warcraft III# #w3_ver=classic#
-Import, c_map\classic\screen
+﻿#target=Warcraft III# #w3_ver=reforged#
+Read: c_map\reforged\screen
+Read: c_map\reforged\mode
+
+%diff_champ%
+%champ_next%
+%champ_tal%
+%champ_fin2%
+
 PickNewHero(ck)
 
 %move_new_hero%
@@ -7,25 +14,24 @@ PickNewHero(ck)
 ChampChat()
 %click_shop_npc%
 
-Exec, champ\tal\ck-equip
+Exec: champ\tal\ck-equip
 
-Exec, stat-up #spsi:128# #stat:F#
+Exec: stat-up #spsi=128# #stat=F#
 
-Chat, -tt #delay:300#
-
-Click:L, 0.281, 0.215
-Click:L, 0.283, 0.306 #rep=2#
-Click:L, 0.421, 0.403
-Click:L, 0.413, 0.209
-Click:L, 0.353, 0.209
-Click:L, 0.347, 0.315 #rep=2#
-Click:L, 0.416, 0.311
-Click:L, 0.350, 0.405
-Click:L, 0.346, 0.501
-Click:L, 0.427, 0.503
-Click:L, 0.419, 0.583
-Click:L, 0.633, 0.593 #rep=2#
-Click:L, 0.636, 0.215 #rep=2#
-Click:L, 0.635, 0.499
-
-Chat, -tt
+#panel=skill#
+Chat: -tt #delay:300#
+Click:L 0.334, 0.198
+Click:L 0.336, 0.291 #rep=2#
+Click:L 0.440, 0.390
+Click:L 0.434, 0.192
+Click:L 0.389, 0.192
+Click:L 0.384, 0.300 #rep=2#
+Click:L 0.436, 0.296
+Click:L 0.386, 0.392
+Click:L 0.383, 0.490
+Click:L 0.445, 0.492
+Click:L 0.439, 0.573
+Click:L 0.600, 0.583 #rep=2#
+Click:L 0.603, 0.198 #rep=2#
+Click:L 0.602, 0.488
+Chat: -tt

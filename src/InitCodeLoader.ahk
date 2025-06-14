@@ -80,18 +80,6 @@ if (GetIniValue("MainGUI", "Minimized", 0))
 
 yMapped := GetIniValue("Settings","yMapped")
 
-c_map["classic"] := LoadMacroContext("classic")
-c_map["reforged"] := LoadMacroContext("reforged")
-
-LoadMacroContext(path := "") {
-    ctx := {}
-    dir := A_ScriptDir . "\macro\c_map\" . path
-    Loop, %dir%\*.txt 
-        ImportVars(ReadFile(A_LoopFileFullPath), ctx)
-    
-    return ctx
-}
-
 ; GUI 위치 저장
 SaveCodeLoaderSettings() {
     ; 메인 GUI

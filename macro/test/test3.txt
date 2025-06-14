@@ -1,2 +1,0 @@
-﻿chat, test3 %abc+d|10%
-Exec, test/test4

@@ -1,0 +1,7 @@
+﻿Read foo-vars
+;#foo=abc#
+note()#delay=300#
+Chat: %foo%
+
+Chat: %g%
+Chat: %g2%

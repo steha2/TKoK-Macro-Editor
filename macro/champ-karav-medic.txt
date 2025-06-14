@@ -1,8 +1,8 @@
 ﻿#target=Warcraft III#
 #w3_ver=reforged#
 
-Import, c_map\reforged\screen
-Import, c_map\reforged\mode
+Read: c_map\reforged\screen
+Read: c_map\reforged\mode
 
 %diff_champ%
 %champ_karav%
@@ -11,35 +11,35 @@ Import, c_map\reforged\mode
 PickNewHero(medic)
 %move_new_hero%
 
-Chat, -fog
-Chat, -cdist 2300
+Chat: -fog
+Chat: -cdist 2300
 LoadApt()
 
 %click_shop_npc%
-Click:L, 0.719, 0.806 #delay=400#
-Click:L, 0.493, 0.344 #rep:2#
-Click:L, 0.518, 0.243 #rep:2#
-Click:L, 0.804, 0.809
-Click:L, 0.517, 0.342 #rep:2#
-Click:L, 0.518, 0.289 #rep:2#
-Click:L, 0.570, 0.240 #rep:2#
-Click:L, 0.548, 0.292 #rep:2#
-Click:L, 0.490, 0.345 #rep:2#
-Click:L, 0.543, 0.338 #rep:2#
-Click:L, 0.467, 0.300 #rep:2#
-Click:L, 0.718, 0.888
-Click:L, 0.570, 0.197 #rep:2#
-Click:L, 0.492, 0.248 #rep:4#
+Click:L 0.719, 0.806 #delay=400#
+Click:L 0.493, 0.344 #rep:2#
+Click:L 0.518, 0.243 #rep:2#
+Click:L 0.804, 0.809
+Click:L 0.517, 0.342 #rep:2#
+Click:L 0.518, 0.289 #rep:2#
+Click:L 0.570, 0.240 #rep:2#
+Click:L 0.548, 0.292 #rep:2#
+Click:L 0.490, 0.345 #rep:2#
+Click:L 0.543, 0.338 #rep:2#
+Click:L 0.467, 0.300 #rep:2#
+Click:L 0.718, 0.888
+Click:L 0.570, 0.197 #rep:2#
+Click:L 0.492, 0.248 #rep:4#
 
-Exec, stat-up #spsi:116# #stat:F#
+Exec: stat-up #spsi=116# #stat=F#
 
-Chat, -tt #delay:300#
-Click:L, 0.390, 0.201
-Click:L, 0.337, 0.207
-Click:L, 0.331, 0.307 #rep:3#
-Click:L, 0.495, 0.392 #rep:2#
-Click:L, 0.548, 0.204 #rep:3#
-Click:L, 0.386, 0.289 #rep:3#
-Click:L, 0.387, 0.387
-Click:L, 0.600, 0.197 #rep:3#
+Chat: -tt #delay:300#
+Click:L 0.390, 0.201
+Click:L 0.337, 0.207
+Click:L 0.331, 0.307 #rep:3#
+Click:L 0.495, 0.392 #rep:2#
+Click:L 0.548, 0.204 #rep:3#
+Click:L 0.386, 0.289 #rep:3#
+Click:L 0.387, 0.387
+Click:L 0.600, 0.197 #rep:3#
 

@@ -60,8 +60,10 @@ ExecMacro(scriptText, vars, current_path) {
         ; 명령어 처리 (vars에서 실제 파싱)
         cmd := ResolveMarker(line, vars, "", ["if","force","end_if"])
         newCmd := ResolveExpr(cmd, vars)
-        if (newCmd != cmd)
+        if (newCmd != cmd) {
             cmd := ResolveMarker(newCmd, vars, "", ["if","force","end_if"])
+            cmd := ResolveExpr(cmd, vars)
+        }
 
         ; 조건 2: 실행 전 제어 흐름
         if (ShouldBreak(vars, "wait"))
@@ -69,7 +71,7 @@ ExecMacro(scriptText, vars, current_path) {
         
         ; 조건 3: start_line 이후만 실행 (강제 실행 아닌 경우)
         if(!tempVars.HasKey("force")) {
-            if(InStr(vars.skip_mode, "vars") || !RegExMatch(cmd, "i)^Import,?\s*(.+?)$")) {
+            if(InStr(vars.skip_mode, "vars") || !RegExMatch(cmd, "i)^Read:\s*(.+?)$")) {
                 if(index < start_line)
                     continue
             }
@@ -90,6 +92,57 @@ ExecMacro(scriptText, vars, current_path) {
     }
     UpdateMacroState(-1)
     ; ShowTip("--- Macro End ---`n,실행중인 매크로 수 : " runMacroCount)
+}
+
+ExecSingleCommand(command, vars, line := "", index := "") {
+    if RegExMatch(command, "i)^Click:([LR]):\s*(.+)", m) {
+        if(vars.target && !vars.target_hwnd)
+            return ShowTip("대상 창이 없습니다.`n" vars.target)
+
+        btn := SubStr(m1,1,1), coords := Trim(m2)
+        
+        if(vars.HasKey(coords))
+            coords := vars[coords]
+        
+        coords := ParseCoords(coords)
+        if(coords)
+            SmartClick(coords.x, coords.y, vars.target_hwnd, btn, vars.send_mode, vars.coord_mode, coords.type)
+    }
+    else if RegExMatch(command, "i)^(SendRaw|Send|Chat):\s*(.*)", m) {
+        if(vars.target && !vars.target_hwnd)
+            return ShowTip("대상 창이 없습니다." vars.target)
+
+        cmdType := StrLower(m1), key := m2
+        if(cmdType = "chat")
+            Chat(key, vars.send_mode, vars.target_hwnd)
+        else if(cmdType = "sendraw")
+            SendKey(key, vars.send_mode . "R", vars.target_hwnd)
+        else
+            SendKey(key, vars.send_mode, vars.target_hwnd)
+    }
+    else if RegExMatch(command, "i)^(Sleep|Wait|Delay):\s*(\d*)", m) {
+        vars.delay := m2
+    }
+    else if RegExMatch(command, "^([a-zA-Z0-9_]+)\((.*)\)$", m) {
+        WinActivateWait(vars.target_hwnd)
+        ExecFunc(m1, m2)
+    }
+    else if RegExMatch(command, "i)^Exec:\s*(.*)", m) {
+        ExecMacroFile(m1, vars)
+    }
+    else if RegExMatch(command, "i)^Read:\s*(.*)", m) {
+        ReadVarsFile(m1, vars)
+    }
+    else if RegExMatch(command, "i)^(Run|RunAs):\s*(.*)", m) {
+        Run_(m1, m2)
+    }
+    else if (command && line && index) {
+        ShowTip("올바른 명령문이 아님 (로그 확인 Alt+L)"
+            . "`nPath: " StrReplace(vars.current_path, MACRO_DIR)
+            . "`nLineNum : " index
+            . "`nLine: " line
+            . "`nCmd : " cmd "`n`n", 5000, true)
+    }
 }
 
 ShouldBreak(vars, timeKey) {
@@ -203,55 +256,93 @@ EvaluateExpr(expr, vars) {
     return TryEval(expr, vars.dp_mode)
 }
 
-ExecSingleCommand(command, vars, line := "", index := "") {
-    if RegExMatch(command, "i)^Click:(\w+),(.+)$", m) {
-        if(vars.target && !vars.target_hwnd)
-            return ShowTip("대상 창이 없습니다.`n" vars.target)
 
-        btn := SubStr(m1,1,1), coords := Trim(m2)
-        
-        if(vars.HasKey(coords))
-            coords := vars[coords]
-        
-        coords := ParseCoords(coords)
-        if(coords)
-            SmartClick(coords.x, coords.y, vars.target_hwnd, btn, vars.send_mode, vars.coord_mode, coords.type)
-    }
-    else if RegExMatch(command, "i)^(SendRaw|Send|Chat)\s*,?\s*(.*)$", m) {
-        if(vars.target && !vars.target_hwnd)
-            return ShowTip("대상 창이 없습니다." vars.target)
+ExplodeByKeys(expr, vars, ByRef isReplaced) {
+    placeHolder := Chr(0xE000)
+    result := []
+    sorted := ToKeyLengthSortedArray(vars)
 
-        cmdType := StrLower(m1), key := m2
-        if(cmdType = "chat")
-            Chat(key, vars.send_mode, vars.target_hwnd)
-        else if(cmdType = "sendraw")
-            SendKey(key, vars.send_mode . "R", vars.target_hwnd)
-        else
-            SendKey(key, vars.send_mode, vars.target_hwnd)
+    ; Step 1: 키워드(길이 내림차순)를 찾아 dummy로 치환하며 값 저장
+    for i, item in sorted {
+        while (found := RegExMatch(expr, item.key, m)) {
+            isReplaced := true
+            result[found] := item.value
+            expr := StrReplace(expr, m, Dummy(m, placeHolder), , 1)
+        }
     }
-    else if RegExMatch(command, "i)^(Sleep|Wait|Delay)\s*,?\s*(\d*)", m) {
-        vars.delay := m2
+
+    ; Step 2: 남은 일반 문자열 처리
+    while (found := RegExMatch(expr, "[^" . placeHolder . "]+", m)) {
+        result[found] := m
+        expr := StrReplace(expr, m, Dummy(m, placeHolder), , 1)
     }
-    else if RegExMatch(command, "^([a-zA-Z0-9_]+)\s*\((.*)\)\s*$", m) {
-        WinActivateWait(vars.target_hwnd)
-        ExecFunc(m1, m2)
+
+    return StrJoin(result,"")
+}
+
+
+EvaluateFunctions(expr, vars) {
+    fnPattern := "(\w+)\(([^)]*)\)"  ; 예: FuncName(arg1, arg2)
+    pos := 1
+    while (found := RegExMatch(expr, fnPattern, m, pos)) {
+        full := m
+        fnName := m1
+        argStr := m2
+        args := StrSplit(argStr, ",")
+        Loop args.Length
+            args[A_Index] := Trim(ResolveExpr(args[A_Index], vars))  ; 인자 재귀 평가
+
+        ; 함수 정의가 vars.funcs에 있으면 실행
+        if IsObject(vars.funcs) && vars.funcs.HasKey(fnName) {
+            fn := vars.funcs[fnName]
+            result := fn.Call(args*)
+        } else {
+            result := "[UnknownFunc:" fnName "]"
+        }
+
+        expr := StrReplace(expr, full, result)
+        pos := found + StrLen(result)
     }
-    else if RegExMatch(command, "i)^Exec,?\s*(.+?)$", m) {
-        ExecMacroFile(m1, vars)
-    }
-    else if RegExMatch(command, "i)^Import,?\s*(.+?)$", m) {
-        fullPath := ResolveMacroFilePath(m1, vars)
-        if (fullPath)
-            ImportVars(ReadFile(fullPath), vars)
-    }
-    else if RegExMatch(command, "i)^(Run|RunAs)\s*,?\s*(.*)$", m) {
-        Run_(m1, m2)
-    }
-    else if (command && line && index) {
-        ShowTip("올바른 명령문이 아님 (로그 확인 Alt+L)"
-            . "`nPath: " StrReplace(vars.current_path, MACRO_DIR)
-            . "`nLine: " index
-            . "`nCmd : " line "`n`n", 5000, true)
+    return expr
+}
+
+
+
+ReadVarsFile(path, vars) {
+    fullPath := ResolveMacroFilePath(path, vars)
+
+    if (!vars.HasKey("__Readed__"))
+        vars["__Readed__"] := {}
+
+    if (vars["__Readed__"].HasKey(fullPath))
+        return
+
+    vars["__Readed__"][fullPath] := true
+
+    content := ReadFile(fullPath)
+
+    ParseVars(content, vars)
+}
+
+ParseVars(content, vars) {
+    lines := SplitLine(content)
+    for index, line in lines {
+        line := Trim(line)
+        line := StripComments(line)
+
+        if (RegExMatch(line, "i)^Read:\s*(.+?)$", m)) {
+            ReadVarsFile(m1, vars)  ; 재귀 Read
+            continue
+        }
+
+        parts := StrSplit(line, "=",, 2)
+        if (parts.Length() < 2)
+            continue
+        
+        key := Trim(parts[1])
+        val := Trim(parts[2])
+        if (key != "" && val != "")
+            vars[key] := val
     }
 }
 
@@ -337,26 +428,4 @@ CheckAbortAndSleep(totalDelay) {
     return !macroAbortRequested
 }
 
-ExplodeByKeys(expr, vars, ByRef isReplaced) {
-    placeHolder := Chr(0xE000)
-    result := []
-    sorted := ToKeyLengthSortedArray(vars)
-
-    ; Step 1: 키워드(길이 내림차순)를 찾아 dummy로 치환하며 값 저장
-    for i, item in sorted {
-        while (found := RegExMatch(expr, item.key, m)) {
-            isReplaced := true
-            result[found] := item.value
-            expr := StrReplace(expr, m, Dummy(m, placeHolder), , 1)
-        }
-    }
-
-    ; Step 2: 남은 일반 문자열 처리
-    while (found := RegExMatch(expr, "[^" . placeHolder . "]+", m)) {
-        result[found] := m
-        expr := StrReplace(expr, m, Dummy(m, placeHolder), , 1)
-    }
-
-    return StrJoin(result,"")
-}
 

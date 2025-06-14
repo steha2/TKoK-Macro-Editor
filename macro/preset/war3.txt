@@ -1,1 +1,1 @@
-﻿#target:Warcraft III#
+﻿#target=Warcraft III#

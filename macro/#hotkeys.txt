@@ -39,6 +39,6 @@ F7 토글 마우스 가두기
 config.ini 에서 명령을 단축키로 지정할 수 있습니다.
 [Macro]
 ;Ctrl : ^    Alt : !    Shift : +   Win : #
-^J = exec, swap-acc
-!Numpad1 = Run, notepad
-!Numpad2 = Send, hello #target=notepad#
+^J = Exec swap-acc
+!Numpad1 = Run: notepad
+!Numpad2 = Send hello #target=notepad#

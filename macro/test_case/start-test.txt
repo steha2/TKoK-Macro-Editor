@@ -1,0 +1,11 @@
+﻿note() #a=1# #force# #skip_mode=vars# #start_line=4#
+#a=3#
+Chat: %a% 3
+Chat: %a% 4
+Chat: %a% 5
+Chat: %a% 6
+Chat: %a% 7
+Chat: %a% 8
+Chat: %a% 9
+Chat: %a% 10
+

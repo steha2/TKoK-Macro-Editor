@@ -1,5 +1,5 @@
-﻿Send, {F1}
-Send, n #delay=600#
-Send, {Numpad5} #delay=200#
-Chat, -spsi %spsi%
-Send, %stat%
+﻿Send: {F1}
+Send: n #delay=600#
+Send: {Numpad5} #delay=200#
+Chat: -spsi %spsi%
+Send: %stat%

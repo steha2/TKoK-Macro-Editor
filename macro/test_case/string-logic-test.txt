@@ -1,0 +1,7 @@
+﻿Note() #a=b1cc# #b=1c#
+
+#if:a!=b# chat: ---1--- %a!=b%
+#if:!a=b# chat: ---2--- %!a=b% ; 내부적으로 !(a=b) 처럼취급
+#if:a~=b# chat: ---3--- %a~=b%
+#if:a=b# chat: ---4--- %a=b%
+

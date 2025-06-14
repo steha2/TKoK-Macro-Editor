@@ -1,7 +1,7 @@
-﻿#target:Warcraft III#
+﻿#target=Warcraft III#
 
-Exec, champ\karrix\ranger-equip
+Exec: champ\karrix\ranger-equip
 
-Exec, stat-up #spsi:100# #stat:Q#
+Exec: stat-up #spsi=100# #stat=Q#
 
-Chat, -tt #delay:300#
+Chat: -tt #delay:300#

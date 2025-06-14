@@ -1,5 +1,0 @@
-﻿#t:notepad#
-Run, %t% ;#delay:100#
-#target:t#
-chat, abc
-send, ^a{delete}^w #wait:1000#

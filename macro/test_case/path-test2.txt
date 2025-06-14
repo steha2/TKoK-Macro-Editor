@@ -1,0 +1,2 @@
+﻿Chat: path-test2 %abc+d|10%
+Exec: path-test3

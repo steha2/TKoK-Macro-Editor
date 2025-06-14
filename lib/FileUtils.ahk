@@ -90,8 +90,7 @@ IsAbsolutePath(path) {
 ReadFile(path) {
     FileRead, content, %path%
     if (ErrorLevel) {
-        MsgBox, % "파일을 불러오는 데 실패했습니다: " . %path%
-        return
+        return false
     }
     return content
 }

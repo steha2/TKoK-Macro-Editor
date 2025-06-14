@@ -1,11 +1,11 @@
 ﻿#target=Warcraft III# #w3_ver=classic#
-Import, c_map\classic\screen
+Read: c_map\classic\screen
 PickNewHero(%part1%)
 @%move_new_hero%
 
 @%click_shop_npc%
-Exec, %out_dir%\%part1%-equip
+Exec: %out_dir%\%part1%-equip
 
-Exec, stat-up #spsi:100# #stat:Q#
-Chat, -tt #delay:300#
+Exec: stat-up #spsi=100# #stat=Q#
+Chat: -tt #delay:300#
 WriteMacroFile("",%out_dir%\%part1%-equip) #force#

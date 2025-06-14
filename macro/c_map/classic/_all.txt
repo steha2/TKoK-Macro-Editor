@@ -1,0 +1,4 @@
+﻿Read: c_map\classic\cmd
+Read: c_map\classic\map
+Read: c_map\classic\popup
+Read: c_map\classic\field

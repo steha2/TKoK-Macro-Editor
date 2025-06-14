@@ -59,9 +59,9 @@ GetAdjustedCoords(ByRef x, ByRef y) {
 ParseCoords(coords) {
     coords := Trim(coords)
 
-    if RegExMatch(coords, "(\d+),\s*(\d+)$", m) {
+    if RegExMatch(coords, "(\d+)\s*,\s*(\d+)$", m) {
         return { x: m1, y: m2, type: "fixed" }
-    } else if RegExMatch(coords, "(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)$", m) {
+    } else if RegExMatch(coords, "(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)$", m) {
         return { x: m1, y: m2, type: "ratio" }
     } else {
         return false
@@ -95,13 +95,13 @@ ConvertScriptMode(scriptText, from, to) {
     for index, line in SplitLine(scriptText) {
         ResolveMarker(line, vars, "panel")
         line := RegExReplace(line, "#\s*(w3_ver)\s*=\s*" . from . "\s*#", "#$1=" . to . "#")
-        line := RegExReplace(line, "i)^(Import,\s*c_map\\)" . from . "(\\[^`\r\n]+)", "$1" . to . "$2")
+        line := RegExReplace(line, "i)^(Read,\s*c_map\\)" . from . "(\\[^`\r\n]+)", "$1" . to . "$2")
         
         panel := vars.panel
         if (panel != "") && RegExMatch(line, "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)(.*)$", m) {
             btn := m1, x := m2+0, y := m3+0, tail := m4
             coords := ConvertCoords(x, y, from, to, panel)
-            if(!coords && panel = "shop")
+            if(!coords && panel = "items")
                 coords := ConvertCoords(x, y, from, to, "cmd")
 
             if(coords) 

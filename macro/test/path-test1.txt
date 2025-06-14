@@ -1,4 +1,0 @@
-﻿Note()
-#a:1# #b:+# #c:2# #d:-1#
-chat, -----test1----- %abc+d|10%
-Exec, test2

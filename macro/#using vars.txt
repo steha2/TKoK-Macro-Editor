@@ -1,20 +1,25 @@
 ﻿변수 선언 #...#, 사용 %...%                      #limit:0#
 
 #키:값# ← 값을 계산한 후 키 변수에 할당
-예: #x:1+2# → x := 3
+예:  
+#x:1+2# → x := 3
+#if:x>1# → true
 
 #키=값# ← 값 그대로 키 변수에 할당
 예: #msg=hello#
 
 변수는 %변수명% 으로 사용
 #a=3# #b=2#
-예: chat, %a+b%  ; 5
+예: chat: %a+b%  ; 5
 
-#if:a>1# 조건 설정~
+#if:a>1# Chat: hello  ; a 가 1보다 크면 실행 if 가 한줄만 검사 합니다
+
+#if_mode=block#   ; if 가 #end_if# 를 만나기 전까지 검사합니다
+
+#if:a>1# 조건 설정 ~
+...
 #end_if# ~조건 해제
 
-#if_mode=line#
-if 가 한줄만 검사 합니다
 
 #force#
 해당 줄을 조건문, 스킵 여부을 무시하고 실행
@@ -23,37 +28,38 @@ preset 적용시 해당 줄은 즉시실행 후 복사안함
 #break#, #limit# 
 매크로 즉시 중단
 
-#limit:2#
-Send,Chat,Click 등 명령 2회 실행 후 종료
+#limit:10#
+명령 10회 실행 후 종료
 
-#limit_mode:line#
+#limit_mode=line#
 반복 횟수 대신 줄 수를 기준으로 실행 제한을 적용
 
-#dp_mode:round2#     :ceil  :floor
+#dp_mode=round2#     =ceil  =floor
 소수점 아래 2자리 반올림    올림    버림
 
-#coord_mode:screen# 
+#coord_mode=screen# 
 좌표모드:전체화면 (기본값:실행창)
 
-#send_mode:C#
-#target:title# 창에 키 입력, 클릭 명령을 비활성 전송합니다.
+#send_mode=C#
+#target=title# 창에 키 입력, 클릭 명령을 비활성 전송합니다.
 일부 프로그램에서는 호환성 문제로 작동하지 않을 수 있습니다.
 
-#send_mode:P#
-chat, 내용을 복사 붙여넣기로 입력합 합니다.
+#send_mode=P#
+Chat: 내용을 복사 붙여넣기로 입력합 합니다.
 
-#start_line:10#
+#start_line=10#
 9번 줄 까지 명령문을 스킵합니다.
 우측상단의 숫자를 바꾸면 이 값도 바뀝니다.
 
-#skip_mode:vars#
+#skip_mode=vars#
 스킵 할때 변수 설정과 명령문을 모두 건너뜁니다.
 
-Import, c_map\classic\mode
+Read: c_map\classic\map
 해당 경로의 key=value 로 저장된 변수값을 읽어옴
 
 Note 에서 Reforged ↔ Classic 좌표 변환시 클릭 영역을 지정합니다
-Ctrl+Alt+F1, F2로 영역 확인 가능
+Alt + Numpad9 로 영역 확인 및 수정 가능
+
 #panel=items# 인벤토리와 상점 (inv ~ shop)
 #panel=skill# 스킬창
 #panel=map#   미니맵 

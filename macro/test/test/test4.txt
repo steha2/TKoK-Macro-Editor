@@ -1,5 +1,0 @@
-﻿chat, test4 - %base_path% 
-
-chat, %current_path%
-
-Exec, test2

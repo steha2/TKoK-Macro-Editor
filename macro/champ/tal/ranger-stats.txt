@@ -1,22 +1,22 @@
 ﻿#target=Warcraft III# #w3_ver=classic#
-Import, c_map\classic\screen
+Read: c_map\classic\screen
 PickNewHero(ranger)
 %move_new_hero%
 
-Send, {F1} #rep=2#
+Send: {F1} #rep=2#
 %click_shop_npc%
-Exec, champ\tal\ranger-equip
+Exec: champ\tal\ranger-equip
 
-Exec, stat-up #spsi:128# #stat:R#
-Chat, -tt #delay:300#
-Click:L, 0.275, 0.214
-Click:L, 0.268, 0.314
-Click:L, 0.562, 0.313 #rep=3#
-Click:L, 0.349, 0.221
-Click:L, 0.349, 0.312
-Click:L, 0.350, 0.598
-Click:L, 0.346, 0.404
-Click:L, 0.345, 0.501
-Click:L, 0.563, 0.404 #rep=2#
-Click:L, 0.496, 0.221 #rep=3#
-Click:L, 0.635, 0.218 #rep=3#
+Exec: stat-up #spsi=128# #stat=R#
+Chat: -tt #delay:300#
+Click:L 0.275, 0.214
+Click:L 0.268, 0.314
+Click:L 0.562, 0.313 #rep=3#
+Click:L 0.349, 0.221
+Click:L 0.349, 0.312
+Click:L 0.350, 0.598
+Click:L 0.346, 0.404
+Click:L 0.345, 0.501
+Click:L 0.563, 0.404 #rep=2#
+Click:L 0.496, 0.221 #rep=3#
+Click:L 0.635, 0.218 #rep=3#

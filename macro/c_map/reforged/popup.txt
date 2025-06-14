@@ -1,0 +1,18 @@
+﻿champ_prac   = Click:L 0.498, 0.269 #delay=300#
+champ_sg     = Click:L 0.498, 0.342 #delay=300#
+champ_karrix = Click:L 0.496, 0.394 #delay=300#
+champ_avnos  = Click:L 0.497, 0.456 #delay=300#
+champ_karnos = Click:L 0.496, 0.518 #delay=300#
+champ_karav  = Click:L 0.495, 0.586 #delay=300#
+champ_mu     = Click:L 0.493, 0.649 #delay=300#
+champ_vj     = Click:L 0.494, 0.711 #delay=300#
+champ_next   = Click:L 0.497, 0.775 #delay=300#
+champ_fin1   = Click:L 0.497, 0.838 #delay=500#
+
+champ_cru    = Click:L 0.499, 0.365 #delay=300#
+champ_tal    = Click:L 0.498, 0.424 #delay=300#
+champ_mk     = Click:L 0.498, 0.487 #delay=300#
+champ_hydra  = Click:L 0.496, 0.554 #delay=300#
+champ_orta   = Click:L 0.495, 0.614 #delay=300#
+champ_ghoul  = Click:L 0.494, 0.678 #delay=300#
+champ_fin2   = Click:L 0.499, 0.807 #delay=500#

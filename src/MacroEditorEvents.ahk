@@ -367,7 +367,7 @@ Pause up::Gosub, ToggleRecord
 !F2::
     if(!isRecording && GetAdjustedCoords(x,y)) {
         lastTime := 0
-        LogToEdit("Click:L, " . x . ", " . y)
+        LogToEdit("Click:L " . x . ", " . y)
         if(overlayVisible) {
             ToggleOverlay()
             ToggleOverlay()

@@ -1,2 +1,2 @@
-﻿#target:Warcraft III#
+﻿#target=Warcraft III#
 PickNewHero(EQ)

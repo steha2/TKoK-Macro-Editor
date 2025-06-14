@@ -113,10 +113,10 @@ GetW3_Ver(target) {
     if(!IsReforged(hwnd))
         return "classic"
 
-    GetClientRect(w3hwnd, cx, cy, cw, ch)
+    GetClientRect(hwnd, cx, cy, cw, ch)
 
     ; 16:9 비율 체크 (0.5625 ± 0.02 허용 오차)
-    ratio := cw / ch
+    ratio := ch / cw
     tolerance := 0.02
     is16by9 := (ratio > 0.5625 - tolerance) && (ratio < 0.5625 + tolerance)
 

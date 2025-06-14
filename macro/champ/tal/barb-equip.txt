@@ -1,16 +1,16 @@
-﻿Click:L, 0.794, 0.812 #delay=400#
-Click:L, 0.518, 0.352 #rep=2#
-Click:L, 0.524, 0.267 #rep=2#
-Click:L, 0.953, 0.809
-Click:L, 0.563, 0.458 #rep=2#
-Click:L, 0.557, 0.404 #rep=2#
-Click:L, 0.594, 0.362 #rep=2#
-Click:L, 0.456, 0.370 #rep=2#
-Click:L, 0.490, 0.492 #rep=2#
-Click:L, 0.624, 0.320 #rep=2#
-Click:L, 0.793, 0.877
-Click:L, 0.493, 0.407 #rep=2#
-Click:L, 0.554, 0.312 #rep=2#
-Click:L, 0.527, 0.358 #rep=2#
-Click:L, 0.848, 0.883
-Click:L, 0.462, 0.221 #rep=2#
+﻿Click:L 0.794, 0.812 #delay=400#
+Click:L 0.518, 0.352 #rep=2#
+Click:L 0.524, 0.267 #rep=2#
+Click:L 0.953, 0.809
+Click:L 0.563, 0.458 #rep=2#
+Click:L 0.557, 0.404 #rep=2#
+Click:L 0.594, 0.362 #rep=2#
+Click:L 0.456, 0.370 #rep=2#
+Click:L 0.490, 0.492 #rep=2#
+Click:L 0.624, 0.320 #rep=2#
+Click:L 0.793, 0.877
+Click:L 0.493, 0.407 #rep=2#
+Click:L 0.554, 0.312 #rep=2#
+Click:L 0.527, 0.358 #rep=2#
+Click:L 0.848, 0.883
+Click:L 0.462, 0.221 #rep=2#

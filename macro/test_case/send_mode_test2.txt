@@ -1,0 +1,24 @@
+﻿;---test\send_mode_test2---
+note()
+Chat: ---------send_mode_test----------
+
+
+
+Chat: %send_mode% 는 NoEnter모드 #send_mode=E0#
+
+Chat: %send_mode% 는 앞쪽 Enter #send_mode=E1#
+
+Chat: %send_mode% 는 뒤쪽 Enter #send_mode=E2#
+
+Chat: %send_mode% 는 기본값 양쪽 Enter #send_mode#
+
+Chat: %send_mode% 는 복사 붙여넣기 모드 #send_mode=P#
+
+Chat: %send_mode% 는 비활성 명령 모드 #send_mode=C#
+
+Chat: %send_mode% 는띄   어 쓰  기무    시모 드 #send_mode=NS#
+
+#send_mode=P# 
+#text:hello from send_mode_test2#
+;Exec notepad-test 
+Exec: note-test

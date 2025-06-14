@@ -1,0 +1,19 @@
+﻿Note() 
+Chat: -----------start----------
+#a:2.5000# #b:1# 
+Chat: % a / b %
+Chat: % a / b % #dp_mode:fixed8#
+Chat: % a / b % #dp_mode:ceil#
+
+Chat: ---
+#a:4.999# #b:1# 
+Chat: % a / b % #dp_mode:round2#
+Chat: % a / b % #dp_mode:round10#
+Chat: %a,b% % a / b % #dp_mode:floor#
+#if:a>1# chat a는1보다 크다
+#if:a>5# chat a는5보다 크다
+#if:a>5# chat a는5보다 크다??? #force#
+Chat: if문 적용중.. 실행안됨
+#if#
+Chat: if문 끝 실행
+Chat: -----------end----------

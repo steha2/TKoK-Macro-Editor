@@ -1,12 +1,12 @@
-﻿Exec, coords\screen
+﻿Exec: coords\screen
 
 PickNewHero(ranger)
 
 %move_new_hero% #delay=5000#
 
 %champ_shop%
-Exec, champ\sg\ranger-equip
+Exec: champ\sg\ranger-equip
 
-;Exec, stat-up #spsi:100# #stat:Q#
+;Exec stat-up #spsi=100# #stat=Q#
 
-Chat, -tt #delay:300#
+Chat: -tt #delay:300#

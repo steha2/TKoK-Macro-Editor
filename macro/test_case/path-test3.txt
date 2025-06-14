@@ -1,0 +1,1 @@
+﻿Chat: path-test3 %abc+d|10%

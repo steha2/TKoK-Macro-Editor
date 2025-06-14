@@ -1,0 +1,5 @@
+﻿#limit2:repeat# #limit_mode=repeat#
+note()
+Chat: %limit2 limit_mode rep%
+
+Chat: %limit2% %limit_mode% %rep%

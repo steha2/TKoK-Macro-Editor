@@ -1,0 +1,4 @@
+﻿Note()
+#a:1# #b:+# #c:2# #d:-1#
+Chat: -----path-test1----- %abc+d|10%
+Exec: path-test2

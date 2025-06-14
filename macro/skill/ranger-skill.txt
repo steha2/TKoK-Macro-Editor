@@ -1,27 +1,27 @@
 ﻿#target=Warcraft III#
 #level:23# #dp_mode:floor#
 
-Send, {F1} 
+Send: {F1} 
 
 #num_stat : %(level-1)*4% #
 #num_skill : %level / 2 + 2% #
 
-chat, Level : %level% num_stat : %num_stat% num_skill : %num_skill%
+Chat: Level : %level% num_stat : %num_stat% num_skill : %num_skill%
 
-exec stat-up #spsi:(level-1)*4# #stat:R#
+exec stat-up #spsi:(level-1)*4# #stat=R#
 
-Chat, -tt #delay:300#
+Chat: -tt #delay:300#
 
 #limit:%level / 2 + 2%# 
 #reforged=skill#
-Click:L, 0.333, 0.198 
-Click:L, 0.388, 0.202
-Click:L, 0.334, 0.308
-Click:L, 0.386, 0.303
-Click:L, 0.386, 0.393
-Click:L, 0.388, 0.486
-Click:L, 0.388, 0.600
-Click:L, 0.548, 0.405 #rep:2#
-Click:L, 0.548, 0.293 #rep:3#
-Click:L, 0.494, 0.202
+Click:L 0.333, 0.198 
+Click:L 0.388, 0.202
+Click:L 0.334, 0.308
+Click:L 0.386, 0.303
+Click:L 0.386, 0.393
+Click:L 0.388, 0.486
+Click:L 0.388, 0.600
+Click:L 0.548, 0.405 #rep:2#
+Click:L 0.548, 0.293 #rep:3#
+Click:L 0.494, 0.202
 #reforged#

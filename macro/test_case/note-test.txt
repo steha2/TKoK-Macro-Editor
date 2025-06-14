@@ -1,0 +1,9 @@
+﻿#send_mode=P# 
+#text=from...outside#
+;#text:text|in side text#
+
+Run: Notepad #delay:200#
+
+Chat: No-test2::--- %text|in side text%
+
+Send: ^a{Delete}^w #wait:1000#

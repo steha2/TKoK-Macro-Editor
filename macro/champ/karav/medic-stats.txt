@@ -1,6 +1,6 @@
 ﻿#target=Warcraft III# #w3_ver=classic#
-Import, c_map\classic\screen
-Import, c_map\classic\mode
+Read: c_map\classic\_all
+
 
 ;#if:w3_ver=classic# ExecMultiW3(1,3,0) #delay=50000#
 
@@ -12,19 +12,19 @@ PickNewHero(medic)
 %move_new_hero%
 ChampChat()
 
-%click_shop_npc% #delay=500#
-Exec, champ\karav\medic-equip
+%click_shop_npc%
+Exec: champ\karav\medic-equip
 
-Exec, stat-up #spsi:116# #stat:F#
+Exec: stat-up #spsi=116# #stat=F#
 
 #panel=skill#
-Chat, -tt #delay:300#
-Click:L, 0.353, 0.216
-Click:L, 0.282, 0.221
-Click:L, 0.274, 0.320 #rep:3#
-Click:L, 0.494, 0.403 #rep:2#
-Click:L, 0.565, 0.219 #rep:3#
-Click:L, 0.348, 0.302 #rep:3#
-Click:L, 0.349, 0.398
-Click:L, 0.634, 0.212 #rep:3#
+Chat: -tt #delay:300#
+Click:L 0.353, 0.216
+Click:L 0.282, 0.221
+Click:L 0.274, 0.320 #rep:3#
+Click:L 0.494, 0.403 #rep:2#
+Click:L 0.565, 0.219 #rep:3#
+Click:L 0.348, 0.302 #rep:3#
+Click:L 0.349, 0.398
+Click:L 0.634, 0.212 #rep:3#
 #panel#
