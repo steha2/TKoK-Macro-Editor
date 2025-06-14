@@ -1,6 +1,5 @@
 ﻿#target=Warcraft III# #w3_ver=classic#
-Read: c_map\classic\screen
-Read: c_map\classic\mode
+Read: c_map\classic\_all
 
 PickNewHero(barb)
 

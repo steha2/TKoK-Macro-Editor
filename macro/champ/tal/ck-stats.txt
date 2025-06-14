@@ -1,6 +1,5 @@
 ﻿#target=Warcraft III# #w3_ver=reforged#
-Read: c_map\reforged\screen
-Read: c_map\reforged\mode
+Read: c_map\classic\_all
 
 %diff_champ%
 %champ_next%
