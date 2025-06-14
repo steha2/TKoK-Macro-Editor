@@ -2,7 +2,7 @@ SaveW3Pos() {
     WinGetTitle, winTitle, A
     WinGetPos, x, y, w, h, A
     
-    MsgBox, 4, 창 위치를 저장합니까?, 예/아니오를 선택해 주세요.
+    MsgBox, 4, 창 위치를 저장합니까?, SaveW3Position`n예/아니오를 선택해 주세요.
     IfMsgBox, No
         return
     
@@ -179,7 +179,7 @@ ExecMultiW3(num := 0, speed := 0, isConfirmClose := false) {
         if(isConfirmClose)
             return false
 
-        msg := "[Y] 종료 후 다시 실행   [N] 종료만   [Cancel] 취소"
+        msg := "[Y] Exit and restart   [N] Exit   [Cancel] Cancel"
         MsgBox, 4099, Warcraft III가 이미 실행 중입니다, %msg%
         IfMsgBox Cancel
             return false

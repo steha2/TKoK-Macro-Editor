@@ -271,7 +271,7 @@ ConfirmNotSaved() {
     GuiControlGet, currentText, macro:, EditMacro
     if (currentText != origContent) {
         showDiff := GetFirstDiffPreview(origContent, currentText)
-        MsgBox, 4100, 저장되지 않음, 변경 내용이 감지되었습니다:`n`n%showDiff%`n`n저장하지 않고 진행합니까?
+        MsgBox, 4100, Not Saved, 변경 내용이 감지되었습니다:`n`n%showDiff%`n`n저장하지 않고 진행합니까?
         IfMsgBox, No
             return false
 

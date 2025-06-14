@@ -107,7 +107,7 @@ WriteMacroFile(content := "", macroFilePath := "") {
 
     ; 이미 파일 존재하면 메시지 후 리턴
     if FileExist(fullPath) {
-        MsgBox, 이미 존재하는 파일이 있습니다.`n%fullPath%
+        MsgBox, file exist already`n이미 존재하는 파일이 있습니다.`n%fullPath%
         return
     }
     ; ✅ 디렉토리 자동 생성

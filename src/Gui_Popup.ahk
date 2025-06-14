@@ -195,7 +195,7 @@ TogglePanelOverlayAll() {
     w3_ver := GetW3_Ver(w3hwnd)
 
     if (!w3_ver)
-        return Alert("워크래프트3 창이 아닙니다")
+        return Alert("Warcraft III 창이 아닙니다")
 
     WinActivateWait(w3hwnd)
     panelMap := uiRegions[w3_ver]
@@ -319,7 +319,7 @@ ShowOrHidePanelOverlay(w3_ver, panelName, w3hwnd, show := true) {
             return
 
         if (!WinExist("ahk_id " . w3hwnd))
-            return Alert("워크래프트3 창이 없습니다.")
+            return Alert("Warcraft III 창이 없습니다.")
 
         rect := uiRegions[w3_ver][panelName]
         GetClientRect(w3hwnd, cx, cy, cw, ch)
