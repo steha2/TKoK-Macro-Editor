@@ -4,9 +4,9 @@
 #a:10#
 Chat: === if block mode test ===
 
-#if:a > 5# chat a는 5보다 큽니다
+#if:a > 5# chat: a는 5보다 큽니다
 
-#if:a > 20# chat a가 20 보다 크지 않으니 출력 안함
+#if:a > 20# chat: a가 20 보다 크지 않으니 출력 안함
 
 Chat: a가 20 보다 크지 않지만 블록모드가 아님으로 출력
 
@@ -19,13 +19,13 @@ Chat: 현재 값: %a%
 Chat: a는 0입니다 (block)
 #end_if#
 
-#b:3# chat b에 3을 대입 
+#b:3# chat: b에 3을 대입 
 
 ; inline 스타일 여전히 유효함
-#if:b=3# chat b는 3입니다 (inline)
+#if:b=3# chat: b는 3입니다 (inline)
 
 ; force 테스트
-#if:a=999# chat 이건 false인데도 나옴 #force#
+#if:a=999# chat: 이건 false인데도 나옴 #force#
 Chat: 무조건 실행됨 #force#
 
 

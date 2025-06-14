@@ -6,4 +6,4 @@
 ;Earthquaker    ~= eq, earth
 
 #target=Warcraft III#
-PickNewHero(%hero%)
+PickNewHero(%hero|Warrior%)

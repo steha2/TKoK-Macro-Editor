@@ -44,15 +44,15 @@ Read: c_map\classic\map
 #coord_mode=screen# 
 좌표모드:전체화면 (기본값:실행창)
 
+#start_line=10#
+10번 줄 부터 명령문을 실행 합니다.
+
+#skip_mode=vars#
+스킵 할때 변수 설정과 명령문을 모두 건너뜁니다.
+
 #send_mode=C#
 #target=title# 창에 키 입력, 클릭 명령을 비활성 전송합니다.
 일부 프로그램에서는 호환성 문제로 작동하지 않을 수 있습니다.
 
 #send_mode=R#
 Chat: 채팅에 문자를 직접 타이핑하듯 입력합니다 (기본은 복붙 방식입니다)
-
-#start_line=10#
-10번 줄 부터 명령문을 실행 합니다.
-
-#skip_mode=vars#
-스킵 할때 변수 설정과 명령문을 모두 건너뜁니다.

@@ -1,2 +1,2 @@
-﻿note()
-#if:TrueTip(aaa)=aaba# chat: babababa
+﻿note() #b=aaa# #aaa=aaac# #b=aaa#
+#if:TrueTip(aaa)=b# chat: babababa

@@ -54,11 +54,10 @@ Note(newText := "", title := "", isAppend := false) {
             return
         }
 
-        msg := "스크립트의 #w3_ver=" from "# 을"
-             . "`n #w3_ver=" to "# 으로 바꿉니다.`n`n"
-             . "Read 경로 및 대상 패널의 비율 좌표를 변환합니다.`n`n"
+        msg := "`n#w3_ver=" from "# 을 #w3_ver=" to "# 로 바꿉니다.`n"
+             . "Read: 경로 및 대상 #panel# 의 비율 좌표를 변환합니다.`n`n"
              . "Read: c_map\" from "\mode`n"
-             . "#panel=items# | #panel=skill#`nClick, 0.100, 0.200`nClick, 0.100, 0.200"
+             . "#panel=items# `nClick, 0.100, 0.200`nClick, 0.100, 0.200"
              
         MsgBox, 4100, Convert to %to%, %msg%
             IfMsgBox, No

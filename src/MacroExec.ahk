@@ -54,7 +54,6 @@ ExecMacro(scriptText, vars, current_path) {
         ; 단일 라인 변수 초기화
         vars.rep := 1
         vars.wait := 0
-        vars.dp_mode := "trim"
         vars.delay := vars.HasKey("base_delay") ? vars.base_delay : BASE_DELAY
 
         ; 명령어 처리 (vars에서 실제 파싱)
@@ -298,7 +297,7 @@ EvaluateFunctions(expr, vars) {
             val := args[A_Index]
             val := Trim(val)
             val := ExplodeByKeys(val, vars).expr  ; 변경: 결과에서 .expr 만 사용
-            args[A_Index] := val
+            args[A_Index] := TryEval(val)
         }
 
         result := ExecFunc(fnName, args)
