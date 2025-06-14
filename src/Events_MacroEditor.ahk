@@ -306,12 +306,26 @@ JumpToLine(lineNum){
     lineNum := Min(lineNum, totalLines0) - 1
     
     GuiControl, macro:Focus, EditMacro
+    
     SendKey("^{Home}")
-    Loop, %lineNum% {
+    Loop, %lineNum%
         SendKey("{Down}")
-    }
+    
     SendKey("+{End}")
 }
+
+; JumpToLine2(lineNum){
+;     GuiControlGet, content, macro:, EditMacro
+;     StringSplit, totalLines, content , `n
+;     lineNum := Min(lineNum, totalLines0) - 1
+    
+;     GuiControl, macro:Focus, EditMacro
+;     ControlSend, Edit2, ^{Home}, ahk_id %hMacro%
+;     Loop, %lineNum%
+;         ControlSend, Edit2, {Down}, ahk_id %hMacro%
+    
+;     ControlSend, Edit2, +{End}, ahk_id %hMacro%
+; }
 
 OnNoteBtn:
     GuiControlGet, content, macro:, EditMacro

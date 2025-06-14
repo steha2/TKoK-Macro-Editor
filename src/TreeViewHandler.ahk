@@ -71,15 +71,19 @@ SelectTreeItemByPath(path) {
 UpdatePathAndEdit(path) {
     if !ConfirmNotSaved()
         return
+
     macroPath := path
     content := ""
     if (IsFile(path)) {
         FileRead, content, %path%
         StringReplace, content, content, `r,, All  ; CR 제거
+        path := StrReplace(RemoveExtension(path), MACRO_DIR . "\", "")
+    } else {
+        path := StrReplace(path, MACRO_DIR . "\", "") . "\"
     }
     origContent := content
-    GuiControl,, EditMacro, %content%
-    GuiControl,, MacroPath, % StrReplace(TrimLastToken(path,"."), MACRO_DIR . "\", "")
+    GuiControl, macro:, EditMacro, %content%
+    GuiControl, macro:, MacroPath, %path%
 }
 
 GetSelectedTreePath() {

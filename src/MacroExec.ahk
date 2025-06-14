@@ -63,6 +63,7 @@ ExecMacro(scriptText, vars, current_path) {
         if (newCmd != cmd) {
             cmd := ResolveMarker(newCmd, vars, "", ["if","force","end_if"])
             cmd := ResolveExpr(cmd, vars)
+            Log("Cmd 가 달라짐`ncmd: " cmd "`nnewCmd: ")
         }
 
         ; 조건 2: 실행 전 제어 흐름
@@ -76,7 +77,6 @@ ExecMacro(scriptText, vars, current_path) {
                     continue
             }
         }
-
         PrepareTargetHwnd(vars)
 
         Loop, % vars.rep
@@ -168,6 +168,10 @@ PrepareTargetHwnd(vars) {
         vars._last_target := vars.target
         if (vars.target) {
             vars.target_hwnd := GetTargetHwnd(vars.target)
+            
+            if (vars.target_hwnd && !InStr(vars.send_mode, "C", true))
+                WinActivateWait(vars.target_hwnd)
+
             return vars.target_hwnd
         } else {
             vars.target_hwnd := ""
@@ -190,6 +194,7 @@ PrepareTargetHwnd(vars) {
 }
 
 ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
+    Log("ResolveMarker(): " line)
     command := line
     pos := 1
     while (found := RegExMatch(line, "#([^#]+)#", m, pos)) {
@@ -198,21 +203,16 @@ ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
 
         ; Match key:val or key=val
         if RegExMatch(inner, "^\s*(\w+)\s*(([:=])\s*(.*))?$", m) {
-            key := m1
-            sep := m3
-            rawVal := Trim(m4)
+            key := m1, sep := m3, rawVal := Trim(m4)
 
-            ; If it's key:value → evaluate expression
-            ; If it's key=value  → assign as literal
-            val := (sep = ":") ? EvaluateExpr(rawVal, vars) : rawVal
-
-            ; key 필터링 조건
             if ((!allowedKey || HasValue(allowedKey, key))
             && (!excludedKey || !HasValue(excludedKey, key))) {
+                ; If it's key:value → evaluate expression
+                ; If it's key=value  → assign as literal
+                val := (sep = ":") ? EvaluateExpr(rawVal, vars) : rawVal
                 vars[key] := val
             }
         }
-
         ; Remove the #...# from command string
         command := StrReplace(command, fullMatch, "")
         pos := found + StrLen(fullMatch)
@@ -242,12 +242,16 @@ EvaluateExpr(expr, vars) {
         hasDefault := true
     }
 
+    expr := EvaluateFunctions(expr, vars)
+
     ; 새 방식으로 키 치환 (안전하게)
-    isReplaced := false
-    expr := ExplodeByKeys(expr, vars, isReplaced)
+    res := ExplodeByKeys(expr, vars)
+    expr := res.expr
+    isReplaced := res.isReplaced
 
     ; 기본값에도 동일한 키 치환 적용
-    defaultVal := ExplodeByKeys(defaultVal, vars, isReplacedDefault)
+    resDef := ExplodeByKeys(defaultVal, vars)
+    defaultVal := resDef.expr
 
     ; 키 치환이 없었고, 기본값 문법이 있었다면 기본값 사용
     if (hasDefault && !isReplaced)
@@ -257,7 +261,7 @@ EvaluateExpr(expr, vars) {
 }
 
 
-ExplodeByKeys(expr, vars, ByRef isReplaced) {
+ExplodeByKeys(expr, vars) {
     placeHolder := Chr(0xE000)
     result := []
     sorted := ToKeyLengthSortedArray(vars)
@@ -265,7 +269,7 @@ ExplodeByKeys(expr, vars, ByRef isReplaced) {
     ; Step 1: 키워드(길이 내림차순)를 찾아 dummy로 치환하며 값 저장
     for i, item in sorted {
         while (found := RegExMatch(expr, item.key, m)) {
-            isReplaced := true
+            is_replaced := true
             result[found] := item.value
             expr := StrReplace(expr, m, Dummy(m, placeHolder), , 1)
         }
@@ -277,36 +281,33 @@ ExplodeByKeys(expr, vars, ByRef isReplaced) {
         expr := StrReplace(expr, m, Dummy(m, placeHolder), , 1)
     }
 
-    return StrJoin(result,"")
+    return {expr: StrJoin(result, ""), isReplaced: is_replaced}
 }
 
-
 EvaluateFunctions(expr, vars) {
-    fnPattern := "(\w+)\(([^)]*)\)"  ; 예: FuncName(arg1, arg2)
     pos := 1
-    while (found := RegExMatch(expr, fnPattern, m, pos)) {
-        full := m
-        fnName := m1
-        argStr := m2
-        args := StrSplit(argStr, ",")
-        Loop args.Length
-            args[A_Index] := Trim(ResolveExpr(args[A_Index], vars))  ; 인자 재귀 평가
+    while (found := RegExMatch(expr, "(\w+)\(([^)]*)\)", m, pos)) {
+        full := m, fnName := m1, argStr := m2
 
-        ; 함수 정의가 vars.funcs에 있으면 실행
-        if IsObject(vars.funcs) && vars.funcs.HasKey(fnName) {
-            fn := vars.funcs[fnName]
-            result := fn.Call(args*)
-        } else {
-            result := "[UnknownFunc:" fnName "]"
+        Log("EvaluateFunctions(): " full)
+
+        args := StrSplit(argStr, ",")
+
+        Loop % args.Length()
+        {
+            val := args[A_Index]
+            val := Trim(val)
+            val := ExplodeByKeys(val, vars).expr  ; 변경: 결과에서 .expr 만 사용
+            args[A_Index] := val
         }
 
+        result := ExecFunc(fnName, args)
         expr := StrReplace(expr, full, result)
+        ;test(fnname, args, result ,pos , expr, full)
         pos := found + StrLen(result)
     }
     return expr
 }
-
-
 
 ReadVarsFile(path, vars) {
     fullPath := ResolveMacroFilePath(path, vars)
@@ -348,7 +349,7 @@ ParseVars(content, vars) {
 
 Run_(mode, path) {
     try {
-        if (StrLen(mode) = 5) {
+        if (StrLower(mode) = "runas") {
             Run *RunAs %path%
         } else {
             Run %path%
@@ -358,22 +359,23 @@ Run_(mode, path) {
     }
 }
 
-
 ExecFunc(fnName, argsStr) {
-    ; 함수 객체 가져오기
     fn := Func(fnName)
-    if !IsObject(fn) {
-        MsgBox, Function "%fnName%" not found.
-        return
-    }
+    if !IsObject(fn)
+        return Alert("Function " fnName " not found.")
 
-    ; 인자 파싱 (쉼표로 나누고 양쪽 공백/따옴표 제거)
-    args := []
-    Loop, Parse, argsStr, `,
-    {
-        arg := Trim(A_LoopField, " `t`r`n""'")
-        args.Push(arg)
+    ; argsStr가 배열이 아니라면 쉼표로 나눔
+    if !IsObject(argsStr) {
+        args := []
+        Loop, Parse, argsStr, `,  ; 문자열로 간주하고 파싱
+        {
+            arg := Trim(A_LoopField, " `t`r`n""'")
+            args.Push(arg)
+        }
+    } else {
+        args := argsStr  ; 이미 배열이면 그대로 사용
     }
+    Log("ExecFunc(): " fnName)
     return fn.Call(args*)
 }
 
@@ -402,7 +404,7 @@ ResolveMacroFilePath(macroFilePath, vars) {
     if (IsFile(try3))
         return try3
 
-    MsgBox, % "매크로 파일을 찾을 수 없습니다.`n" . try1 . "`n" . try2 . "`n" . try3
+    Alert("매크로 파일을 찾을 수 없습니다.`n" . try1 . "`n" . try2 . "`n" . try3, "Error", 0)
     return false
 }
 

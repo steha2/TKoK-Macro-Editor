@@ -26,18 +26,18 @@ ClickA(x, y, btn := "L", mode := "") {
         Click(x, y, hwnd, btn, mode)
 }
 
-ClickW3(coordKey, btn := "L", mode := "", hwnd := "") {
-    hwnd := hwnd ? hwnd : WinExist("A")
+; ClickW3(coordKey, btn := "L", mode := "", hwnd := "") {
+;     hwnd := hwnd ? hwnd : WinExist("A")
 
-    if(!IsTargetWindow(W3_WINTITLE, wnd))
-        return ShowTip("Warcraft III 창이 아닙니다.")
+;     if(!IsTargetWindow(W3_WINTITLE, wnd))
+;         return ShowTip("Warcraft III 창이 아닙니다.")
 
-    w3_ver := IsReforged(hwnd) ? "reforged" : "classic"
-    coords := ParseCoords(coordMap[w3_ver][coordKey])
+;     w3_ver := IsReforged(hwnd) ? "reforged" : "classic"
+;     coords := ParseCoords(coordMap[w3_ver][coordKey])
 
-    if(coords)
-        SmartClick(coords.x, coords.y, hwnd, btn, mode, "", coords.type)
-}
+;     if(coords)
+;         SmartClick(coords.x, coords.y, hwnd, btn, mode, "", coords.type)
+; }
 
 ClickBack(x, y, hwnd, btn := "L") {
     ClickBackEx({x: x, y: y, hwnd: hwnd, btn: btn})
@@ -89,7 +89,6 @@ ClickBackEx(clickCmdArr) {
     }
     ; BlockInput, Off
     currHwnd := ""
-
 }
 
 Chat(text, mode := "", hwnd := "") {

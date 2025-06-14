@@ -1,10 +1,11 @@
 #Include %A_ScriptDir%\src\CommonSetting.ahk 
-#Include %A_ScriptDir%\src\InitMacroEditor.ahk
+#Include %A_ScriptDir%\src\Gui_MacroEditor.ahk
 #Include %A_ScriptDir%\src\MacroExec.ahk
 #Include %A_ScriptDir%\src\MacroEdit.ahk
-#Include %A_ScriptDir%\src\MacroEditorEvents.ahk
+#Include %A_ScriptDir%\src\Events_MacroEditor.ahk
 #Include %A_ScriptDir%\src\TreeViewHandler.ahk
-#Include %A_ScriptDir%\src\InputExecutor.ahk
+#Include %A_ScriptDir%\src\Input_Sender.ahk
 #Include %A_ScriptDir%\src\CoordConverter.ahk 
-#Include %A_ScriptDir%\src\TempGuis.ahk 
+#Include %A_ScriptDir%\src\Gui_Popup.ahk 
+#Include %A_ScriptDir%\src\Input_Logger.ahk 
 #Include %A_ScriptDir%\lib\LibIncludes.ahk

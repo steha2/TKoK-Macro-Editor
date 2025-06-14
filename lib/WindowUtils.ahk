@@ -194,6 +194,10 @@ GetTargetHwnd(target) {
     if (!target)
         return false
 
+    currHwnd := WinActive("A")
+    if (IsTargetWindow(target, currHwnd))
+        return currHwnd
+
     candidates := ["ahk_id " . target, "ahk_class " . target, "ahk_exe " . target . ".exe", target]
     for index, each in candidates {
         findHwnd := WinExist(each)
@@ -282,6 +286,15 @@ GetMouseMonitorRatio(ByRef rx, ByRef ry) {
     }
     rx := ry := -1
     return false
+}
+
+ScreenToClient(hwnd, ByRef x, ByRef y) {
+    VarSetCapacity(pt, 8)
+    NumPut(x, pt, 0, "Int")
+    NumPut(y, pt, 4, "Int")
+    DllCall("ScreenToClient", "Ptr", hwnd, "Ptr", &pt)
+    x := NumGet(pt, 0, "Int")
+    y := NumGet(pt, 4, "Int")
 }
 
 GetWindowDPI(hwnd := "A") {

@@ -3,15 +3,15 @@ note()
 Chat: ---------target test----------
 Chat: %target% %target_hwnd% 1
 
-#target=notepad# #send_mode:P#
+#target=notepad#
 
-Chat: P 는 복사 붙여넣기 모드
+Chat: 기본 복사 붙여넣기 모드
 
 Chat: %target% %target_hwnd% 4
 
-#send_mode=I#
+#send_mode=C#
 
-Chat: I 는 비활성 명령 모드
+Chat: C 는 비활성 명령 모드
 
 ;---------target test----------
 

@@ -47,6 +47,15 @@ TrimLastToken(str, delim) {
         return ""  ; 구분자가 없으면 빈 문자열
 }
 
+RemoveExtension(str) {
+    ; 마지막 점 위치 찾기 (확장자 시작 지점)
+    lastDotPos := InStr(str, ".", false, 0)
+    if (lastDotPos && lastDotPos > InStr(str, "\", false, 0)) ; 마지막 \ 이후에 점이 있는 경우만
+        return SubStr(str, 1, lastDotPos - 1)
+    else
+        return str  ; 점이 없거나 디렉토리 경로에 있는 점만 있을 경우 원본 반환
+}
+
 GetLastPart(str, delim) {
     parts := StrSplit(str, delim)
     return parts[parts.MaxIndex()]

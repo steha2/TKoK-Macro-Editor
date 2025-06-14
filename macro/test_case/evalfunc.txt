@@ -1,0 +1,2 @@
+﻿note()
+#if:TrueTip(aaa)=aaba# chat: babababa

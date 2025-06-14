@@ -6,10 +6,8 @@ test(a := "", b := "", c := "", d := "", e := "", f := "", isTip := false, write
         if (value != "")
             output .= "Arg" index " : " FormatValue(value) "`n`n"
     }
-    if (writeLog) {
-        FileDelete, %logFilePath%
-        FileAppend, % output, % logFilePath
-    }
+    if (writeLog)
+        Log(msg)
 
     if (isTip)
         ShowTip(output)
@@ -74,12 +72,35 @@ testj(data) {
     }
 }
 
-ShowTip(msg, duration := 1500, writeLog := true) {
-    if (writeLog) {
-        FileAppend, `n%msg%, % logFilePath
-    }
+Log(msg, level := 3) {
+    if (DEBUG_LEVEL >= level)
+        FileAppend, `n[%A_Now%][L%level%] %msg%, % logFilePath
+}
+
+ShowTip(msg, duration := 1500, writeLog := false) {
+    if (writeLog)
+        Log("ShowTip(): " msg, 2)  ; INFO 수준
     Tooltip, %msg%
     SetTimer, RemoveToolTip, -%duration%
+}
+
+TrueTip(msg := "", duration := 1500, writeLog := true) {
+    ShowTip(msg, duration)
+    if (writeLog)
+        Log("TrueTip(): " msg, 2)  ; INFO
+    return msg ? msg : true
+}
+
+FalseTip(msg := "", duration := 1500, writeLog := true) {
+    ShowTip(msg, duration)
+    if (writeLog)
+        Log("FalseTip(): " msg, 0)  ; ERROR
+    return false
+}
+
+
+TipResult(isSuccess, msg := "", duration := 1500, writeLog := true) {
+    return isSuccess ? TrueTip(msg, duration, writeLog) : FalseTip(msg, duration, writeLog)
 }
 
 RemoveToolTip() {
@@ -93,9 +114,9 @@ Clone(obj) {
     return new
 }
 
-Alert(msg, title := "알림", writeLog := true) {
-     if (writeLog) {
-        FileAppend, % msg, % logFilePath
+Alert(msg, title := "알림", level := 2) {
+     if (level >= 0) {
+        Log(msg, level)
     }
     MsgBox, 4096, %title%, %msg%
 }

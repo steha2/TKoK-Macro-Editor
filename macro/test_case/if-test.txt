@@ -8,8 +8,8 @@
 
 #b:3# chat b에 3을 대입
 ; force 플래그 테스트
-#force# #if:a=10# chat 이건 조건 만족하므로 나옴 #force#
-#if:a=999# chat 이건 false인데도 출력됨 #force#
+#force# #if:a=10# chat: 이건 조건 만족하므로 나옴 #force#
+#if:a=999# chat: 이건 false인데도 출력됨 #force#
 Chat: --123--- %if% %a%
 
 #b:1#

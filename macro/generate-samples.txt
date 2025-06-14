@@ -1,0 +1,3 @@
+﻿;If there was an error in creating the nameplate sample, [▶ Run]
+#target=Warcraft III#
+#if:GenerateNamePlateSamples()# PickNewHero(Ranger)

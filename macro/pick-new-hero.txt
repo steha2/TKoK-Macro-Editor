@@ -1,0 +1,9 @@
+﻿;풀네임 or 이니셜 or 앞글자 3자 이상 일치 (대소문자 구분없음)
+;Chaotic Knight ~= CK, chaotic
+;Shadow Shaman  ~= SS
+;Hydromancer    ~= hydro
+;Shadowblade    ~= sb
+;Earthquaker    ~= eq, earth
+
+#target=Warcraft III#
+PickNewHero(%hero%)

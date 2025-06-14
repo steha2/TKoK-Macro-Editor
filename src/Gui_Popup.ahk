@@ -185,15 +185,6 @@ SaveOverlayRegions(w3hwnd) {
     ShowTip("UI 영역 저장 완료!", 1500, false)
 }
 
-ScreenToClient(hwnd, ByRef x, ByRef y) {
-    VarSetCapacity(pt, 8)
-    NumPut(x, pt, 0, "Int")
-    NumPut(y, pt, 4, "Int")
-    DllCall("ScreenToClient", "Ptr", hwnd, "Ptr", &pt)
-    x := NumGet(pt, 0, "Int")
-    y := NumGet(pt, 4, "Int")
-}
-
 TogglePanelOverlayAll() {
     static shown := false, w3hwnd, w3_ver
     static OverlayControlGui := "OverlayCtrl"
