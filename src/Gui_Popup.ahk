@@ -8,11 +8,11 @@ Note(newText := "", title := "", isAppend := false) {
         Gui, SimpleNote: +Resize +HwndhNote  ; << 핸들 저장
         Gui, SimpleNote: Margin, 10, 10
         Gui, SimpleNote: Font, 16s, Consolas
-        Gui, SimpleNote: Add, Text, x10 y10 w90, Convet To
+        Gui, SimpleNote: Add, Edit, vNoteEdit x10 y40 w600 h500 WantTab
+        Gui, SimpleNote: Add, Text, x10 y10 w90, Convert to
         Gui, SimpleNote: Add, Button, x100 y10 w90 h20 gOnConvertBtn, reforged
         Gui, SimpleNote: Add, Button, x200 y10 w90 h20 gOnConvertBtn, classic
         Gui, SimpleNote: Add, Button, x300 y10 w90 h20 gOnConvertBtn, custom
-        Gui, SimpleNote: Add, Edit, vNoteEdit x10 y40 w600 h500 WantTab
         isCreated := true
     }
 
@@ -144,7 +144,7 @@ ToggleOverlay() {
     Loop, % lines.Length()
     {
         ResolveMarker(lines[A_Index], vars)
-        if RegExMatch(lines[A_Index], "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)", m)
+        if RegExMatch(lines[A_Index], "i)^Click:([LR])\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)", m)
             && !InStr(vars.coordMode, "screen") 
         {
             mx := m2/dpi*100, my := m3/dpi*100

@@ -1,6 +1,6 @@
 ﻿;클릭.txt #x_pos:0.3# #y_pos:0.2#
 #target=notepad#
 #x_pos:0.4# #y_pos:0.2#
-Click:L, %x_pos%, %y_pos%
+Click:L %x_pos%, %y_pos%
 #x_pos:144# #y_pos:422#
-Click:L, %x_pos%, %y_pos%
+Click:L %x_pos%, %y_pos%

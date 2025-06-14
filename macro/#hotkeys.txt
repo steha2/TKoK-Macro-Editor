@@ -1,4 +1,4 @@
-﻿--- 단축키 목록 ---- src/....Events.ahk 맨 아래에서 변경가능 #limit:0#
+﻿--- 단축키 목록 ---- src/Events_....ahk 맨 아래에서 변경가능      #limit#
 PrintScreen 매크로 실행/중단
 Pause  매크로 기록/중단
 

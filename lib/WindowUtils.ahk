@@ -190,6 +190,14 @@ IsTargetWindow(target, hwnd := "") {
     return InStr(title, target, false) || InStr(class, target, false) || InStr(exe, target, false)
 }
 
+AddUniqueHwnds(arr, listName) {
+    Loop % listName {
+        hwnd := %listName%[A_Index]
+        if (!IsInArray(arr, hwnd))
+            arr.Push(hwnd)
+    }
+}
+
 GetTargetHwnd(target) {
     if (!target)
         return false

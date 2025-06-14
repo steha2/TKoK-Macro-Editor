@@ -69,7 +69,7 @@ IsSameMacroLine(line1, line2) {
     if (Abs(wait1 - wait2) > EPSILON_WAIT || delay1 != delay2)
         return false
 
-    pattern := "i)^Click:[LR]\s+([\d.]+)\s*,\s*([\d.]+)"
+    pattern := ":[LR]\s*([\d.]+)\s*,\s*([\d.]+)"
     if (RegExMatch(cmd1, pattern , am) && RegExMatch(cmd2, pattern , bm)) {
         ; 문자열 기반 소수점 포함 여부로 정수/실수 판별
         isFloat1 := InStr(am2, ".") || InStr(am3, ".")

@@ -103,12 +103,22 @@ MultiLoad(squadText := "") {
         GuiControlGet, squadText, main:, SquadField
     squadArr := StrSplit(squadText, ",")
     clientArr := GetClientHwndArray()
+    
+    ; 배열이 비어 있지 않으면 (== 클라이언트가 최소 1개 이상 존재하면)
+    if (!clientArr.Length())
+        clientArr := GetW3Array()
 
-    if (!squadArr.Length() || !clientArr.Length() 
-      || squadArr.Length() != clientArr.Length())
-        return Alert("로드 목록과 클라이언트가 없거나 수가 다릅니다." 
-                 . "`n로드 목록 수: " . squadArr.Length() 
-                 . "`n클라이언트 수: " . clients.Length())
+    if (!squadArr.Length() || !clientArr.Length()) {
+        return ShowTip("로드 목록이나 클라이언트가 없습니다." 
+            . "`n로드 목록 수: " . squadArr.Length() 
+            . "`n클라이언트 수: " . clientArr.Length())
+    }
+
+    if (squadArr.Length() != clientArr.Length()) {
+        ShowTip("로드 목록과 클라이언트가 수가 다릅니다." 
+            . "`n로드 목록 수: " . squadArr.Length() 
+            . "`n클라이언트 수: " . clientArr.Length())
+    }
 
     LoadSquad(squadArr, clientArr)
     

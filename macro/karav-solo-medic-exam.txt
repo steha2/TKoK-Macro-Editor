@@ -1,0 +1,50 @@
+﻿; This is an example for execution testing.
+
+#w3_ver=reforged# #target=Warcraft III#
+Read: c_map\reforged\_all ; Load fixed coordinates %...% used below
+
+; If you newly run Warcraft III, delay 1 minute from game creation to loading completion
+; The classic Warcraft 3 shortcut path must be specified
+#if:ExecMultiW3(1,3,1)# #delay=60000#
+
+%diff_champ%       ; Select difficulty: Champion mode
+%champ_karav%      ; Select Karavnos
+%champ_fin1%       ; Confirm
+
+PickNewHero(medic) ; Find and choose a medicaster
+%move_new_hero%    ; Go to town
+
+Chat: -fog
+Chat: -cdist 2300
+LoadApt()
+
+%click_shop_npc% ; Select Equipment Vendor
+#panel=items#
+Click:L, 0.719, 0.806 #delay=400#
+Click:L, 0.493, 0.344 #rep:2#
+Click:L, 0.518, 0.243 #rep:2#
+Click:L, 0.804, 0.809
+Click:L, 0.517, 0.342 #rep:2#
+Click:L, 0.518, 0.289 #rep:2#
+Click:L, 0.570, 0.240 #rep:2#
+Click:L, 0.548, 0.292 #rep:2#
+Click:L, 0.490, 0.345 #rep:2#
+Click:L, 0.543, 0.338 #rep:2#
+Click:L, 0.467, 0.300 #rep:2#
+Click:L, 0.718, 0.888
+Click:L, 0.570, 0.197 #rep:2#
+Click:L, 0.492, 0.248 #rep:4#
+
+; Execute stat-up macro, set spsi value and stat hotkey
+Exec: stat-up #spsi=116# #stat=F#
+
+Chat: -tt #delay:300#
+#panel=skill#
+Click:L, 0.390, 0.201
+Click:L, 0.337, 0.207
+Click:L, 0.331, 0.307 #rep:3#
+Click:L, 0.495, 0.392 #rep:2#
+Click:L, 0.548, 0.204 #rep:3#
+Click:L, 0.386, 0.289 #rep:3#
+Click:L, 0.387, 0.387
+Click:L, 0.600, 0.197 #rep:3#

@@ -15,4 +15,4 @@ if not A_IsAdmin
     ExitApp
 }
 global logFilePath :=  A_Temp "\macro_test_log.txt"
-global DEBUG_LEVEL := 2
+global DEBUG_LEVEL := 3

@@ -1,4 +1,4 @@
-﻿--- 기본 명령어(대소문자 구분없음) ---              #limit:0#
+﻿--- 기본 명령어(대소문자 구분없음) ---                          #limit:0#
 Send: 키 이름 기능키는 {Enter} 처럼 입력
 Send: {F1}
 Send: sample text
@@ -38,9 +38,8 @@ Exec: stat-up #spsi=100# #stat=Q#
 LoadHero(Warrior) 캐릭터 로드
 LoadApt() Apt 입력
 ExecW3() 워3 실행
-ExecMultiW3(2,2) 
-워3 다중실행 후 LAN 게임 생성
-(2개 실행 생략시 로드 목록 수 만큼, 2:보통속도 생략시 config.ini의 속도 읽어옴)
+ExecMultiW3(2,2,1) 워3 다중실행 후 LAN 게임 생성
+(2개 실행|로드 목록 수, 2:보통 속도|config.ini의 속도,이미 실행 중일때 종료확인 여부)
 
 SwitchW3(1) 1번으로 창 전환
 ToggleClipMouse() 마우스 가두기

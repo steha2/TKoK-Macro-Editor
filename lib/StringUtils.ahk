@@ -38,6 +38,13 @@ HasValue(arr, val) {
     return false
 }
 
+IsInArray(arr, val) {
+    for each, item in arr
+        if (item == val)
+            return true
+    return false
+}
+
 TrimLastToken(str, delim) {
     ; 마지막 구분자 위치 찾기 (뒤에서부터)
     lastDelimPos := InStr(str, delim, false, 0)

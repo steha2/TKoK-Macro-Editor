@@ -7,7 +7,7 @@ test(a := "", b := "", c := "", d := "", e := "", f := "", isTip := false, write
             output .= "Arg" index " : " FormatValue(value) "`n`n"
     }
     if (writeLog)
-        Log(msg)
+        Log(msg, 4)
 
     if (isTip)
         ShowTip(output)

@@ -1,5 +1,5 @@
 ﻿#target=Warcraft III#
-#level:23# #dp_mode:floor#
+#level=23# #dp_mode=floor#
 
 Send: {F1} 
 
@@ -8,19 +8,19 @@ Send: {F1}
 
 Chat: Level : %level% num_stat : %num_stat% num_skill : %num_skill%
 
-exec stat-up #spsi:(level-1)*4# #stat=R#
+exec: stat-up #spsi:(level-1)*4# #stat=R#
 
 Chat: -tt #delay:300#
 
 #limit:%level / 2 + 2%# 
 
-Click:L, 0.277, 0.213 
-Click:L, 0.350, 0.217
-Click:L, 0.278, 0.321
-Click:L, 0.348, 0.316
-Click:L, 0.348, 0.404
-Click:L, 0.351, 0.495
-Click:L, 0.350, 0.607
-Click:L, 0.565, 0.416 #rep:2#
-Click:L, 0.565, 0.306 #rep:3#
-Click:L, 0.492, 0.217
+Click:L 0.277, 0.213 
+Click:L 0.350, 0.217
+Click:L 0.278, 0.321
+Click:L 0.348, 0.316
+Click:L 0.348, 0.404
+Click:L 0.351, 0.495
+Click:L 0.350, 0.607
+Click:L 0.565, 0.416 #rep:2#
+Click:L 0.565, 0.306 #rep:3#
+Click:L 0.492, 0.217

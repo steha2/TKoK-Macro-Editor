@@ -69,23 +69,6 @@ LoadBtn:
     }
 return
 
-#If (WinActive("ahk_class Warcraft III") and yMapped and !isRecording)
-; Y → F (조합키 포함)
-*F::SendMapped("y")
-; F → Y (조합키 포함)
-*Y::SendMapped("f")
-
-; Ctrl+F 예외처리
-; ^f::
-;     if (yMapped)
-;         Send ^f  ; yMapped 상태에서는 실제 f 키 전송
-;     else
-;         Send ^f  ; 그대로
-; return
-
-#If IsTargetWindow("Warcraft III", WinExist("A"))
-^Y::ToggleYMapping(2)
-
 ; 키 매핑 토글
 ToggleYMapping(force := 2) {
     if (force != 2)
@@ -108,6 +91,23 @@ SendMapped(key) {
         mods := "", key := "f"
     Send, % mods key
 }
+
+#If IsW3() and yMapped and !isRecording
+; Y → F (조합키 포함)
+*F::SendMapped("y")
+; F → Y (조합키 포함)
+*Y::SendMapped("f")
+
+; Ctrl+F 예외처리
+; ^f::
+;     if (yMapped)
+;         Send ^f  ; yMapped 상태에서는 실제 f 키 전송
+;     else
+;         Send ^f  ; 그대로
+; return
+
+#If IsW3()
+^Y::ToggleYMapping(2)
 
 ;Interact
 F4::

@@ -32,7 +32,7 @@ LogMouseClick(key) {
         return
     
     btn := SubStr(key, 1, 1)
-    LogToEdit("Click:" . btn . ", " . xStr . ", " . yStr, key)
+    LogToEdit("Click:" . btn . " " . xStr . ", " . yStr, key)
 }
 
 LogToEdit(line, k := "", isModifier := false) {

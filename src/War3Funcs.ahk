@@ -34,7 +34,7 @@ RestoreW3Pos(hwnd := "") {
 }
 
 ActivateBottomW3() {
-    WinActivateBottom, ahk_class Warcraft III
+    WinActivateBottom, % "ahk_id " . GetTargetHwnd("Warcraft III")
 }
 
 SwitchNextW3(isClip := true, minimizePrev := false) {
@@ -89,7 +89,8 @@ SwitchW3(clientNum := 1, isClip := false, minimizePrev := false, cursorToCenter 
     }
 }
 
-IsW3(hwnd) {
+IsW3(hwnd := "") {
+    hwnd := hwnd ? hwnd : WinActive("A")
     return IsTargetWindow("Warcraft III", hwnd)
 }
 
@@ -147,7 +148,7 @@ ShareUnit(hwnd := "") {
 
 ExecW3(roleTitle := "", mini := false) {
     if (W3_LNK = "" || !FileExist(W3_LNK))
-        return Alert("실행할 W3_LNK 경로를 찾지 못했습니다.`nconfig.ini 에서 경로를 수정하세요.")
+        return ShowTip("실행할 W3_LNK 경로를 찾지 못했습니다.`nconfig.ini 에서 경로를 수정하세요.")
     
     origHwnd := WinExist("A")
     ;실행 후 hwnd 을 찾을대까지 기다림
@@ -173,8 +174,11 @@ ExecW3(roleTitle := "", mini := false) {
 }
 
 ;비활성 명령으로 실행
-ExecMultiW3(num := 0, speed := 0) {
-    if WinExist("ahk_class Warcraft III") {
+ExecMultiW3(num := 0, speed := 0, isConfirmClose := false) {
+    if WinExist("ahk_id " . GetTargetHwnd(W3_WINTITLE)) {
+        if(isConfirmClose)
+            return false
+
         msg := "[Y] 종료 후 다시 실행   [N] 종료만   [Cancel] 취소"
         MsgBox, 4099, Warcraft III가 이미 실행 중입니다, %msg%
         IfMsgBox Cancel
@@ -199,8 +203,7 @@ ExecMultiW3(num := 0, speed := 0) {
     if(!num)
         return
 
-    Loop, % Max(num, 1)
-    {
+    Loop, %num% {
         if (A_Index = 1) {
             hostHwnd := ExecHostW3(speed)
         } else {
@@ -212,6 +215,7 @@ ExecMultiW3(num := 0, speed := 0) {
     WinActivate, ahk_id %currhwnd%
     Sleep, numW3 = 1 ? 2500 : 1000
     SendKey("{alt down}s{alt up}", "C", hostHwnd)
+    return TrueTip("ExecMultiW3():Game Start`nClientNum: " num)
 }
 
 ;비활성 명령으로 실행
@@ -245,31 +249,32 @@ ExecJoinW3(num := "") {
 }
 
 CloseAllW3() {
-    WinGet, list, List, ahk_class Warcraft III
-    w3List := []
-    
-    Loop, %list% {
-        hwnd := list%A_Index%
-        if (WinExist("ahk_id " . hwnd)) {
+    originalList := GetW3Array()
+    sortedList := []
+
+    ; 정렬: client index가 1인 것은 앞에, 나머지는 뒤에
+    for _, hwnd in originalList {
+        if (WinExist("ahk_id " . hwnd) && IsW3(hwnd)) {
             if (GetClientIndex(hwnd) = 1)
-                w3List.InsertAt(1, hwnd)  ; 제일 앞에 넣기
+                sortedList.InsertAt(1, hwnd) ; 맨 앞에 삽입 (AHK 1.1에선 Insert로 가능)
             else
-                w3List.Push(hwnd)         ; 뒤에 추가
+                sortedList.Push(hwnd)
         }
     }
 
-    for index, hwnd in w3List
+    ; 일반 종료 시도
+    for _, hwnd in sortedList 
         WinClose, ahk_id %hwnd%
 
     Sleep, 300
-    for index, hwnd in w3List {
-        if(WinExist("ahk_id " . hwnd)) {
-            SendKey("x", "C", hwnd)  ; 강제 종료
+    ; 여전히 안 닫힌 창 강제 종료
+    for _, hwnd in sortedList {
+        if (WinExist("ahk_id " . hwnd)) {
+            SendKey("x", "C", hwnd)  ; 강제 종료 시도
             Sleep, 300
         }
     }
 }
-
 
 WaitUntilNotWhiteOrBlack(hwnd, timeout := 8000) {
     start := A_TickCount
@@ -326,3 +331,16 @@ GetClientHwndArray() {
     return clients
 }
 return
+
+GetW3Array() {
+    w3Array := []
+    ; WinGet, w3List1, List, Warcraft III
+    WinGet, w3List2, List, ahk_class Warcraft III
+    WinGet, w3List3, List, ahk_exe Warcraft III.exe
+
+    ; AddUniqueHwnds(w3Array, w3List1)
+    AddUniqueHwnds(w3Array, w3List2)
+    AddUniqueHwnds(w3Array, w3List3)
+    return w3Array
+}
+

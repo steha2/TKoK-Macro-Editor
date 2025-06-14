@@ -139,7 +139,7 @@ SendKey(key, mode := "", hwnd := "", delay := 0) {
 
     if (isControl) {
         if (!hwnd)
-            hwnd := WinExist("A")
+            hwnd := WinActive("A")
         if (isRaw)
             ControlSendRaw,, %key%, ahk_id %hwnd%
         else

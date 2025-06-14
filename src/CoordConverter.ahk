@@ -98,7 +98,7 @@ ConvertScriptMode(scriptText, from, to) {
         line := RegExReplace(line, "i)^(Read,\s*c_map\\)" . from . "(\\[^`\r\n]+)", "$1" . to . "$2")
         
         panel := vars.panel
-        if (panel != "") && RegExMatch(line, "i)^Click:(\w+),\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)(.*)$", m) {
+        if (panel != "") && RegExMatch(line, "i)^Click:([LR])\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)(.*)$", m) {
             btn := m1, x := m2+0, y := m3+0, tail := m4
             coords := ConvertCoords(x, y, from, to, panel)
             if(!coords && panel = "items")

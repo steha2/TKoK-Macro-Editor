@@ -60,11 +60,12 @@ ExecMacro(scriptText, vars, current_path) {
         cmd := ResolveMarker(line, vars, "", ["if","force","end_if"])
         newCmd := ResolveExpr(cmd, vars)
         if (newCmd != cmd) {
+            Log("Cmd 가 달라짐cmd: " cmd "  newCmd: " newCmd, 4)
             cmd := ResolveMarker(newCmd, vars, "", ["if","force","end_if"])
             cmd := ResolveExpr(cmd, vars)
-            Log("Cmd 가 달라짐`ncmd: " cmd "`nnewCmd: ")
         }
 
+        log(cmd)
         ; 조건 2: 실행 전 제어 흐름
         if (ShouldBreak(vars, "wait"))
             break
@@ -94,7 +95,7 @@ ExecMacro(scriptText, vars, current_path) {
 }
 
 ExecSingleCommand(command, vars, line := "", index := "") {
-    if RegExMatch(command, "i)^Click:([LR]):\s*(.+)", m) {
+    if RegExMatch(command, "i)^Click:([LR])\s*(.+)", m) {
         if(vars.target && !vars.target_hwnd)
             return ShowTip("대상 창이 없습니다.`n" vars.target)
 
@@ -140,7 +141,7 @@ ExecSingleCommand(command, vars, line := "", index := "") {
             . "`nPath: " StrReplace(vars.current_path, MACRO_DIR)
             . "`nLineNum : " index
             . "`nLine: " line
-            . "`nCmd : " cmd "`n`n", 5000, true)
+            . "`nCmd : " command "`n`n", 5000, true)
     }
 }
 
@@ -193,7 +194,7 @@ PrepareTargetHwnd(vars) {
 }
 
 ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
-    Log("ResolveMarker(): " line)
+    Log("ResolveMarker(): " line, 4)
     command := line
     pos := 1
     while (found := RegExMatch(line, "#([^#]+)#", m, pos)) {

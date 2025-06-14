@@ -1,7 +1,12 @@
-﻿Read foo-vars
+﻿Read: foo-vars
 ;#foo=abc#
 note()#delay=300#
 Chat: %foo%
 
 Chat: %g%
 Chat: %g2%
+
+Read: c_map\classic\_all ; 고정 좌표를 불러옴 %...% 로 아래서 사용
+chat: %diff_champ%  
+
+chat: .....delay.....
