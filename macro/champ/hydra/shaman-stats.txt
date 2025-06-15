@@ -1,19 +1,30 @@
-﻿#target=Warcraft III#
+﻿#w3_ver=reforged# #target=Warcraft III#
 
+Read: c_map\reforged\_all
+
+%diff_champ%
+%champ_next%
+%champ_hydra%
+%champ_fin2%
+
+#if:PickNewHero(SS)# %move_new_hero%
+Exec: setting-chat
+
+%click_shop_npc%
 Exec: champ\hydra\shaman-equip
 
 Exec: stat-up #spsi=144# #stat=D#
 
-Chat: -tt #delay:300#
-Click:L 0.282, 0.224
-Click:L 0.351, 0.218
-Click:L 0.419, 0.217
-Click:L 0.418, 0.314
-Click:L 0.413, 0.489
-Click:L 0.273, 0.499
-Click:L 0.273, 0.593 #rep:2#
-Click:L 0.495, 0.604 #rep:2#
-Click:L 0.640, 0.408 #rep:3#
-Click:L 0.627, 0.214 #rep:2#
-Click:L 0.348, 0.591 #rep:3#
-Click:L 0.499, 0.232 #rep:2#
+Chat: -tt #delay:300# #panel=skill#
+Click:L 0.335, 0.208
+Click:L 0.387, 0.201
+Click:L 0.439, 0.200
+Click:L 0.438, 0.299
+Click:L 0.434, 0.478
+Click:L 0.328, 0.488
+Click:L 0.328, 0.583 #rep:2#
+Click:L 0.496, 0.595 #rep:2#
+Click:L 0.606, 0.395 #rep:3#
+Click:L 0.596, 0.197 #rep:2#
+Click:L 0.385, 0.581 #rep:3#
+Click:L 0.499, 0.216 #rep:2#

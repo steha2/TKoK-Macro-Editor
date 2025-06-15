@@ -1,4 +1,4 @@
-﻿#target=Warcraft III# #w3_ver=reforged#
+﻿#w3_ver=reforged# #target=Warcraft III#
 Read: c_map\classic\_all
 
 %diff_champ%
@@ -6,9 +6,7 @@ Read: c_map\classic\_all
 %champ_tal%
 %champ_fin2%
 
-PickNewHero(ck)
-
-%move_new_hero%
+#if:PickNewHero(CK)# %move_new_hero%
 
 ChampChat()
 %click_shop_npc%

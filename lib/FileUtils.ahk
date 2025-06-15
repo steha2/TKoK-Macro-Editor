@@ -57,21 +57,26 @@ GetFileNameNoExt(filename) {
 
 ; 파일 또는 폴더 삭제 함수 (비어있는 폴더만 삭제 가능)
 ; 성공 시 true, 실패 시 false 반환
-DeleteItem(path) {
+DeleteItem(path, force := false) {
     if (!FileExist(path))
         return false
 
     isDir := InStr(FileExist(path), "D")
 
     if (isDir) {
-        ; 비어있는 폴더만 삭제
-        FileRemoveDir, %path%
-        return (ErrorLevel = 0)  ; 성공하면 0, 실패하면 1
+        ; force가 true면 재귀적으로 폴더 삭제
+        if (force) {
+            FileRemoveDir, %path%, 1  ; 1 = 내용 포함 삭제
+        } else {
+            FileRemoveDir, %path%
+        }
+        return (ErrorLevel = 0)
     } else {
         FileDelete, %path%
-        return !FileExist(path)  ; 삭제 성공 여부 반환
+        return !FileExist(path)
     }
 }
+
 
 GetContainingFolder(path) {
     if (FileExist(path) ~= "D")  ; Directory

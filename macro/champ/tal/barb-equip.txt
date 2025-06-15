@@ -1,4 +1,5 @@
-﻿Click:L 0.794, 0.812 #delay=400#
+﻿#w3_ver=classic# #panel=items#
+Click:L 0.794, 0.812 #delay=400#
 Click:L 0.518, 0.352 #rep=2#
 Click:L 0.524, 0.267 #rep=2#
 Click:L 0.953, 0.809

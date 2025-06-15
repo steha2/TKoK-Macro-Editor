@@ -92,12 +92,15 @@ IsSameMacroLine(line1, line2) {
     }
 }
 
-WriteMacroFile(content := "", macroFilePath := "") {
+WriteMacroFile(content := "", macroFilePath := "", isReload := false, overwrite := false) {
+    Log("WriteMacroFile() content: " content ", path:" macroFilePath)
     if (macroFilePath  = "") {
         FormatTime, now,, MMdd_HHmmss
         macroFilePath := "Macro_" . now
     }
+
     AppendExt(macroFilePath)
+
     ; 절대경로인지 검사 (드라이브 문자 or \로 시작)
     if (IsAbsolutePath(macroFilePath)) {
         fullPath := macroFilePath
@@ -105,21 +108,29 @@ WriteMacroFile(content := "", macroFilePath := "") {
         fullPath := MACRO_DIR . "\" . macroFilePath
     }
 
-    ; 이미 파일 존재하면 메시지 후 리턴
-    if FileExist(fullPath) {
+    ; ✅ 덮어쓰기 허용 여부 확인
+    if (!overwrite && FileExist(fullPath)) {
         MsgBox, file exist already`n이미 존재하는 파일이 있습니다.`n%fullPath%
         return
     }
+
     ; ✅ 디렉토리 자동 생성
     SplitPath, fullPath, , outDir
     if !FileExist(outDir) {
         FileCreateDir, %outDir%
     }
 
+    ; ✅ 파일 덮어쓰기 전 기존 파일 삭제 (선택적)
+    if (overwrite && FileExist(fullPath)) {
+        FileDelete, %fullPath%
+    }
+
     ; 파일 쓰기
     FileAppend, %content%, %fullPath%
-    ShowTip("매크로 파일 생성 완료`n" fullPath)
-    ReloadTreeView(fullPath)
+    ShowTip("매크로 파일 생성 완료`n" fullPath, 1500, true)
+
+    if(isReload)
+        ReloadTreeView(fullPath)
 }
 
 PreprocessMacroLines(lines, vars, isExec := false) {
@@ -129,16 +140,16 @@ PreprocessMacroLines(lines, vars, isExec := false) {
         lines := [lines]
     
     for index, line in lines {
-        if(SubStr(line, 1, 1) = "@")
-            line := SubStr(line, 2)
-        else {
-            line := ResolveExpr(line, vars)
-            cmd := StripComments(line)
-            cmd := ResolveMarker(cmd, vars)
-        }
-        
+        line := ResolveExpr(line, vars)
+        cmd := StripComments(line)
+        cmd := ResolveMarker(cmd, vars)
+
+        ReplaceEscapeChar(cmd)
+        ReplaceEscapeChar(line)
+
         if (vars.HasKey("force") && isExec) {
             vars.Delete("force")
+            Log("PreprocessMacroLines(): #force# && isExec = true, cmd: " cmd "  w3v:" vars.w3_ver)
             ExecSingleCommand(cmd, vars)
         } else {
             processedLines.Push(line)

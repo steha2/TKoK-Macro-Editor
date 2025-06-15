@@ -1,0 +1,3 @@
+﻿Chat: -cdist 2300
+Chat: -music
+Chat: -fog

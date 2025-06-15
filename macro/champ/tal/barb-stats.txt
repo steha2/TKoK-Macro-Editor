@@ -1,18 +1,14 @@
 ﻿#target=Warcraft III# #w3_ver=classic#
 Read: c_map\classic\_all
 
-PickNewHero(barb)
-
-%move_new_hero%
+#if:PickNewHero(barb)# %move_new_hero%
 
 %click_shop_npc%
-
 Exec: champ\tal\barb-equip
 
 Exec: stat-up #spsi=128# #stat=Q#
 
-Chat: -tt #delay:300#
-
+Chat: -tt #delay:300# #panel=skill#
 Click:L 0.347, 0.220
 Click:L 0.345, 0.313
 Click:L 0.414, 0.398 #rep=3#

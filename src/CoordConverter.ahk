@@ -89,27 +89,38 @@ AdjustWindowToClient(win, ByRef x, ByRef y) {
     return true
 }
 
-ConvertScriptMode(scriptText, from, to) {
-    out := ""
+ConvertScriptMode(ByRef script, from, to, startIndex := 1) {
     vars := {}
-    for index, line in SplitLine(scriptText) {
-        ResolveMarker(line, vars, "panel")
-        line := RegExReplace(line, "#\s*(w3_ver)\s*=\s*" . from . "\s*#", "#$1=" . to . "#")
-        line := RegExReplace(line, "i)^(Read,\s*c_map\\)" . from . "(\\[^`\r\n]+)", "$1" . to . "$2")
-        
-        panel := vars.panel
-        if (panel != "") && RegExMatch(line, "i)^Click:([LR])\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)(.*)$", m) {
-            btn := m1, x := m2+0, y := m3+0, tail := m4
-            coords := ConvertCoords(x, y, from, to, panel)
-            if(!coords && panel = "items")
-                coords := ConvertCoords(x, y, from, to, "cmd")
 
-            if(coords) 
-                line := "Click:" . btn . ", " . coords.x . ", " . coords.y . tail
-        }
-        out .= line . "`n"
+    ; 문자열인 경우 배열로 변환
+    if !IsObject(script)
+        script := SplitLine(script)
+
+    Loop % script.Length()
+    {
+        i := A_Index
+        if (i < startIndex)
+            continue
+        script[i] := ConvertLine(script[i], from, to, vars)
     }
-    return RTrim(out, "`n")
+}
+
+ConvertLine(line, from, to, vars) {
+    ResolveMarker(line, vars, "panel")
+    line := RegExReplace(line, "#\s*(w3_ver)\s*=\s*" . from . "\s*#", "#$1=" . to . "#")
+    line := RegExReplace(line, "i)^(Read,\s*c_map\\)" . from . "(\\[^`\r\n]+)", "$1" . to . "$2")
+
+    panel := vars.panel
+    if (panel != "") && RegExMatch(line, "i)^Click:([LR])\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)(.*)$", m) {
+        btn := m1, x := m2+0, y := m3+0, tail := m4
+        coords := ConvertCoords(x, y, from, to, panel)
+        if(!coords && panel = "items")
+            coords := ConvertCoords(x, y, from, to, "cmd")
+
+        if(coords) 
+            line := "Click:" . btn . " " . coords.x . ", " . coords.y . tail
+    }
+    return line
 }
 
 ConvertCoords(x, y, fromMode, toMode, panelName) {

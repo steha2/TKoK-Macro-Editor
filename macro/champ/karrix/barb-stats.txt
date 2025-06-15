@@ -1,10 +1,10 @@
-﻿#target=Warcraft III#
+﻿#target=Warcraft III# #w3_ver=classic#
 
 Exec: champ\karrix\barb-equip
 
 Exec: stat-up #spsi=88# #stat=Q#
 
-Chat: -tt #delay:300#
+Chat: -tt #delay:300# #panel=skill#
 Click:L 0.343, 0.213
 Click:L 0.419, 0.215
 Click:L 0.349, 0.313

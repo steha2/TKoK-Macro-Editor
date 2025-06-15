@@ -1,5 +1,5 @@
-﻿Click:L 0.783, 0.808 #delay=400#
-;Exec sell-all
+﻿#w3_ver=classic# #panel=items#
+Click:L 0.783, 0.808 #delay=400#
 Click:L 0.492, 0.364 #rep:2#
 Click:L 0.525, 0.264 #rep:2#
 Click:L 0.906, 0.811

@@ -7,13 +7,14 @@ test(a := "", b := "", c := "", d := "", e := "", f := "", isTip := false, write
             output .= "Arg" index " : " FormatValue(value) "`n`n"
     }
     if (writeLog)
-        Log(msg, 4)
+        Log(a "  " b "  " c "  " d "  " e "  " f, 3)
 
     if (isTip)
-        ShowTip(output)
+        ShowTip(output, 1500, true)
     else
         MsgBox, % output
 }
+
 hwndInfo(hwnd) {
     ; 기본 정보 수집
     WinGetTitle, title, ahk_id %hwnd%
@@ -73,8 +74,10 @@ testj(data) {
 }
 
 Log(msg, level := 3) {
-    if (DEBUG_LEVEL >= level)
-        FileAppend, `n[%A_Now%][L%level%] %msg%, % logFilePath
+    if (DEBUG_LEVEL >= level) {
+        FormatTime, timeStr,, HH:mm:ss
+        FileAppend, `n[%timeStr%][L%level%] %msg%, %logFilePath%
+    }
 }
 
 ShowTip(msg, duration := 1500, writeLog := false) {

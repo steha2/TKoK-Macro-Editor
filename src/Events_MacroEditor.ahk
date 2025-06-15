@@ -90,7 +90,7 @@ RenameMacro:
     if !ConfirmNotSaved()
         return
     if (!macroPath || !FileExist(macroPath)) {
-        MsgBox,,%EDITOR_TITLE%, 삭제 선택된 파일이 없습니다.
+        MsgBox,,%EDITOR_TITLE%, 선택된 파일이 없습니다.
         return
     }
 
@@ -132,6 +132,9 @@ RenameMacro:
     GuiControl, macro:Focus, EditMacro
 return
 
+ReloadTV:
+    ReloadTreeView()
+return
 
 AddMacro:
     if !ConfirmNotSaved()
@@ -159,7 +162,7 @@ AddMacro:
     vars := {rel_path:relPath, out_dir:outDir}
     newContents := LoadPresetForMacro(fileName, vars)
 
-    WriteMacroFile(newContents, relPath)
+    WriteMacroFile(newContents, relPath, true)
     GuiControl, macro:Focus, EditMacro
 return
 

@@ -13,8 +13,8 @@ Read: c_map\reforged\_all ; 고정 좌표를 불러옴 %...% 로 아래서 사�
 %champ_karav%             ; 카라브노스 선택
 %champ_fin1%              ; 확인
 
-PickNewHero(medic)        ; 메디케스터를 찾고 고름
-%move_new_hero%           ; 마을로 나가기
+;메디케스터를 찾고 고른 후 마을로 나가기
+#if;PickNewHero(medic)# %move_new_hero%           
 
 Chat: -fog
 Chat: -cdist 2300

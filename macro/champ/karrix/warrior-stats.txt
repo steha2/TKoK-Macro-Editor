@@ -1,7 +1,12 @@
-﻿#target=Warcraft III#
+﻿#w3_ver=classic# 
+#target=Warcraft III#
 
+Read: c_map\classic\_all
+
+#if:PickNewHero(warrior)# %move_new_hero%
+
+%click_shop_npc%
 Exec: champ\karrix\warrior-equip
 
 Exec: stat-up #spsi=100# #stat=Q#
-
-Chat: -tt #delay:300#
+Chat: -tt #delay:300# #panel=skill#

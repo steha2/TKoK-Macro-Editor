@@ -1,4 +1,4 @@
-﻿#target=Warcraft III#
+﻿#w3_ver=classic# #panel=items#
 Click:L 0.798, 0.813 #delay:400#
 Click:L 0.624, 0.449 #rep:2#
 Click:L 0.561, 0.455 #rep:2#

@@ -28,14 +28,27 @@ ReadAptFile() {
     aptFile := GetLatestFile(SAVE_DIR, "Account*.txt")
     if (aptFile.path != "") {
         FileRead, content, % aptFile.path
-        RegExMatch(content, "Code:\s*-la\s+([^\r\n]+)", match)
+
+        apt := {}  ; APT 정보 객체
+
+        if RegExMatch(content, "Code:\s*-la\s+([^\r\n]+)", match)
             la := "-la " match1
-        RegExMatch(content, "APT:\s*(\d+)", apt)
-        RegExMatch(content, "DEDI PTS:\s*(\d+)", dedi)
-        GuiControl, main:, AptText, % "APT: " apt1 "`nDEDI: " dedi1
-        return aptFile
-    } else
-        MsgBox, Account*.txt 파일을 찾을수 없습니다.
+        if RegExMatch(content, "APT:\s*(\d+)", a)
+            apt.apt := a1
+        if RegExMatch(content, "DEDI PTS:\s*(\d+)", d)
+            apt.dedi := d1
+
+        ; GUI에 표시
+        GuiControl, main:, AptText, % "APT: " apt.apt "`nDEDI: " apt.dedi
+
+        ; 필요한 경우 함께 반환
+        apt.file := aptFile
+        apt.time := aptFile.time
+        return apt
+    } else {
+        MsgBox, Account*.txt 파일을 찾을 수 없습니다.
+        return {}  ; 빈 객체 반환
+    }
 }
 
 LoadHero(selectedHero := "", hwnd := "", delay := 1000) {
@@ -281,13 +294,14 @@ LastSaveTimes() {
     for heroName, info in heroInfo {
         diff := A_Now
         EnvSub, diff, % info.time, Seconds
-        msg := heroName ": " . FormatTimeDiff(diff) . " (" . info.exp . " Exp)`n" . msg
+        msg := heroName ": " . FormatTimeDiff(diff) . "   Exp: " . info.exp . "   Gold: " . info.gold . "`n" . msg
     }
 
     ; account 파일 시간 차이
     accDiff := A_Now
-    EnvSub, accDiff, ReadAptFile().time, Seconds
-    msg := "Account: " . FormatTimeDiff(accDiff) . "`n" . msg
+    apt := ReadAptFile()
+    EnvSub, accDiff, apt.time, Seconds
+    msg := "Account: " . FormatTimeDiff(accDiff) . "   APT: " . apt.apt . "`n" . msg
 
     MsgBox, 4096, LastSaveTimes, %msg%
 }

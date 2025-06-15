@@ -1,7 +1,0 @@
-﻿#target=Warcraft III#
-
-Exec: champ\vj\ranger-equip
-
-Exec: stat-up #spsi=100# #stat=Q#
-
-Chat: -tt #delay:300#

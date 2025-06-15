@@ -1,1 +1,3 @@
-﻿
+﻿#w3_ver=classic#
+#panel=items#
+Click:L 0.783, 0.808 #delay=400#

@@ -1,9 +1,10 @@
-﻿; 풀네임 or 이니셜 or 앞글자 3자 이상 일치 (대소문자 구분없음)
+﻿; 풀네임 or 이니셜 or 앞글자 3자 이상 일치 및 몇가지 추가 매칭 (대소문자 구분없음)
 ; Chaotic Knight ~= CK, chaotic
 ; Shadow Shaman  ~= SS
 ; Hydromancer    ~= hydro
-; Shadowblade    ~= sb
+; Shadowblade    ~= sb, shadow ; Shadow Shaman 보다 먼저 검색됩니다
 ; Earthquaker    ~= eq, earth
-
+; Chronowarper   ~= chrono, panda
 #target=Warcraft III#
-PickNewHero(%hero|Warrior%)
+PickNewHero(shadow)
+chat: -repick #wait:500#

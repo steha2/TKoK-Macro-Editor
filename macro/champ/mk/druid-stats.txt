@@ -1,10 +1,10 @@
-﻿#target=Warcraft III#
+﻿#w3_ver=classic# #target=Warcraft III#
 
 Exec: champ\mk\druid-equip
 
 Exec: stat-up #spsi=140# #stat=S#
 
-Chat: -tt #delay:300#
+Chat: -tt #delay:300# #panel=skill#
 Click:L 0.278, 0.211
 Click:L 0.353, 0.214
 Click:L 0.420, 0.210

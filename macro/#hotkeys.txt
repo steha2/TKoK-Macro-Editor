@@ -1,13 +1,16 @@
 ﻿--- 단축키 목록 ---- src/Events_....ahk 맨 아래에서 변경가능      #limit#
-PrintScreen 매크로 실행/중단
-Pause  매크로 기록/중단
+PrintScreen 매크로 실행/중단 
+ScrollLock  [🡅 Back]
+Pause       매크로 기록/중단
+
+레코딩 중에는 동작안함:
+ALT+F1 매크로 클릭위치 확인 오버레이 토글
+ALT+F2 Click:L 한줄 추가
+ALT+F3 [🡅 Back]
+
 
 Ctrl+S 활성화 된 창의 내용을 저장합니다.
 -Load Hero List -Macro Editor -AHK Note
-
-ALT+F1 매크로 클릭위치 확인 오버레이 토글
-ALT+F2 Click:L 한줄 추가
-ALT+F3, ScrollLock [🡅 Back]
 
 Ctrl+Alt+W 워3 창 크기 저장
 Alt+E 저장 된 창 크기로 복원

@@ -1,4 +1,4 @@
-﻿Chat: i: %i% a : %a%   if: %if%
+﻿Chat: i: %i% a : %a%   if: "%if%"
 
 #if:a>=1000#
 Chat: a>=1000 ?  if:%if%  a 가 1000 보다 크다 "BREAK"

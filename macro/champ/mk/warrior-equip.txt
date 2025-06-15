@@ -1,4 +1,4 @@
-﻿#target=Warcraft III#
+﻿#w3_ver=classic# #panel=items#
 Click:L 0.796, 0.818 #delay:400#
 Click:L 0.625, 0.363 #rep:2#
 Click:L 0.524, 0.313 #rep:2#
@@ -14,5 +14,3 @@ Click:L 0.489, 0.452 #rep:2#
 Click:L 0.795, 0.872
 Click:L 0.592, 0.267 #rep:2#
 Click:L 0.454, 0.356 #rep:4#
-
-;Exec 착용템다팔기

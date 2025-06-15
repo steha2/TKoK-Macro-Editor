@@ -8,7 +8,8 @@ ExecMacro(scriptText, vars, current_path) {
 
     UpdateMacroState(+1)
     lines := SplitLine(scriptText)
-    
+    isConverted := false
+
     if !IsObject(vars) {
         ShowTip("Warning! : vars is not an object")
         vars := {}
@@ -23,18 +24,8 @@ ExecMacro(scriptText, vars, current_path) {
             continue
 
         ExtractVar(vars, "start_line", start_line, "natural")
+        tempVars := PrepareConditionVars(line, vars)
         
-        tempVars := Clone(vars)
-        ResolveMarker(line, tempVars, ["if", "force", "end_if"])
-        if (tempVars.HasKey("end_if")) {
-            vars.Delete("if")
-        } else if(tempVars.HasKey("if") && vars.if_mode = "block") {
-            vars.if := tempVars.if
-        }
-
-        if((StrLower(tempVars.if) = "false"))
-            tempVars.if := false
-
         ; 조건 확인: force가 없고, skip_mode=vars 이며, start_line 전이면 건너뛰기
         if (!tempVars.HasKey("force")) {
             if (InStr(vars.skip_mode, "vars") && index < start_line)
@@ -50,22 +41,8 @@ ExecMacro(scriptText, vars, current_path) {
                 }
             }
         }
-        
-        ; 단일 라인 변수 초기화
-        vars.rep := 1
-        vars.wait := 0
-        vars.delay := vars.HasKey("base_delay") ? vars.base_delay : BASE_DELAY
 
-        ; 명령어 처리 (vars에서 실제 파싱)
-        cmd := ResolveMarker(line, vars, "", ["if","force","end_if"])
-        newCmd := ResolveExpr(cmd, vars)
-        if (newCmd != cmd) {
-            Log("Cmd 가 달라짐cmd: " cmd "  newCmd: " newCmd, 4)
-            cmd := ResolveMarker(newCmd, vars, "", ["if","force","end_if"])
-            cmd := ResolveExpr(cmd, vars)
-        }
-
-        log(cmd)
+        cmd := ResolveCommand(line, vars)
         ; 조건 2: 실행 전 제어 흐름
         if (ShouldBreak(vars, "wait"))
             break
@@ -78,6 +55,8 @@ ExecMacro(scriptText, vars, current_path) {
             }
         }
         PrepareTargetHwnd(vars)
+
+        EnsureScriptW3VersionMatch(lines, vars, isConverted)
 
         Loop, % vars.rep
         {
@@ -94,6 +73,59 @@ ExecMacro(scriptText, vars, current_path) {
     ; ShowTip("--- Macro End ---`n,실행중인 매크로 수 : " runMacroCount)
 }
 
+PrepareConditionVars(line, vars) {
+    temp := Clone(vars)
+    ResolveMarker(line, temp, ["if", "force", "end_if"])
+
+    ; if 블록 관리
+    if (temp.HasKey("end_if"))
+        vars.Delete("if")
+    else if (temp.HasKey("if") && vars.if_mode = "block")
+        vars.if := temp.if
+
+    ; 문자열 false 처리
+    if (StrLower(temp.if) = "false")
+        temp.if := false
+
+    return temp
+}
+
+ParseKeyValueLine(line, vars, delimiter := "@") {
+    if (SubStr(Trim(line), 1, StrLen(delimiter)) != delimiter)
+        return false
+
+    parts := StrSplit(line, delimiter)  ; delimiter 기준 분할
+
+    for each, token in parts {
+        if !token
+            continue
+
+        kv := StrSplit(token, "=", , 2)  ; 최대 2개로 분할
+        key := Trim(kv[1])
+        val := (kv.Length() = 2) ? Trim(kv[2]) : ""  ; = 없으면 빈값
+        vars[key] := val
+    }
+    return true
+}
+
+ResolveCommand(line, vars) {
+    if (ParseKeyValueLine(line, vars))
+        return
+    ; 단일 라인 기본 변수 초기화
+    vars.rep := 1
+    vars.wait := 0
+    vars.delay := vars.HasKey("base_delay") ? vars.base_delay : BASE_DELAY
+
+
+    cmd := ResolveMarker(line, vars, "", ["if", "force", "end_if"])
+    cmd := ResolveExpr(cmd, vars)
+    ; 이스케이프 복원 처리
+    
+    ReplaceEscapeChar(cmd)
+
+    return cmd
+}
+
 ExecSingleCommand(command, vars, line := "", index := "") {
     if RegExMatch(command, "i)^Click:([LR])\s*(.+)", m) {
         if(vars.target && !vars.target_hwnd)
@@ -105,6 +137,7 @@ ExecSingleCommand(command, vars, line := "", index := "") {
             coords := vars[coords]
         
         coords := ParseCoords(coords)
+
         if(coords)
             SmartClick(coords.x, coords.y, vars.target_hwnd, btn, vars.send_mode, vars.coord_mode, coords.type)
     }
@@ -142,6 +175,17 @@ ExecSingleCommand(command, vars, line := "", index := "") {
             . "`nLineNum : " index
             . "`nLine: " line
             . "`nCmd : " command "`n`n", 5000, true)
+    }
+}
+
+EnsureScriptW3VersionMatch(lines, vars, ByRef isConverted) {
+    if (!isConverted && vars.HasKey("w3_ver") && vars.target_hwnd && IsW3(vars.target_hwnd)) {
+        active_w3_ver := GetW3_Ver(vars.target_hwnd)
+        if (vars.w3_ver != active_w3_ver) {
+            ConvertScriptMode(lines, vars.w3_ver, active_w3_ver)
+            isConverted := true
+            Log("Convert script: " vars.w3_ver " to " active_w3_ver)
+        }
     }
 }
 
@@ -197,7 +241,7 @@ ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
     Log("ResolveMarker(): " line, 4)
     command := line
     pos := 1
-    while (found := RegExMatch(line, "#([^#]+)#", m, pos)) {
+    while (found := RegExMatch(line, "(?<!#)#([^#]+)#", m, pos)) {
         fullMatch := m
         inner := Trim(m1)
 
@@ -220,16 +264,28 @@ ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
     return Trim(command)
 }
 
-ResolveExpr(line, vars) {
-    pos := 1
-    while (found := RegExMatch(line, "%([^%]+)%", m, pos)) {
-        fullMatch := m
-        rawExpr := Trim(m1)
-        result := EvaluateExpr(rawExpr, vars)
-        line := StrReplace(line, fullMatch, result)
-        pos := found + StrLen(result)
+ResolveExpr(line, vars, maxDepth := 5) {
+    depth := 0
+    prevLine := ""
+
+    while (line != prevLine && depth < maxDepth) {
+        prevLine := line
+        pos := 1
+        while (found := RegExMatch(line, "(?<!%)%([^%]+)%", m, pos)) {
+            fullMatch := m
+            rawExpr := Trim(m1)
+            result := EvaluateExpr(rawExpr, vars)
+            line := SubStr(line, 1, found - 1) . result . SubStr(line, found + StrLen(fullMatch))
+            pos := found + StrLen(result)
+        }
+        depth++
     }
     return line
+}
+
+ReplaceEscapeChar(ByRef str) {
+    str := StrReplace(str, "##", "#")
+    str := StrReplace(str, "%%", "%")
 }
 
 EvaluateExpr(expr, vars) {
@@ -262,9 +318,14 @@ EvaluateExpr(expr, vars) {
 
 
 ExplodeByKeys(expr, vars) {
-    placeHolder := Chr(0xE000)
     result := []
     sorted := ToKeyLengthSortedArray(vars)
+
+    ; Step 0: 큰따옴표로 감싼 문자열 보호
+    while (found := RegExMatch(expr, """([^""]*)""", m)) {
+        result[found] := m
+        expr := StrReplace(expr, m, Dummy(m, placeHolder), , 1)
+    }
 
     ; Step 1: 키워드(길이 내림차순)를 찾아 dummy로 치환하며 값 저장
     for i, item in sorted {
@@ -367,15 +428,16 @@ ExecFunc(fnName, argsStr) {
     ; argsStr가 배열이 아니라면 쉼표로 나눔
     if !IsObject(argsStr) {
         args := []
+        argsStr := StrReplace(argsStr, "``,", placeHolder)
         Loop, Parse, argsStr, `,  ; 문자열로 간주하고 파싱
         {
-            arg := Trim(A_LoopField, " `t`r`n""'")
+            arg := UnescapeLiteral(Trim(A_LoopField, " `t""'"))
             args.Push(arg)
         }
     } else {
         args := argsStr  ; 이미 배열이면 그대로 사용
     }
-    Log("ExecFunc(): " fnName)
+    Log("ExecFunc(): " fnName "() args : " StrJoin(args, ", "))
     return fn.Call(args*)
 }
 
@@ -429,5 +491,3 @@ CheckAbortAndSleep(totalDelay) {
     }
     return !macroAbortRequested
 }
-
-

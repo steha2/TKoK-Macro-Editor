@@ -40,7 +40,7 @@ CaptureImage(x, y, w, h, fileOut := "capture.png") {
     if (result != 0)
         return FalseTip("저장 실패: 오류 코드 " . result)
 
-    return TrueTip("캡처 성공: " . fileOut)
+    return TrueTip("capture: " . fileOut)
 }
 
 
@@ -70,6 +70,7 @@ ResolveHeroIndex(name) {
 
         heroMap["sb"] := 9
         heroMap["eq"] := 17
+        heroMap["panda"] := 6
     }
 
     normName := StrLower(name)
@@ -83,11 +84,11 @@ ResolveHeroIndex(name) {
 FindHeroPath(currName, targetName) {
     currIndex := ResolveHeroIndex(currName)
     if (!currIndex)
-        return ShowTip("FindHeroPath`n영웅을 찾을 수 없습니다: " . currName)
+        return FalseTip("FindHeroPath`n영웅을 찾을 수 없습니다: " . currName)
 
     targetIndex := ResolveHeroIndex(targetName)
     if (!targetIndex)
-        return ShowTip("FindHeroPath`n영웅을 찾을 수 없습니다: " . targetName)
+        return FalseTip("FindHeroPath`n영웅을 찾을 수 없습니다: " . targetName)
 
     if (currIndex = targetIndex)
         return
@@ -107,7 +108,7 @@ GetNamePlatePos(ByRef x1, ByRef y1, ByRef x2, ByRef y2, ByRef iw, ByRef ih, ByRe
     w3_ver := GetW3_Ver(hwnd)
     
     if(!w3_ver)
-        return FalseTip("GetNamePlatePos()`n워크래프트 3창이 아닙니다")
+        return FalseTip("GetNamePlatePos()`nWarcraft III 창이 아닙니다")
 
     nameplate := uiRegions[w3_ver]["nameplate"]
     x1 := nameplate.x1
@@ -131,9 +132,9 @@ GetNamePlatePos(ByRef x1, ByRef y1, ByRef x2, ByRef y2, ByRef iw, ByRef ih, ByRe
 }
 
 GetHeroNameByImg() {
-    if !IsTargetWindow("Warcraft III", WinExist("A")) {
-        return FalseTip("현재 창이 Warcraft III 이 아닙니다")
-    }
+    if !IsW3()
+        return FalseTip("Warcraft III 창이 아닙니다")
+
     GetNamePlatePos(ix, iy, ix2, iy2, iw, ih, imgDir)
 
     if (!IsDirectory(imgDir)) {
@@ -152,8 +153,8 @@ GetHeroNameByImg() {
         }
     }
 
-    Alert("영웅 선택 화면이 아니거나. 영웅을 찾지 못했습니다.`nDelete the sample folder and try again")
-    return -2
+    return FalseTip("GetNameByImg(): 영웅 선택 화면이 아니거나. 영웅을 찾지 못했습니다."
+                 . "`nThis is not the hero selection screen. The hero was not found.")
 }
 
 PickNewHero(targetHero) {
@@ -161,8 +162,8 @@ PickNewHero(targetHero) {
 
     currHero := GetHeroNameByImg()
 
-    if (!currHero || currHero = -2)
-        return 
+    if (currHero = 0)
+        return FalseTip("PickNewHero(): Fail to find hero : " targetHero)
 
     if (currHero = -1) {
         GenerateNamePlateSamples()
@@ -179,8 +180,10 @@ PickNewHero(targetHero) {
     
     if (GetFullName(targetHero) = currHero) {
         SendA("{Esc}")
+        return TrueTip("영웅 선택 완료: " currHero)
         Sleep, 500
     }
+    return FalseTip("영웅 선택 실패 targetHero: " targetHero "  currHero: " currHero )
 }
 
 GetFullName(shortName) {

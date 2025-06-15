@@ -1,9 +1,8 @@
 ﻿#target=Warcraft III# #w3_ver=classic#
 Read: c_map\classic\_all
-PickNewHero(ranger)
-%move_new_hero%
 
-Send: {F1} #rep=2#
+#if:PickNewHero(ranger)# %move_new_hero%
+
 %click_shop_npc%
 Exec: champ\tal\ranger-equip
 

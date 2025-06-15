@@ -38,6 +38,25 @@ HasValue(arr, val) {
     return false
 }
 
+ExtractQuotedStrings(ByRef str) {
+    placeholder := Chr(0xE100)
+    map := {}
+    pos := 1
+    while (found := RegExMatch(str, """([^""]*)""", m, pos)) {
+        key := placeholder . pos
+        map[key] := m1
+        pos := found
+        str := SubStr(str, 1, pos-2) . key . SubStr(str, pos + StrLen(m))
+    }
+    return map
+}
+
+RestoreQuotedStrings(str, map) {
+    for k, v in map
+        str := StrReplace(str, k, v)
+    return str
+}
+
 IsInArray(arr, val) {
     for each, item in arr
         if (item == val)
@@ -52,6 +71,16 @@ TrimLastToken(str, delim) {
         return SubStr(str, 1, lastDelimPos - 1)
     else
         return ""  ; 구분자가 없으면 빈 문자열
+}
+
+UnescapeLiteral(str) {
+    ; AHK escape 문자 처리
+    str := StrReplace(str, placeHolder, ",")  ; 줄바꿈
+    str := StrReplace(str, "``n", "`n")  ; 줄바꿈
+    str := StrReplace(str, "``r", "`r")  ; 캐리지리턴
+    str := StrReplace(str, "``t", "`t")  ; 탭
+    str := StrReplace(str, "``", "`")   ; 백틱 자체
+    return str
 }
 
 RemoveExtension(str) {

@@ -63,8 +63,8 @@ Note(newText := "", title := "", isAppend := false) {
             IfMsgBox, No
                 return
         
-        converted := ConvertScriptMode(noteContent, from, to)
-        GuiControl, SimpleNote:, NoteEdit, %converted%
+        ConvertScriptMode(noteContent, from, to)
+        GuiControl, SimpleNote:, NoteEdit, % StrJoin(noteContent, "`n")
     return
 
     SimpleNoteGuiClose:

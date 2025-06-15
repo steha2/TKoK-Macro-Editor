@@ -1,4 +1,5 @@
 BuildTreeView(rootPath, parentID := 0) {
+    Log("BuildTreeView():dir: " rootPath, 4)
     Loop, Files, % rootPath "\*", D
     {
         folderName := A_LoopFileName
@@ -7,10 +8,11 @@ BuildTreeView(rootPath, parentID := 0) {
         g_PathMap[folderID] := fullPath
         BuildTreeView(fullPath, folderID)
     }
+
     Loop, Files, % rootPath "\*.txt"
-    {
+    {   
         fileName := A_LoopFileName
-        displayName := RegExReplace(fileName, "\.txt$", "")  ; .txt 제거
+        displayName := RemoveExtension(fileName)
         fullPath := A_LoopFileFullPath
         fileID := TV_Add(displayName, parentID)
         g_PathMap[fileID] := fullPath
@@ -19,13 +21,15 @@ BuildTreeView(rootPath, parentID := 0) {
 
 ReloadTreeView(path := "") {
     suspendTreeEvents := true
-    TV_Delete()           ; 트리뷰 항목 초기화
+    Gui, macro: Default 
     g_PathMap := {}       ; 경로 맵 초기화
+    TV_Delete()           ; 트리뷰 항목 초기화
     BuildTreeView(MACRO_DIR)  ; 트리 다시 만들기
-    
+    Log("BuildTreeView Done g_PathMap Count :" g_PathMap.Count(), 4)
 
     ; 트리 구축 후 경로 선택
     suspendTreeEvents := false
+
     Sleep, 250
 
     if(path = MACRO_DIR)
@@ -35,12 +39,15 @@ ReloadTreeView(path := "") {
     } else {
         SelectTreeItemByPath(path)
     }
+    Log("ReloadTreeView Done :" path)
 }
 
 OnClickTreeItem() {
     if (suspendTreeEvents)
-        return  ; 이벤트 무시
+        return 
+
     path := g_PathMap[A_EventInfo]
+    Log("OnClickTreeItem() path: " path, 4)
 
     if (!path || !FileExist(path))
         return
@@ -48,13 +55,15 @@ OnClickTreeItem() {
 }
 
 SelectTreeItemByPath(path) {
+    Log("SelectTreeItemByPath():" path "   g_PathMap Count :" g_PathMap.Count(), 4)
     ; MsgBox, [입력 path]`n%path%
     path := RegExReplace(path, "/", "\")
-    path := Trim(path, " \t`n`r")
-
+    path := Trim(path, " `t`n`r")
+    
     for id, fullPath in g_PathMap {
-        normPath := Trim(RegExReplace(fullPath, "/", "\"), " \t`n`r")
+        normPath := Trim(RegExReplace(fullPath, "/", "\"), " `t`n`r")
         ; MsgBox, Testing ID: %id%`nPath: %normPath%`nCompare to: %path%
+
         if (StrCompare(normPath, path)) {
             UpdatePathAndEdit(path)
             TV_Modify(id, "Select Expand")
