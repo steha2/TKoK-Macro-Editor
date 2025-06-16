@@ -5,7 +5,7 @@ Read: c_map\%part3|classic%\_all
 
 #if:PickNewHero(%part1%)# %%move_new_hero%%
 
-%%click_shop_npc%%
+%%select_shop_npc%%
 Exec: %out_dir%\%part1%-equip
 
 Exec: stat-up #spsi=100# #stat=Q#

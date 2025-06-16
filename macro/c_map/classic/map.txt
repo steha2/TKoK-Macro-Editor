@@ -1,3 +1,6 @@
-﻿tele_npc      = Click:R 0.072, 0.872 ;텔레포트 npc 옆
+﻿w3_ver = classic
+panel  = map
+
+tele_npc      = Click:R 0.072, 0.872 ;텔레포트 npc 옆
 tol_pt        = Click:R 0.114, 0.818 ;톨캄 포탈 npc 옆
 

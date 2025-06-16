@@ -30,7 +30,7 @@ ReloadTreeView(path := "") {
     ; 트리 구축 후 경로 선택
     suspendTreeEvents := false
 
-    Sleep, 250
+    Sleep(250)
 
     if(path = MACRO_DIR)
         path := ""

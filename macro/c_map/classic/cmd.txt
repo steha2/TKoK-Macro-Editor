@@ -1,4 +1,7 @@
 ﻿;Right Bottom Panel
+w3_ver = classic
+panel  = cmd
+
 cmd_1  = Click:L 0.792, 0.808
 cmd_2  = Click:L 0.852, 0.816
 cmd_3  = Click:L 0.904, 0.815

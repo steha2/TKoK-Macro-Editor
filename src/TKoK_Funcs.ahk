@@ -8,7 +8,7 @@ SendCodeToW3(hwnd := "", delay := 1000) {
             Chat(pl1)
             Chat(pl2)
         }
-        Sleep, delay
+        Sleep(delay)
         LoadApt(hwnd)
     } else {
         MsgBox, 코드를 입력하지 못했습니다.
@@ -137,7 +137,7 @@ MultiLoad(squadText := "") {
     
     if(squadArr.Length() >= 2) {
         SwitchW3(1, true, false, true)
-        Sleep, 200
+        Sleep(200)
         SendKey("^s {F3}^3 {F2}^2 {F1}^1 +{F2} +{F3}", "NS") ;IgnoreSpace
     } else 
         SendKey("{F1}^1")
@@ -181,7 +181,7 @@ LoadSquad(squadArr, clientArr) {
             ClickA(0.801, 0.953, "R")
         } else if (hero = "Chaotic Knight") {
             ;ClickA(0.797, 0.954, "R")
-            ;Sleep, 500
+            ;Sleep(500)
         }
     }
 }
@@ -211,7 +211,7 @@ LoadSquadReverse(squadArr, reverse := false) {
             ClickA(0.801, 0.953, "R")
         } else if (hero = "Chaotic Knight") {
             ;ClickA(0.797, 0.954, "R")
-            ;Sleep, 500
+            ;Sleep(500)
         }
     }
 }
@@ -240,17 +240,17 @@ LoadSquad3(champ := false) {
             thisHero := squad%A_Index%
             LoadHero(thisHero)
             Chat("-qs")
-            Sleep, 300
+            Sleep(300)
             if (thisHero = "Shadowblade") {
                 ClickA(0.976, 0.879, "R")
                 ClickA(0.906, 0.879, "R")
-                Sleep, 500
+                Sleep(500)
             } else if (thisHero = "Barbarian") {
                 ClickA(0.801, 0.953, "R")
-                Sleep, 500 
+                Sleep(500 )
             } else if (thisHero = "Chaotic Knight") {
                 ClickA(0.797, 0.954, "R")
-                Sleep, 500 
+                Sleep(500 )
             }
         }
         

@@ -83,11 +83,10 @@ SwitchW3(clientNum := 1, isClip := false, minimizePrev := false, cursorToCenter 
     }
     
     if(cursorToCenter) {
-        cx := 0.5, cy := 0.5
-        CalcCoords(cx, cy, WinActive("A"))
-        MouseMove, %cx%, %cy% , 0
+        MouseMove(0.5, 0.5)
     }
 }
+
 
 IsW3(hwnd := "") {
     hwnd := hwnd ? hwnd : WinActive("A")
@@ -166,7 +165,7 @@ ExecW3(roleTitle := "", mini := false) {
         if (mini)
             WinMinimize, ahk_id %hwnd%
         
-        Sleep, W3_LAUNCH_DELAY ;UI 로딩 대기
+        Sleep(W3_LAUNCH_DELAY)
         return hwnd
     } else {
         return Alert("UI 로딩 감지 실패 (흰/검 배경에서 벗어나지 않음")
@@ -187,7 +186,7 @@ ExecMultiW3(num := 0, speed := 0, isConfirmClose := false) {
             return CloseAllW3()
         
         CloseAllW3()
-        Sleep, 3000
+        Sleep(3000)
     }
 
     
@@ -213,7 +212,7 @@ ExecMultiW3(num := 0, speed := 0, isConfirmClose := false) {
     currHwnd := WinExist("A")
     WinActivate, ahk_id %hostHwnd%
     WinActivate, ahk_id %currhwnd%
-    Sleep, numW3 = 1 ? 2500 : 1000
+    Sleep(numW3 = 1 ? 2500 : 1000)
     SendKey("{alt down}s{alt up}", "C", hostHwnd)
     return TrueTip("ExecMultiW3():Game Start`nClientNum: " num)
 }
@@ -266,12 +265,12 @@ CloseAllW3() {
     for _, hwnd in sortedList 
         WinClose, ahk_id %hwnd%
 
-    Sleep, 300
+    Sleep(300)
     ; 여전히 안 닫힌 창 강제 종료
     for _, hwnd in sortedList {
         if (WinExist("ahk_id " . hwnd)) {
             SendKey("x", "C", hwnd)  ; 강제 종료 시도
-            Sleep, 300
+            Sleep(300)
         }
     }
 }
@@ -303,7 +302,7 @@ WaitUntilNotWhiteOrBlack(hwnd, timeout := 8000) {
 
         if (A_TickCount - start > timeout)
             return false  ; 타임아웃
-        Sleep, 100
+        Sleep(100)
     }
 }
 

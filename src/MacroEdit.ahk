@@ -50,8 +50,8 @@ IsSameMacroLine(line1, line2) {
 
     vars1 := {}
     vars2 := {}
-    cmd1 := ResolveMarker(line1, vars1)
-    cmd2 := ResolveMarker(line2, vars2)
+    cmd1 := ResolveMarkerMute(line1, vars1)
+    cmd2 := ResolveMarkerMute(line2, vars2)
 
     allowed := { "wait": 1, "delay": 1, "rep": 1 }
     for k in vars1
@@ -69,28 +69,36 @@ IsSameMacroLine(line1, line2) {
     if (Abs(wait1 - wait2) > EPSILON_WAIT || delay1 != delay2)
         return false
 
-    pattern := ":[LR]\s*([\d.]+)\s*,\s*([\d.]+)"
+    pattern := "i)^Click:[LR]\s*([\d.]+)\s*,\s*([\d.]+)"
     if (RegExMatch(cmd1, pattern , am) && RegExMatch(cmd2, pattern , bm)) {
-        ; 문자열 기반 소수점 포함 여부로 정수/실수 판별
-        isFloat1 := InStr(am2, ".") || InStr(am3, ".")
-        isFloat2 := InStr(bm2, ".") || InStr(bm3, ".")
-
         x1 := am2 + 0, y1 := am3 + 0
         x2 := bm2 + 0, y2 := bm3 + 0
-        dist := Sqrt((x1 - x2)**2 + (y1 - y2)**2)
 
         if (am1 != bm1)
             return false
-        else if (!isFloat1 && !isFloat2) ; 둘 다 정수
-            return dist <= EPSILON_FIXED
-        else if (isFloat1 && isFloat2)   ; 둘 다 실수
-            return dist <= EPSILON_RATIO
-        else
-            return false ; 정수/실수 혼합 → 다르다고 판단
+        
+        return IsClosePoint(x1, y1, x2, y2)
     } else {
         return (cmd1 = cmd2)
     }
 }
+
+IsClosePoint(x1, y1, x2, y2) {
+    isFloat1 := InStr(x1, ".") || InStr(y1, ".")
+    isFloat2 := InStr(x2, ".") || InStr(x2, ".")
+
+    if (isFloat1 != isFloat2)
+        return false
+
+    dist := GetDistance(x1, y1, x2, y2)
+
+    if (!isFloat1 && !isFloat2) {
+        return dist <= (EPSILON_FIXED ? EPSILON_FIXED : 3)
+    } else {
+        return dist <= (EPSILON_RATIO ? EPSILON_RATIO : 0.005)
+    }
+}
+
 
 WriteMacroFile(content := "", macroFilePath := "", isReload := false, overwrite := false) {
     Log("WriteMacroFile() content: " content ", path:" macroFilePath)
@@ -133,6 +141,15 @@ WriteMacroFile(content := "", macroFilePath := "", isReload := false, overwrite 
         ReloadTreeView(fullPath)
 }
 
+ShouldConvertCoords(vars) {
+    return vars.HasKey("w3_ver")
+        && vars.HasKey("_active_w3_ver")
+        && (vars.w3_ver != vars._active_w3_ver)
+        && vars.HasKey("panel")
+        && (vars.panel != "")
+        && (vars.panel != "none")
+}
+
 PreprocessMacroLines(lines, vars, isExec := false) {
     processedLines := []
     
@@ -140,9 +157,9 @@ PreprocessMacroLines(lines, vars, isExec := false) {
         lines := [lines]
     
     for index, line in lines {
-        line := ResolveExpr(line, vars)
+        line := ResolveExprMute(line, vars)
         cmd := StripComments(line)
-        cmd := ResolveMarker(cmd, vars)
+        cmd := ResolveMarkerMute(cmd, vars)
 
         ReplaceEscapeChar(cmd)
         ReplaceEscapeChar(line)
@@ -178,6 +195,17 @@ LoadPresetForMacro(fileName, vars) {
             lines := StrSplit(presetContent, ["`r`n", "`n", "`r"])
             newContents := PreprocessMacroLines(lines, vars, true)
             return RTrim(StrJoin(newContents),"`t`n ")
+        }
+    }
+}
+
+EnsureScriptW3VersionMatch(lines, vars, ByRef isConverted) {
+    if (!isConverted && vars.HasKey("w3_ver") && vars.target_hwnd && IsW3(vars.target_hwnd)) {
+        active_w3_ver := GetW3_Ver(vars.target_hwnd)
+        if (vars.w3_ver != active_w3_ver) {
+            ConvertScriptMode(lines, vars.w3_ver, active_w3_ver)
+            isConverted := true
+            Log("Convert script: " vars.w3_ver " to " active_w3_ver)
         }
     }
 }

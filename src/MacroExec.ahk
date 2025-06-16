@@ -24,23 +24,11 @@ ExecMacro(scriptText, vars, current_path) {
             continue
 
         ExtractVar(vars, "start_line", start_line, "natural")
-        tempVars := PrepareConditionVars(line, vars)
+        tempVars := PrepareConditionVars(line, vars, index, start_line)
         
         ; 조건 확인: force가 없고, skip_mode=vars 이며, start_line 전이면 건너뛰기
-        if (!tempVars.HasKey("force")) {
-            if (InStr(vars.skip_mode, "vars") && index < start_line)
-                continue
-        
-            if (tempVars.HasKey("if")){
-                if(IsLogicExpr(tempVars.if)) {
-                    if(!Eval(tempVars.if))
-                        continue
-                } else {
-                    if(!TryStringLogic(tempVars.if))
-                        continue
-                }
-            }
-        }
+        if(tempVars._vars_skip)
+            continue
 
         cmd := ResolveCommand(line, vars)
         ; 조건 2: 실행 전 제어 흐름
@@ -48,16 +36,12 @@ ExecMacro(scriptText, vars, current_path) {
             break
         
         ; 조건 3: start_line 이후만 실행 (강제 실행 아닌 경우)
-        if(!tempVars.HasKey("force")) {
-            if(InStr(vars.skip_mode, "vars") || !RegExMatch(cmd, "i)^Read:\s*(.+?)$")) {
-                if(index < start_line)
-                    continue
-            }
-        }
+        if(tempVars._command_skip)
+            continue
+        
         PrepareTargetHwnd(vars)
 
-        EnsureScriptW3VersionMatch(lines, vars, isConverted)
-
+        Log("Cmd: " cmd ", Line: " line)
         Loop, % vars.rep
         {
             ExecSingleCommand(cmd, vars, line, index)
@@ -73,37 +57,109 @@ ExecMacro(scriptText, vars, current_path) {
     ; ShowTip("--- Macro End ---`n,실행중인 매크로 수 : " runMacroCount)
 }
 
-PrepareConditionVars(line, vars) {
+
+PrepareConditionVars(line, vars, index, start_line) {
     temp := Clone(vars)
-    ResolveMarker(line, temp, ["if", "force", "end_if"])
+    muteAll := false
+    ResolveMarker(line, temp, ["force"])
+    
+    if (temp.HasKey("force")) {
+        temp._vars_skip := false
+        temp._command_skip := false
+    }
+    else if (index < start_line) {
+        muteAll := true
+        if (InStr(vars.skip_mode, "vars")) { ; 스킵모드가 vars 까지 모두 스킵하는경우
+            temp._vars_skip := true
+        } else { ; 스킵모드가 vars 는 스킵 안하는 경우
+            temp._vars_skip := false
+            if (!RegExMatch(line, "i)^Read:\s*(.+?)$")) ; Read 명령이 아니면
+                temp._command_skip := true ; 명령실행 필요 없음
+        }
+    }
+    else {
+        ResolveMarker(line, temp, ["if", "end_if"])
+        if (temp.HasKey("end_if"))
+            vars.Delete("if")
+        else if (temp.HasKey("if") && vars.if_mode = "block")
+            vars.if := temp.if
 
-    ; if 블록 관리
-    if (temp.HasKey("end_if"))
-        vars.Delete("if")
-    else if (temp.HasKey("if") && vars.if_mode = "block")
-        vars.if := temp.if
-
-    ; 문자열 false 처리
-    if (StrLower(temp.if) = "false")
-        temp.if := false
-
+        if (StrLower(temp.if) = "false")
+            temp.if := false
+        
+        if (temp.HasKey("if")) {
+            if (IsLogicExpr(temp.if)) {
+                if (!Eval(temp.if)) {
+                    Log("!Eval continue line: " line "  tempVars.if:" tempVars.if)
+                    temp._vars_skip := true
+                }
+            } else {
+                if (!TryStringLogic(temp.if)) {
+                    Log("!TryStringLogic continue line: " line "  tempVars.if:" tempVars.if)
+                    temp._vars_skip := true
+                }
+            }
+        }
+    }
     return temp
+}
+
+; 공통 key=value 추출 함수
+ParseKeyValueToken(token, vars) {
+    kv := StrSplit(token, "=", , 2)  ; 최대 2개로 분할
+    key := Trim(kv[1])
+    val := (kv.Length() = 2) ? Trim(kv[2]) : ""
+    if (key != "")
+        vars[key] := val
+}
+
+ReadVarsFile(path, vars) {
+    fullPath := ResolveMacroFilePath(path, vars)
+    Log("ReadVarsFile(): path: " path "  actw3ver: " vars._active_w3_ver)
+
+    if (!vars.HasKey("__Readed__"))
+        vars["__Readed__"] := {}
+
+    if (vars["__Readed__"].HasKey(fullPath))
+        return
+
+    vars["__Readed__"][fullPath] := true
+
+    content := ReadFile(fullPath)
+
+    ParseVars(content, vars)
+}
+
+ParseVars(content, vars) {
+    lines := SplitLine(content)
+    for index, line in lines {
+        line := Trim(StripComments(line))
+
+        if (RegExMatch(line, "i)^Read:\s*(.+?)$", m)) {
+            ReadVarsFile(m1, vars)  ; 재귀 Read
+            continue
+        }
+
+        kv := StrSplit(line, "=", , 2)  ; 최대 2개로 분할
+        key := Trim(kv[1])
+        val := (kv.Length() = 2) ? Trim(kv[2]) : ""
+        if (key != "") {
+            if(val && vars.w3_ver != vars._active_w3_ver)
+                val := ConvertClickLine(val, vars.w3_ver, vars._active_w3_ver, vars.panel)
+            vars[key] := val
+        }
+    }
 }
 
 ParseKeyValueLine(line, vars, delimiter := "@") {
     if (SubStr(Trim(line), 1, StrLen(delimiter)) != delimiter)
         return false
 
-    parts := StrSplit(line, delimiter)  ; delimiter 기준 분할
-
+    parts := StrSplit(line, delimiter)
     for each, token in parts {
         if !token
             continue
-
-        kv := StrSplit(token, "=", , 2)  ; 최대 2개로 분할
-        key := Trim(kv[1])
-        val := (kv.Length() = 2) ? Trim(kv[2]) : ""  ; = 없으면 빈값
-        vars[key] := val
+        ParseKeyValueToken(token, vars)
     }
     return true
 }
@@ -116,9 +172,9 @@ ResolveCommand(line, vars) {
     vars.wait := 0
     vars.delay := vars.HasKey("base_delay") ? vars.base_delay : BASE_DELAY
 
-
     cmd := ResolveMarker(line, vars, "", ["if", "force", "end_if"])
     cmd := ResolveExpr(cmd, vars)
+    cmd := ResolveMarker(cmd, vars, "", ["if", "force", "end_if"])
     ; 이스케이프 복원 처리
     
     ReplaceEscapeChar(cmd)
@@ -126,24 +182,48 @@ ResolveCommand(line, vars) {
     return cmd
 }
 
-ExecSingleCommand(command, vars, line := "", index := "") {
-    if RegExMatch(command, "i)^Click:([LR])\s*(.+)", m) {
-        if(vars.target && !vars.target_hwnd)
-            return ShowTip("대상 창이 없습니다.`n" vars.target)
-
-        btn := SubStr(m1,1,1), coords := Trim(m2)
-        
-        if(vars.HasKey(coords))
-            coords := vars[coords]
-        
-        coords := ParseCoords(coords)
-
-        if(coords)
-            SmartClick(coords.x, coords.y, vars.target_hwnd, btn, vars.send_mode, vars.coord_mode, coords.type)
+EnsureTargetReady(vars) {
+    if (vars.target && !vars.target_hwnd) {
+        return FalseTip("대상 창이 없습니다.`n" vars.target)
     }
+    return true
+}
+
+ExecSingleCommand(command, vars, line := "", index := "") {
+    if RegExMatch(command, "i)^(Click|Drag):([LR])\s*(.+)", m) {
+        if (!EnsureTargetReady(vars))
+            return
+
+        isDrag := (StrLower(m1) = "drag")
+        btn := SubStr(m2, 1, 1)
+        coordStr := Trim(m3)
+
+        if vars.HasKey(coordStr)
+            coordStr := vars[coordStr]
+        if !(coords := ParseCoords(coordStr))
+            return
+
+        x1 := coords.x1, y1 := coords.y1
+        x2 := coords.x2, y2 := coords.y2
+
+        ; 좌표 변환 필요 시
+        if (ShouldConvertCoords(vars)) {
+            if (conv := ConvertCoordsWithFallback(x1, y1, vars.w3_ver, vars._active_w3_ver, vars.panel))
+                x1 := conv.x, y1 := conv.y
+            if (isDrag && (conv := ConvertCoordsWithFallback(x2, y2, vars.w3_ver, vars._active_w3_ver, vars.panel)))
+                x2 := conv.x, y2 := conv.y
+        }
+
+        full_mode := vars.coord_mode . coords.type
+        if (isDrag)
+            MouseDrag(x1, y1, x2, y2, vars.target_hwnd, btn, vars.send_mode, full_mode)
+        else
+            SmartClick(x1, y1, vars.target_hwnd, btn, vars.send_mode, full_mode)
+    }
+
     else if RegExMatch(command, "i)^(SendRaw|Send|Chat):\s*(.*)", m) {
-        if(vars.target && !vars.target_hwnd)
-            return ShowTip("대상 창이 없습니다." vars.target)
+        if (!EnsureTargetReady(vars))
+            return
 
         cmdType := StrLower(m1), key := m2
         if(cmdType = "chat")
@@ -170,22 +250,8 @@ ExecSingleCommand(command, vars, line := "", index := "") {
         Run_(m1, m2)
     }
     else if (command && line && index) {
-        ShowTip("올바른 명령문이 아님 (로그 확인 Alt+L)"
-            . "`nPath: " StrReplace(vars.current_path, MACRO_DIR)
-            . "`nLineNum : " index
-            . "`nLine: " line
-            . "`nCmd : " command "`n`n", 5000, true)
-    }
-}
-
-EnsureScriptW3VersionMatch(lines, vars, ByRef isConverted) {
-    if (!isConverted && vars.HasKey("w3_ver") && vars.target_hwnd && IsW3(vars.target_hwnd)) {
-        active_w3_ver := GetW3_Ver(vars.target_hwnd)
-        if (vars.w3_ver != active_w3_ver) {
-            ConvertScriptMode(lines, vars.w3_ver, active_w3_ver)
-            isConverted := true
-            Log("Convert script: " vars.w3_ver " to " active_w3_ver)
-        }
+        ShowTip("Error Line Num : " index " | Path: " StrReplace(vars.current_path, MACRO_DIR) " | Log:Alt+L"
+              . "`nCmd: " command " | Line: " line, 5000, true)
     }
 }
 
@@ -206,35 +272,44 @@ PrepareTargetHwnd(vars) {
     ; 타겟이 없고 hwnd 도 없으면
     if (!vars.HasKey("target") && !vars.target_hwnd) {
         return
+    }
 
     ; 타겟이 변경되었을 경우 새로 검색
-    } else if (vars.target != vars._last_target) {
+    if (vars.target != vars._last_target) {
         vars._last_target := vars.target
         if (vars.target) {
             vars.target_hwnd := GetTargetHwnd(vars.target)
-            
             if (vars.target_hwnd && !InStr(vars.send_mode, "C", true))
                 WinActivateWait(vars.target_hwnd)
-
-            return vars.target_hwnd
         } else {
             vars.target_hwnd := ""
-            return
         }
 
     ; 타겟은 같은데 hwnd 가 없는 경우 → 재검색
     } else if (!vars.target_hwnd) {
         vars.target_hwnd := GetTargetHwnd(vars.target)
-        return vars.target_hwnd
 
-    ; 타겟 동일하고 hwnd 있음 → hwnd 유효성 검사 후 반환
-    } else if (WinExist("ahk_id " . vars.target_hwnd)) {
-        return vars.target_hwnd
+    ; 타겟 동일하고 hwnd 있음 → 유효성 검사
+    } else if (!WinExist("ahk_id " . vars.target_hwnd)) {
+        vars.target_hwnd := ""
     }
 
-    ; hwnd 있었지만 창이 사라졌음 → 재검색 시도
-    vars.target_hwnd := GetTargetHwnd(vars.target)
-    return vars.target_hwnd
+    ; 내부에 저장해둘 이전 hwnd 추적 변수 활용
+    if (vars.HasKey("w3_ver") && vars.target_hwnd && IsW3(vars.target_hwnd)
+                              && vars.target_hwnd != vars._last_w3_ver_hwnd) {
+        vars._active_w3_ver := GetW3_Ver(vars.target_hwnd)
+        vars._last_w3_ver_hwnd := vars.target_hwnd
+    }
+}
+
+ResolveMarkerMute(line, vars, allowedKey := "", excludedKey := "") {
+    muteAll := true
+    return ResolveMarker(line, vars, allowedKey, excludedKey)
+}
+
+ResolveExprMute(line, vars) {
+    muteAll := true
+    return ResolveExpr(line, vars)
 }
 
 ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
@@ -261,6 +336,7 @@ ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
         command := StrReplace(command, fullMatch, "")
         pos := found + StrLen(fullMatch)
     }
+    muteAll := false
     return Trim(command)
 }
 
@@ -280,6 +356,7 @@ ResolveExpr(line, vars, maxDepth := 5) {
         }
         depth++
     }
+    muteAll := false
     return line
 }
 
@@ -315,7 +392,6 @@ EvaluateExpr(expr, vars) {
 
     return TryEval(expr, vars.dp_mode)
 }
-
 
 ExplodeByKeys(expr, vars) {
     result := []
@@ -368,44 +444,6 @@ EvaluateFunctions(expr, vars) {
         pos := found + StrLen(result)
     }
     return expr
-}
-
-ReadVarsFile(path, vars) {
-    fullPath := ResolveMacroFilePath(path, vars)
-
-    if (!vars.HasKey("__Readed__"))
-        vars["__Readed__"] := {}
-
-    if (vars["__Readed__"].HasKey(fullPath))
-        return
-
-    vars["__Readed__"][fullPath] := true
-
-    content := ReadFile(fullPath)
-
-    ParseVars(content, vars)
-}
-
-ParseVars(content, vars) {
-    lines := SplitLine(content)
-    for index, line in lines {
-        line := Trim(line)
-        line := StripComments(line)
-
-        if (RegExMatch(line, "i)^Read:\s*(.+?)$", m)) {
-            ReadVarsFile(m1, vars)  ; 재귀 Read
-            continue
-        }
-
-        parts := StrSplit(line, "=",, 2)
-        if (parts.Length() < 2)
-            continue
-        
-        key := Trim(parts[1])
-        val := Trim(parts[2])
-        if (key != "" && val != "")
-            vars[key] := val
-    }
 }
 
 Run_(mode, path) {
@@ -477,6 +515,7 @@ UpdateMacroState(delta) {
     } else {
         GuiControl, macro:Text, execBtn, ▶ Run
         macroAbortRequested := false
+        muteAll := false
     }
 }
 
@@ -487,7 +526,7 @@ CheckAbortAndSleep(totalDelay) {
             ShowTip("매크로 중단 요청")
             return false
         }
-        Sleep, % Min(100, totalDelay)
+        Sleep( Min(100, totalDelay))
     }
     return !macroAbortRequested
 }

@@ -10,7 +10,7 @@ Read: c_map\classic\_all
 #if:PickNewHero(medic)# %move_new_hero%
 ChampChat()
 
-%click_shop_npc%
+%select_shop_npc%
 Exec: champ\karav\medic-equip
 
 Exec: stat-up #spsi=116# #stat=F#

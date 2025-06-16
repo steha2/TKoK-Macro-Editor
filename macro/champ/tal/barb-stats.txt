@@ -3,7 +3,7 @@ Read: c_map\classic\_all
 
 #if:PickNewHero(barb)# %move_new_hero%
 
-%click_shop_npc%
+%select_shop_npc%
 Exec: champ\tal\barb-equip
 
 Exec: stat-up #spsi=128# #stat=Q#

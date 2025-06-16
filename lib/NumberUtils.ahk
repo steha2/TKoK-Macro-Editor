@@ -27,6 +27,10 @@ FormatDecimal(num, mode) {
     }
 }
 
+GetDistance(x1, y1, x2, y2) {
+    return Sqrt((x1 - x2)**2 + (y1 - y2)**2)
+}
+
 ;a.delay += b
 AddDelay(a, b) {
    ;msgBox, % isDigit(b) "  " (b + a)

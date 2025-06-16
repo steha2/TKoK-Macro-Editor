@@ -131,11 +131,11 @@ F6::Chat("-tt")
     {
         SendKey("n",100)
         gosub, F5
-        Sleep, 200
+        Sleep(200)
         SwapItems()
         gosub, F5
         SwitchNextW3(A_Index = loopCount)
-        Sleep, 300
+        Sleep(300)
         
     }
 return

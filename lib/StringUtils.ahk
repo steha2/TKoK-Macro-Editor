@@ -1,11 +1,10 @@
 ; --------------------------------- 문자 함수 ---------------------------------
 
 RemoveChars(text, chars) {
-    Loop, Parse, text
+    Loop, Parse, chars
         text := StrReplace(text, A_LoopField)
     return text
 }
-
 
 StrCompare(a, b) {
     StringLower, aLower, a

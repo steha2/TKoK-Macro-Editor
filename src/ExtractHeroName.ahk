@@ -17,7 +17,7 @@ GenerateNamePlateSamples() {
         FileCreateDir, %imgDir%
 
     for index, hero in heroArr {
-        Sleep, % NEW_HERO_DELAY + 100
+        Sleep( NEW_HERO_DELAY + 100)
         file := imgDir . "\" . hero . ".png"
         
         if(!CaptureImage(ix, iy, iw, ih, file)) {
@@ -97,6 +97,7 @@ FindHeroPath(currName, targetName) {
     rightDist := Mod((targetIndex - currIndex + total), total)
     leftDist  := Mod((currIndex - targetIndex + total), total)
 
+    Log("FindHeroPath(): curr: " currName "  target:" targetName "  dir: " dir " " count)
     if (rightDist <= leftDist)
         return {dir: "{right}", count: rightDist}
     else
@@ -154,10 +155,12 @@ GetHeroNameByImg() {
     }
 
     return FalseTip("GetNameByImg(): 영웅 선택 화면이 아니거나. 영웅을 찾지 못했습니다."
-                 . "`nThis is not the hero selection screen. The hero was not found.")
+                 . "`nThis is not the hero selection screen. The hero was not found."
+                 . ix "  " iy "  " ix2 "  " iy2 "  " iw "  " ih "  " imgDir)
 }
 
 PickNewHero(targetHero) {
+    MouseMove(0.5, 0.5)
     SendA("{right}", NEW_HERO_DELAY)
 
     currHero := GetHeroNameByImg()
@@ -167,21 +170,23 @@ PickNewHero(targetHero) {
 
     if (currHero = -1) {
         GenerateNamePlateSamples()
+        Sleep(2000)
         currHero := GetHeroNameByImg()
     }
 
     path := FindHeroPath(currHero, targetHero)
     Loop, % path.count {
         SendA(path.dir)
-        Sleep, %NEW_HERO_DELAY%
+        Sleep(NEW_HERO_DELAY)
     }
     
     currHero := GetHeroNameByImg()
     
     if (GetFullName(targetHero) = currHero) {
         SendA("{Esc}")
-        return TrueTip("영웅 선택 완료: " currHero)
-        Sleep, 500
+        Sleep(500)
+        Log("영웅 선택 완료: " currHero)
+        return true
     }
     return FalseTip("영웅 선택 실패 targetHero: " targetHero "  currHero: " currHero )
 }

@@ -1,18 +1,7 @@
 
-SmartClick(x, y, hwnd := "", btn := "L", mode := "", coord_mode := "", coord_type := "") {
-    if (hwnd && !WinExist("ahk_id " . hwnd))
-        return ShowTip("SmartClick()`n지정된 창이 없습니다. hwnd: " . hwnd)
-    hwnd := hwnd ? hwnd : WinExist("A")
-    CalcCoords(x, y, hwnd, coord_mode, coord_type)
-
-    if (InStr(mode, "C", true)) {
-        AdjustWindowToClient(hwnd, x, y)
-        Sleep, 100
-        ControlClick, x%x% y%y%, ahk_id %hwnd%,, %btn%,, NA
-    } else {
-        WinActivateWait(hwnd)
-        PhysClick(x, y, btn)
-    }
+SmartClick(x, y, hwnd := "", btn := "L", send_mode := "", coord_mode := "") {
+    event := {x:x, y:y, hwnd:hwnd, btn:btn, send_mode:send_mode, coord_mode:coord_mode}
+    MouseEvent(event)
 }
 
 ;ControlClick
@@ -75,7 +64,7 @@ ClickBackEx(clickCmdArr) {
     }
     ; 마우스 위치 복귀
     CoordMode, Mouse, Screen
-    MouseMove, %origX%, %origY%, 0
+    MouseMove(origX, origy)
 
     ; 작업 전 활성화되었던 창 복귀
     if (WinExist("ahk_id " . origHwnd)) {
@@ -125,11 +114,14 @@ PasteText(text, mode := "", hwnd := "") {
 }
 
 SendKey(key, mode := "", hwnd := "", delay := 0) {
+    if (muteAll)   
+        return
+
     if (hwnd && !WinExist("ahk_id " . hwnd))
         return ShowTip("SendKey()`n지정된 창이 없습니다. hwnd :" . hwnd)
 
     if (delay < 0)
-        Sleep, -delay
+        Sleep(-delay)
 
     if (InStr(mode, "NS"))
         key := StrReplace(key, " ")
@@ -156,9 +148,73 @@ SendKey(key, mode := "", hwnd := "", delay := 0) {
     }
 
     if (delay > 0)
-        Sleep, delay
+        Sleep(delay)
 }
 
 SendA(key, delay := 0) {
     SendKey(key, "", "", delay)
+}
+
+MouseMove(x, y) {
+    MouseEvent({x:x, y:y, hwnd:WinActive("A")})
+}
+
+ClickDrag(x1, y1, x2, y2, btn := "L", speed := 500) {
+    hwnd := WinActive("A")
+    CalcCoords(x1, y1, hwnd)
+    CalcCoords(x2, y2, hwnd)
+    MouseClickDrag, %btn%, %x1%, %y1%, %x2%, %y2%, %speed%
+}
+
+MouseDrag(x1, y1, x2, y2, hwnd := "" , btn := "L", send_mode := "", coord_mode := "") {
+    event := {x:x1, y:y1, hwnd:hwnd, btn:btn . "D", send_mode:RemoveChars(send_mode, "C"), coord_mode:coord_mode}
+    
+    MouseEvent(event)
+    event.btn := ""
+    event.x := x2
+    event.y := y2
+    
+    Sleep(100)
+    MouseEvent(event)
+
+    event.btn := btn . "U"
+    MouseEvent(event)
+}
+
+MouseEvent(event) {
+    static BtnDownMsg := { "L": 0x201, "R": 0x204 }
+    static BtnUpMsg   := { "L": 0x202, "R": 0x205 }
+
+    if (muteAll)   
+        return
+
+    hwnd := event.hwnd
+    if (hwnd && !WinExist("ahk_id " . hwnd))
+        return FalseTip("MouseEvent()`n지정된 창이 없습니다. hwnd: " . hwnd)
+
+    ; 필수 값 추출
+    x := event.x, y := event.y
+    hwnd := hwnd ? hwnd : WinExist("A")
+    btn := event.btn
+
+    ; 좌표 변환
+    CalcCoords(x, y, hwnd, event.coord_mode)
+
+    ; 버튼 및 액션 파싱
+    baseBtn := SubStr(btn, 1, 1)
+    isDown := InStr(btn, "D")
+    isUp   := InStr(btn, "U")
+
+    ; ControlClick 모드
+    if (InStr(event.send_mode, "C")) {
+        AdjustWindowToClient(hwnd, x, y)
+        Sleep(100)
+        clickOpt := isDown ? "D" : isUp ? "U" : ""
+        ControlClick, x%x% y%y%, ahk_id %hwnd%,, %baseBtn%,, %clickOpt% NA
+    }
+    ; 물리 입력
+    else {
+        WinActivateWait(hwnd)
+        PhysMouseInput(x, y, btn)
+    }
 }

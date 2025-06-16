@@ -1,6 +1,7 @@
-﻿note()
+﻿note() #force#
 ; 정의되지 않은 변수에 빈기본값
 #cc:5|1#
+#a:Sleep(10000)# #force#
 
 Chat: %cc%  
 

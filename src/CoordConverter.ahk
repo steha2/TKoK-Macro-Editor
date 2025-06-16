@@ -13,8 +13,8 @@ CoordTracking() {
         GuiControl, macro:, SaveBtn, ◆ Save
     }
 
-    if (GetAdjustedCoords(x, y)) {
-        coordStr := x . ", " . y
+    if (coords := GetAdjustedCoords()) {
+        coordStr := coords.x . ", " . coords.y
         GuiControlGet, isClient, macro:, ClientBtn
         WinGetTitle, activeTitle, A
         if (isClient && activeTitle) {
@@ -27,12 +27,12 @@ CoordTracking() {
 }
 
 
-CalcCoords(ByRef x, ByRef y, hwnd, coord_mode := "", coord_type := "") {
+CalcCoords(ByRef x, ByRef y, hwnd, coord_mode := "") {
     if(!hwnd)
         return
 
     isClient := !InStr(coord_mode,"screen")
-    isRatio := !InStr(coord_type,"fixed")
+    isRatio := !InStr(coord_mode,"fixed")
 
     CoordMode, Mouse, % isClient ? "Client" : "Screen"
     if(isRatio) {
@@ -42,21 +42,29 @@ CalcCoords(ByRef x, ByRef y, hwnd, coord_mode := "", coord_type := "") {
     }
 }
 
-GetAdjustedCoords(ByRef x, ByRef y) {
+GetAdjustedCoords() {
+    obj := {}
     GuiControlGet, isClient, macro:, ClientBtn
     GuiControlGet, isRatio, macro:, RatioBtn
     CoordMode, Mouse, % isClient ? "Client" : "Screen"
+    obj.isClient := isClient
+    obj.isRatio := isRatio
+
     if (isRatio) {
         WinGet, hwnd, ID, A
-        if(!GetMouseRatio(hwnd, x, y))
+        obj.hwnd := hwnd
+        if (!GetMouseRatio(hwnd, x, y)) {
             return false
+        }
     } else {
         MouseGetPos, x, y
     }
-    return true
+    obj.x := x  
+    obj.y := y
+    return obj
 }
 
-ParseCoords(coords) {
+ParseCoords2(coords) {
     coords := Trim(coords)
 
     if RegExMatch(coords, "(\d+)\s*,\s*(\d+)$", m) {
@@ -66,6 +74,34 @@ ParseCoords(coords) {
     } else {
         return false
     }
+}
+
+ParseCoords(coords) {
+    coords := StrReplace(coords," ")
+    parts := StrSplit(coords, ",")  ; 쉼표/공백/탭 구분
+
+    if (parts.Length() = 2 || parts.Length() = 4) {
+        floats := 0
+        nums := []
+
+        for i, part in parts {
+            part := Trim(part)
+            if (!RegExMatch(part, "^\d+(\.\d+)?$"))
+                return false
+            if (InStr(part, "."))
+                floats++
+            nums.Push(part + 0)
+        }
+
+        type := (floats > 0) ? "ratio" : "fixed"
+
+        if (nums.Length() = 2)
+            return { x1: nums[1], y1: nums[2], type: type }
+        else
+            return { x1: nums[1], y1: nums[2], x2: nums[3], y2: nums[4], type: type }
+    }
+
+    return false
 }
 
 AdjustWindowToClient(win, ByRef x, ByRef y) {
@@ -103,27 +139,33 @@ ConvertScriptMode(ByRef script, from, to, startIndex := 1) {
             continue
         script[i] := ConvertLine(script[i], from, to, vars)
     }
+    Log("ConvertScriptMode(from  " from "  to " to)
 }
 
 ConvertLine(line, from, to, vars) {
-    ResolveMarker(line, vars, "panel")
+    ResolveMarkerMute(line, vars, "panel")
     line := RegExReplace(line, "#\s*(w3_ver)\s*=\s*" . from . "\s*#", "#$1=" . to . "#")
-    line := RegExReplace(line, "i)^(Read,\s*c_map\\)" . from . "(\\[^`\r\n]+)", "$1" . to . "$2")
+    line := RegExReplace(line, "i)^(Read:\s*c_map\\)" . from . "(\\[^`\r\n]+)", "$1" . to . "$2")
+    line := ConvertClickLine(line, from, to, vars.panel)
+    return line
+}
 
-    panel := vars.panel
+ConvertClickLine(line, from, to, panel) {
     if (panel != "") && RegExMatch(line, "i)^Click:([LR])\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)(.*)$", m) {
         btn := m1, x := m2+0, y := m3+0, tail := m4
-        coords := ConvertCoords(x, y, from, to, panel)
-        if(!coords && panel = "items")
-            coords := ConvertCoords(x, y, from, to, "cmd")
+        coords := ConvertCoordsWithFallback(x, y, from, to, panel)
 
-        if(coords) 
-            line := "Click:" . btn . " " . coords.x . ", " . coords.y . tail
+        if (coords)
+            return "Click:" . btn . " " . coords.x . ", " . coords.y . tail
     }
     return line
 }
 
 ConvertCoords(x, y, fromMode, toMode, panelName) {
+  if (!uiRegions.HasKey(fromMode) || !uiRegions[fromMode].HasKey(panelName)
+   || !uiRegions.HasKey(toMode)   || !uiRegions[toMode].HasKey(panelName))
+        return FalseTip("ConvertCoords Fail !HasKey from:  " fromMode " to:  " toMode "  panel: " panelName)
+
     from := uiRegions[fromMode][panelName]
     to   := uiRegions[toMode][panelName]
 
@@ -140,4 +182,19 @@ ConvertCoords(x, y, fromMode, toMode, panelName) {
     newY := to.y1 + relY * (to.y2 - to.y1)
 
     return { x: Round(newX, 3), y: Round(newY, 3) }
+}
+
+ConvertCoordsWithFallback(x, y, fromMode, toMode, panelName) {
+    ; 1차 시도: 원래 패널로 변환
+    result := ConvertCoords(x, y, fromMode, toMode, panelName)
+    if (result)
+        return result
+
+    ; 2차 시도: items 패널 → cmd 패널로 폴백
+    if (panelName = "items") {
+        return ConvertCoords(x, y, fromMode, toMode, "cmd")
+    }
+
+    ; 변환 실패
+    return false
 }

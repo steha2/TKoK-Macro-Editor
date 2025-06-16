@@ -17,3 +17,5 @@ if not A_IsAdmin
 global logFilePath :=  A_Temp "\macro_test_log.txt"
 global DEBUG_LEVEL := 3
 global placeHolder := Chr(0xE000)
+global muteAll := false
+

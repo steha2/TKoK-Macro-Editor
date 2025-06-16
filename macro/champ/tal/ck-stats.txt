@@ -9,7 +9,7 @@ Read: c_map\classic\_all
 #if:PickNewHero(CK)# %move_new_hero%
 
 ChampChat()
-%click_shop_npc%
+%select_shop_npc%
 
 Exec: champ\tal\ck-equip
 

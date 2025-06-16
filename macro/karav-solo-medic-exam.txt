@@ -9,14 +9,14 @@ Read: c_map\reforged\_all ; Load fixed coordinates %...% used below
 %champ_karav%      ; Select Karavnos
 %champ_fin1%       ; Confirm
 
-; Find and choose a medicaster then Go to portal
+; Find and choose a medicaster then go to portal
 #if:PickNewHero(medic)# %move_new_hero%    
 
 Chat: -fog
 Chat: -cdist 2300
 LoadApt()
 
-%click_shop_npc% ; Select Equipment Vendor
+%select_shop_npc% ; Select Equipment Vendor
 #panel=items#
 Click:L 0.719, 0.806 #delay=400#
 Click:L 0.493, 0.344 #rep:2#

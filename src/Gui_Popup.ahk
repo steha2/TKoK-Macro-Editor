@@ -36,7 +36,7 @@ Note(newText := "", title := "", isAppend := false) {
 
         vars := {}
         for index, line in SplitLine(noteContent)
-            ResolveMarker(line, vars, "w3_ver")
+            ResolveMarkerMute(line, vars, "w3_ver")
 
         if !(vars.HasKey("w3_ver")) {
             ShowTip("noteContent에 'w3_ver' 값이 없습니다.", 1500, false)
@@ -90,7 +90,6 @@ SaveNote() {
     }
     FileDelete, %filePath%
     FileAppend, %noteContent%, %filePath%
-    ShowTip("Note 저장 완료:`n" . filePath)
 
     ; 매크로 에디터와 공유된 경우 동기화
     if (macroPath = filePath) {
@@ -101,9 +100,11 @@ SaveNote() {
         origContent := noteContent
         GuiControl, macro:, EditMacro, %noteContent%
     }
+    TrueTip("Note 저장 완료:`n" . filePath)
 }
 
 ToggleOverlay() {
+    Log("ToggleOverlay()")
     if (overlayVisible) {
         Gui, overlayBG:Destroy
         Gui, overlayBtn:Destroy
@@ -114,14 +115,16 @@ ToggleOverlay() {
     ; 매크로 내용 가져오기
     vars := {}
     GuiControlGet, currentText, macro:, EditMacro
-    lines := StrSplit(currentText, ["`r`n", "`n", "`r"])
+    lines := SplitLine(currentText)
     lines := PreprocessMacroLines(lines, vars)
 
     ; 타겟 윈도우
     PrepareTargetHwnd(vars)
     hwnd := vars.target_hwnd ? vars.target_hwnd : WinExist("A")
-    
     WinActivateWait(hwnd)
+
+    if(ShouldConvertCoords(vars))
+        ConvertScriptMode(lines, vars.w3_ver, vars._active_w3_ver)
 
     ; 타겟 창 정보
     GetClientRect(hwnd, cx, cy, cw, ch)
@@ -143,12 +146,12 @@ ToggleOverlay() {
     vars := {}
     Loop, % lines.Length()
     {
-        ResolveMarker(lines[A_Index], vars)
+        ResolveMarkerMute(lines[A_Index], vars)
         if RegExMatch(lines[A_Index], "i)^Click:([LR])\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)", m)
-            && !InStr(vars.coordMode, "screen") 
+            && !InStr(vars.coord_mode, "screen") 
         {
             mx := m2/dpi*100, my := m3/dpi*100
-            CalcCoords(mx, my, hwnd, vars.coordMode)
+            CalcCoords(mx, my, hwnd, vars.coord_mode)
             size := 27/dpi*100
             boxX := mx - Floor(size / 2)
             boxY := my - Floor(size / 2)

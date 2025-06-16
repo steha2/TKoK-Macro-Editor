@@ -83,21 +83,24 @@ Log(msg, level := 3) {
 ShowTip(msg, duration := 1500, writeLog := false) {
     if (writeLog)
         Log("ShowTip(): " msg, 2)  ; INFO 수준
-    Tooltip, %msg%
+    
+    if(!muteAll)
+        Tooltip, %msg%
+
     SetTimer, RemoveToolTip, -%duration%
 }
 
-TrueTip(msg := "", duration := 1500, writeLog := true) {
+TrueTip(msg := "", duration := 1500, level := 2, writeLog := true) {
     ShowTip(msg, duration)
     if (writeLog)
-        Log("TrueTip(): " msg, 2)  ; INFO
+        Log("TrueTip(): " msg, level)  ; INFO
     return msg ? msg : true
 }
 
-FalseTip(msg := "", duration := 1500, writeLog := true) {
+FalseTip(msg := "", duration := 1500,  level := 0, writeLog := true) {
     ShowTip(msg, duration)
     if (writeLog)
-        Log("FalseTip(): " msg, 0)  ; ERROR
+        Log("FalseTip(): " msg, level)  ; ERROR
     return false
 }
 
@@ -121,6 +124,10 @@ Alert(msg, title := "알림", level := 2) {
      if (level >= 0) {
         Log(msg, level)
     }
+
+    if(muteAll)
+        return
+
     MsgBox, 4096, %title%, %msg%
 }
 
@@ -158,7 +165,14 @@ WaitGetHwnd(winTitle, interval := 100, maxLoop := 50) {
         if (hwnd && w3Class = W3_WINTITLE) 
             return hwnd
         else 
-            Sleep, %interval%
+            Sleep(interval)
     }
     return false
+}
+
+Sleep(delay) {
+    if(muteAll)
+        return
+
+    Sleep, %Delay%
 }

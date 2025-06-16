@@ -2,3 +2,6 @@
 Read: c_map\classic\map
 Read: c_map\classic\popup
 Read: c_map\classic\field
+
+;패널 값 삭제
+panel= 

@@ -1,0 +1,7 @@
+﻿@target=AHK Note
+note() 
+chat: start!
+Send: ^a
+Click:L 0.596, 0.303
+Click:L 0.656, 0.366
+Drag:L 0.554, 0.339, 0.018, 0.097

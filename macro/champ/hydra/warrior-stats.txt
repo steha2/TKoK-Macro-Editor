@@ -10,7 +10,7 @@ Read: c_map\reforged\_all
 #if:PickNewHero(warrior) #%move_new_hero%
 Exec: setting-chat
 
-%click_shop_npc%
+%select_shop_npc%
 Exec: champ\hydra\warrior-equip
 
 Exec: stat-up #spsi=144# #stat=Z#

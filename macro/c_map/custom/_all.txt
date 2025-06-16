@@ -1,0 +1,4 @@
+﻿Read: c_map\reforged\cmd
+Read: c_map\reforged\map
+Read: c_map\reforged\popup
+Read: c_map\reforged\field

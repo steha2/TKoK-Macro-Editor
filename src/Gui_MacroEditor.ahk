@@ -111,7 +111,7 @@ Loop, Parse, hotkeyMacros, `n, `r
     macro := Trim(parts[2])
     if(hkey, macro) {
         vars := {}
-        cmd := ResolveMarker(macro, vars)
+        cmd := ResolveMarkerMute(macro, vars)
         fn := Func("ExecMacro").Bind(cmd, vars, "")
         Hotkey, %hkey%, % fn
     }

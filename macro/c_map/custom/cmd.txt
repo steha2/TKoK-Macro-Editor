@@ -1,0 +1,10 @@
+﻿; For Reforged, only 16:9 resolution is supported
+; other resolutions is classified as custom.
+
+diff_normal  = Click:L 0.725, 0.806 #delay=1000#
+diff_leg     = Click:L 0.763, 0.807 #delay=1000#
+diff_hc      = Click:L 0.804, 0.809 #delay=1000#
+diff_nm      = Click:L 0.843, 0.806 #delay=1000#
+diff_ehc     = Click:L 0.805, 0.881 #delay=1000#
+diff_champ   = Click:L 0.720, 0.952 #delay=1000#
+
