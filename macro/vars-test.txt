@@ -1,0 +1,3 @@
+﻿note() #a=abef# #if_mode=block#
+;#if:in(a,e)# 
+chat: 에이는 %a% %if% %in(a,e)%

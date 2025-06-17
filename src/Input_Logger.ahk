@@ -33,17 +33,17 @@ LogKey() {
         if (k = "NumpadLeft" or k = "NumpadRight") and !GetKeyState(k, "P")
             return
         k := StrLen(k) > 1 ? "{" k "}" : k ~= "\w" ? k : "{" vksc "}"
-        LogToEdit("Send, " . k, k)
+        LogToEdit("Send: " . k, k)
     }
 }
 
 LogKeyControl(key) {
   k:=InStr(key,"Win") ? key : SubStr(key,2)
-  LogToEdit("Send, {" . k . " down}", k, true)
+  LogToEdit("Send: {" . k . " down}", k, true)
   Critical, Off
   KeyWait, %key%
   Critical
-  LogToEdit("Send, {" . k . " up}" , k, true)
+  LogToEdit("Send: {" . k . " up}" , k, true)
 } 
 
 LogMouseClick(key) {

@@ -1,0 +1,20 @@
+﻿@target=Warcraft III
+Read: c_map\classic\_all
+@panel=cp_boss
+;@boss=hydra
+
+#if:!has[boss]# Log(!haskey boss) #break#
+
+%diff_champ%
+
+#isPage2:in(boss, cru tal mk hydra orta ghoul)#
+
+#if:isPage2# %champ_next%
+
+#selected=champ_%boss%#
+
+#if:!has[selected]# FalseTip(not found boss: %selected%) #break#
+
+vars[%selected%]
+
+#if:isPage2# %champ_fin2% else %champ_fin1%

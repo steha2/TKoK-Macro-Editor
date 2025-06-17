@@ -151,7 +151,7 @@ ModiKeyWait() {
 }
 
 RunGetHwnd(path, winTitle := "") {
-    Run, *RunAs %path%
+    Run_("runas", path)
     hwndR := WaitGetHwnd(winTitle)
     if (!hwndR)
         return false

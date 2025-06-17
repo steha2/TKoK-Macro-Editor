@@ -68,9 +68,11 @@ ResolveHeroIndex(name) {
             }
         }
 
+        ; 커스텀 약어
         heroMap["sb"] := 9
         heroMap["eq"] := 17
         heroMap["panda"] := 6
+        heroMap["shaman"] := 18
     }
 
     normName := StrLower(name)
@@ -79,6 +81,10 @@ ResolveHeroIndex(name) {
         index := heroPrefixMap[normName]
 
     return index
+}
+
+GetFullName(shortName) {
+    return heroArr[ResolveHeroIndex(StrLower(shortName))]
 }
 
 FindHeroPath(currName, targetName) {
@@ -191,6 +197,29 @@ PickNewHero(targetHero) {
     return FalseTip("영웅 선택 실패 targetHero: " targetHero "  currHero: " currHero )
 }
 
-GetFullName(shortName) {
-    return heroArr[ResolveHeroIndex(StrLower(shortName))]
+PickNewHeroC(targetHero, hwnd) {
+    if(!hwnd)
+        return FalseTip("PickNewHeroC(): hwnd not found")
+
+    Critical
+    WinActivateWait(hwnd)
+    MouseMove(0.5, 0.5)
+    SendKey("{right}", "C", hwnd, NEW_HERO_DELAY)
+    currHero := GetHeroNameByImg()
+    Critical, Off
+
+    if (currHero <= 0)
+        return FalseTip("PickNewHeroC(): Fail to find hero : " targetHero "  win_title: " Win_GetTitle(hwnd))
+
+    path := FindHeroPath(currHero, targetHero)
+    Loop, % path.count
+        SendKey(path.dir, "C", hwnd, NEW_HERO_DELAY)
+    
+    SendKey("{Esc}", "C", hwnd, 500)
+
+    Log("PickNewHeroC() 영웅 선택 완료: " currHero)
+    return true
 }
+
+
+

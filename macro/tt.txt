@@ -1,6 +1,0 @@
-﻿#w3_ver=classic# #target=Warcraft III# 
-Read: c_map\classic\_all ; 고정 좌표를 불러옴 %...% 로 아래서 사용
-;#if:PickNewHero(medic)# %move_new_hero%           
-#panel=field#
-Send: {F1} #rep=2#
-%select_shop_npc%

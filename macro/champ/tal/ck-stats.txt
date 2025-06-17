@@ -1,10 +1,7 @@
 ﻿#w3_ver=reforged# #target=Warcraft III#
 Read: c_map\classic\_all
 
-%diff_champ%
-%champ_next%
-%champ_tal%
-%champ_fin2%
+Exec: select-champ-boss #boss=tal#
 
 #if:PickNewHero(CK)# %move_new_hero%
 
@@ -31,4 +28,4 @@ Click:L 0.439, 0.573
 Click:L 0.600, 0.583 #rep=2#
 Click:L 0.603, 0.198 #rep=2#
 Click:L 0.602, 0.488
-Chat: -tt
+Send: {Numpad2}

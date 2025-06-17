@@ -126,13 +126,6 @@ GetW3_Ver(target) {
         return "custom"
 }
 
-; TrySwitchNextW3() {
-;     if (switchRunning >= 3)
-;         return
-;     SetTimer, SwitchNextW3, % (-200 * switchRunning) - 1
-;     switchRunning++
-; }
-
 ShareUnit(hwnd := "") {
     if(hwnd) {
         SendKey("{F11}", "C", hwnd, 300)

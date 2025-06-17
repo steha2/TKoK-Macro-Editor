@@ -2,6 +2,7 @@
 
 ; if 조건문 테스트
 #a:10#
+#if:b|0# chat: aa %b%
 #if:a>5# chat: a는 5보다 큽니다
 #if:a<0# chat: a는 0보다 작습니다
 #if:a=10# chat: 정확히 10입니다

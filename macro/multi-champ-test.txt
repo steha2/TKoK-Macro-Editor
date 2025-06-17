@@ -1,0 +1,13 @@
+﻿@macro1=champ\mk\warrior-stats
+@macro2=champ\mk\shaman-stats
+
+#if:ExecMultiW3(2,2,1)# #delay=60000#
+
+
+
+SwitchW3(1)
+Exec: %macro1%
+
+SwitchW3(2)
+Exec: %macro2%
+

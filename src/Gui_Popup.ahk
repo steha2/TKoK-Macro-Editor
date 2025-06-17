@@ -38,25 +38,19 @@ Note(newText := "", title := "", isAppend := false) {
         for index, line in SplitLine(noteContent)
             ResolveMarkerMute(line, vars, "w3_ver")
 
-        if !(vars.HasKey("w3_ver")) {
-            ShowTip("noteContent에 'w3_ver' 값이 없습니다.", 1500, false)
-            return
-        }
+        if !(vars.HasKey("w3_ver"))
+            return ShowTip("noteContent에 'w3_ver' 값이 없습니다.", 1500, false)
         
         from := vars.w3_ver
-        if !(uiRegions.HasKey(from)) {
-            ShowTip("'" from "'는 UI 영역 정의에 없습니다.", 1500, false)
-            return
-        }
+        if !(uiRegions.HasKey(from))
+            return ShowTip("'" from "'는 UI 영역 정의에 없습니다.", 1500, false)
 
-        if (from = to) {
-            ShowTip("w3_ver 이 같습니다.", 1500, false)
-            return
-        }
+        if (from = to)
+            return ShowTip("w3_ver 이 같습니다.", 1500, false)
 
         msg := "`n#w3_ver=" from "# 을 #w3_ver=" to "# 로 바꿉니다.`n"
              . "Read: 경로 및 대상 #panel# 의 비율 좌표를 변환합니다.`n`n"
-             . "Read: c_map\" from "\mode`n"
+             . "Read: c_map\" from "\items`n"
              . "#panel=items# `nClick, 0.100, 0.200`nClick, 0.100, 0.200"
              
         MsgBox, 4100, Convert to %to%, %msg%
@@ -136,7 +130,7 @@ ToggleOverlay() {
     Gui, overlayBG:+AlwaysOnTop -Caption +ToolWindow +E0x20 +HwndhOverlayBG
     Gui, overlayBG:Color, 0x222244
     Gui, overlayBG:Show, x%cx% y%cy% w%cw% h%ch% NoActivate
-    WinSet, Transparent, 100, ahk_id %hOverlayBG%
+    WinSet, Transparent, 150, ahk_id %hOverlayBG%
 
     ; 2. 버튼 전용 GUI (투명 배경)
     Gui, overlayBtn:+AlwaysOnTop -Caption +ToolWindow +HwndhOverlayBtn
@@ -144,22 +138,45 @@ ToggleOverlay() {
     Gui, overlayBtn:Font, s10 Bold, Segoe UI
 
     vars := {}
-    Loop, % lines.Length()
-    {
-        ResolveMarkerMute(lines[A_Index], vars)
-        if RegExMatch(lines[A_Index], "i)^Click:([LR])\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)", m)
-            && !InStr(vars.coord_mode, "screen") 
-        {
-            mx := m2/dpi*100, my := m3/dpi*100
+    for index, line in lines {
+        line := ResolveMarkerMute(line, vars)
+        if RegExMatch(line, "i)^(Click|Drag):([LR])\s*(.+)", m) && !InStr(vars.coord_mode, "screen") {
+
+            isDrag := (StrLower(m1) = "drag")
+            coordStr := Trim(m3)
+            if vars.HasKey(coordStr)
+                coordStr := vars[coordStr]
+            if !(coords := ParseCoords(coordStr))
+                return
+
+            ; 좌표 계산
+            mx := coords.x1 / dpi * 100
+            my := coords.y1 / dpi * 100
             CalcCoords(mx, my, hwnd, vars.coord_mode)
-            size := 27/dpi*100
-            boxX := mx - Floor(size / 2)
-            boxY := my - Floor(size / 2)
-            Gui, overlayBtn:Add, Button, x%boxX% y%boxY% w%size% h%size% cRed gOnOverlayBtn, %A_Index%
+
+            if isDrag {
+                ; 드래그 박스 크기 계산
+                mx2 := coords.x2 / dpi * 100
+                my2 := coords.y2 / dpi * 100
+                CalcCoords(mx2, my2, hwnd, vars.coord_mode)
+
+                boxX := Min(mx, mx2)
+                boxY := Min(my, my2)
+                boxW := Abs(mx2 - mx)
+                boxH := Abs(my2 - my)
+            }
+             else {
+                size := 27 / dpi * 100
+                boxX := mx - Floor(size / 2)
+                boxY := my - Floor(size / 2)
+                boxW := size
+                boxH := size
+            }
+            Gui, overlayBtn:Add, Button, x%boxX% y%boxY% w%boxW% h%boxH% gOnOverlayBtn, %A_Index%
         }
     }
     Gui, overlayBtn:Show, x%cx% y%cy% w%cw% h%ch% NoActivate
-    WinSet, TransColor, 0x123456 200, ahk_id %hOverlayBtn%
+    WinSet, TransColor, 0x123456 150, ahk_id %hOverlayBtn%
 
     overlayVisible := true
 }
@@ -178,8 +195,8 @@ SaveOverlayRegions(w3hwnd) {
         x2 := Round( (x + w - cx) / cw , 3 )
         y2 := Round( (y + h - cy) / ch , 3 )
 
-        w3_ver := StrSplit(guiID, "_")[1]
-        panelName := StrSplit(guiID, "_")[2]
+        w3_ver := StrSplit(guiID, "_",,2)[1]
+        panelName := StrSplit(guiID, "_",,2)[2]
 
         uiRegions[w3_ver][panelName] := { x1:x1, y1:y1, x2:x2, y2:y2 }
     }
@@ -305,7 +322,7 @@ AdjustOverlay(direction) {
     if (direction = "North")
         y -= amount, h += amount
     else if (direction = "South")
-        h += amount * +1
+        h += amount
     else if (direction = "East")
         w += amount
     else if (direction = "West")

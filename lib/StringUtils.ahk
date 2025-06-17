@@ -117,30 +117,59 @@ SplitLine(scriptText) {
     return StrSplit(scriptText, ["`r`n", "`n", "`r"])
 }
 
-TryStringLogic(expr) {
+TryStringLogic(expr, vars) {
     expr := Trim(expr)
-    ; 논리 반전 (!)
     flip := false
+
+    ; 논리 반전 (!)
     if (SubStr(expr, 1, 1) = "!") {
         expr := SubStr(expr, 2)
         flip := true
     }
-    ; 비교 연산
+
     result := ""
-    if InStr(expr, "!=") {
+
+      ; 사용자 정의 함수: has()
+    if RegExMatch(expr, "^has\[(.+)\]$", m) {
+        key := Trim(m1)
+        result := vars.HasKey(key)
+    } else if InStr(expr, "!=") {
         parts := StrSplit(expr, "!=", , 2)
         result := (Trim(parts[1]) != Trim(parts[2]))
     } else if InStr(expr, "~=") {
         parts := StrSplit(expr, "~=", , 2)
         result := (Trim(parts[1]) ~= Trim(parts[2]))
+    } else if InStr(expr, " in ") {
+        parts := StrSplit(expr, " in ", , 2)
+        result := InStr(Trim(parts[2]), Trim(parts[1]), true)
     } else if InStr(expr, "=") {
         parts := StrSplit(expr, "=", , 2)
         result := (Trim(parts[1]) = Trim(parts[2]))
     } else {
-        ; 일반 문자열 존재 여부
         result := (expr != "")
     }
-    return flip ? !result : result
+    result := flip ? !result : result
+    Log("expr: " expr " result: " result)
+    return result
+}
+
+in(val, list, delim := " ") {
+    if (delim != "")
+        return inlist(val, list, delim)
+    else
+        return contains(val, list) || contains(list, val)
+}
+
+inlist(val, list, delim := " ") {
+    items := StrSplit(list, delim)
+    for _, item in items
+        if (val = Trim(item))
+            return true
+    return false
+}
+
+contains(a, b) {
+    return InStr(a, b) > 0
 }
 
 JoinLines(arr) {
@@ -207,6 +236,7 @@ ObjectToArray(obj) {
     }
     return arr
 }
+
 
 ArrayToObject(arr) {
     obj := {}

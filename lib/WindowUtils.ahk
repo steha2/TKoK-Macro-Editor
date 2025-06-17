@@ -55,6 +55,11 @@ Win_Wait(winTitle, timeout := "") {
     WinWait, %winTitle%, , %timeout%
 }
 
+Win_GetTitle(hwnd) {
+    WinGetTitle, title, ahk_id %hwnd%
+    return title
+}
+
 WinActivateWait(winTitleOrHwnd, timeout := 0.1) {
     if (!winTitleOrHwnd)
         return false

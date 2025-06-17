@@ -1,5 +1,5 @@
 ﻿w3_ver = classic
-panel  = popup
+panel  = cp_boss
 
 champ_prac   = Click:L 0.489, 0.140 #delay=300#
 champ_sg     = Click:L 0.494, 0.205 #delay=300#

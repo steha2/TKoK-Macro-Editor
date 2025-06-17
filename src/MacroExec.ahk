@@ -19,29 +19,32 @@ ExecMacro(scriptText, vars, current_path) {
     for index, line in lines {
         if(macroAbortRequested)
             break
-        line := StripComments(line)
-        if (line = "")
+        cmd := StripComments(line)
+        if (cmd = "")
             continue
 
         ExtractVar(vars, "start_line", start_line, "natural")
-        tempVars := PrepareConditionVars(line, vars, index, start_line)
-        
+        tempVars := PrepareConditionVars(cmd, vars, index, start_line)
         ; 조건 확인: force가 없고, skip_mode=vars 이며, start_line 전이면 건너뛰기
-        if(tempVars._vars_skip)
+        if(tempVars._vars_skip) {
+            Log("tempVars._vars_skip = true! start_line: " start_line)
             continue
+        }
 
-        cmd := ResolveCommand(line, vars)
+        cmd := ResolveCommand(cmd, vars)
         ; 조건 2: 실행 전 제어 흐름
-        if (ShouldBreak(vars, "wait"))
+        if (ShouldStop(vars, "wait"))
             break
-        
+
+        Log("tempVars.if:" tempVars.if "  Cmd: " cmd ", Line: " line)
+
         ; 조건 3: start_line 이후만 실행 (강제 실행 아닌 경우)
-        if(tempVars._command_skip)
+         if(tempVars._command_skip) {
+            Log("tempVars._command_skip = true! start_line: " start_line)
             continue
-        
+        }
         PrepareTargetHwnd(vars)
 
-        Log("Cmd: " cmd ", Line: " line)
         Loop, % vars.rep
         {
             ExecSingleCommand(cmd, vars, line, index)
@@ -49,23 +52,76 @@ ExecMacro(scriptText, vars, current_path) {
                 if(index = 1 || vars.limit_mode != "line")
                     vars.limit--
             }
-            if (ShouldBreak(vars, "delay"))
+            if (ShouldStop(vars, "delay")) 
                 break
+        }
+        if (tempVars.HasKey("break")) {
+            Log("has break current_path: " current_path "  lineNum: " index)
+            break
         }
     }
     UpdateMacroState(-1)
     ; ShowTip("--- Macro End ---`n,실행중인 매크로 수 : " runMacroCount)
 }
 
+ResolveCommand(cmd, vars) {
+    if (ParseKeyValueLine(cmd, vars))
+        return
 
-PrepareConditionVars(line, vars, index, start_line) {
+    vars.rep := 1
+
+    ; 1차 marker 처리 (key:value 치환)
+    ResolveMarker(cmd, vars)
+
+    ; 2차 표현식 (%key%)
+    cmd := ResolveExpr(cmd, vars)
+
+    ; ✅ 먼저 vars[...] 치환
+    cmd := ResolveIndexedAccess(cmd, vars)
+   
+    ; 3차 마커 재평가 (변수값 변동 고려)
+    cmd := ResolveMarker(cmd, vars)
+
+    ; 이스케이프 복원
+    ReplaceEscapeChar(cmd)
+
+    return cmd
+}
+
+
+PrepareConditionVars(ByRef cmd, vars, index, start_line) {
     temp := Clone(vars)
     muteAll := false
-    ResolveMarker(line, temp, ["force"])
-    
-    if (temp.HasKey("force")) {
+    cmd := ResolveMarker(cmd, temp, ["force", "if", "end_if"])
+    force := temp.HasKey("force")
+
+    ;if 구문 처리
+    if (temp.HasKey("end_if"))
+        vars.Delete("if")
+    else if (temp.HasKey("if") && vars.if_mode = "block")
+        vars.if := temp.if ; vars.if 는 if 문의 조건문 자체를 저장함
+
+    if (temp.HasKey("if")) ; 아래부터 이번 라인에 대한 평가
+        temp.if := IsLogicExpr(temp.if) ? Eval(temp.if) : TryStringLogic(temp.if, temp)
+
+
+    if (StrLower(temp.if) = "false")
+        temp.if := false
+
+    ;else 처리
+    if (InStr(cmd, " else ")) {
+        parts := StrSplit(cmd, " else ", , 2)
+        cmd := (force || !temp.HasKey("if") || temp.if) ? parts[1] : (parts.Length() > 1 ? parts[2] : "")
+    } else {
+        cmd := (force || !temp.HasKey("if") || temp.if) ? cmd : ""
+    }
+
+    cmd := ResolveMarker(cmd, temp, "break")
+
+    if (force) {
         temp._vars_skip := false
         temp._command_skip := false
+        temp.if := true
     }
     else if (index < start_line) {
         muteAll := true
@@ -73,32 +129,8 @@ PrepareConditionVars(line, vars, index, start_line) {
             temp._vars_skip := true
         } else { ; 스킵모드가 vars 는 스킵 안하는 경우
             temp._vars_skip := false
-            if (!RegExMatch(line, "i)^Read:\s*(.+?)$")) ; Read 명령이 아니면
+            if (!RegExMatch(cmd, "i)^Read:\s*(.+?)$")) ; Read 명령이 아니면
                 temp._command_skip := true ; 명령실행 필요 없음
-        }
-    }
-    else {
-        ResolveMarker(line, temp, ["if", "end_if"])
-        if (temp.HasKey("end_if"))
-            vars.Delete("if")
-        else if (temp.HasKey("if") && vars.if_mode = "block")
-            vars.if := temp.if
-
-        if (StrLower(temp.if) = "false")
-            temp.if := false
-        
-        if (temp.HasKey("if")) {
-            if (IsLogicExpr(temp.if)) {
-                if (!Eval(temp.if)) {
-                    Log("!Eval continue line: " line "  tempVars.if:" tempVars.if)
-                    temp._vars_skip := true
-                }
-            } else {
-                if (!TryStringLogic(temp.if)) {
-                    Log("!TryStringLogic continue line: " line "  tempVars.if:" tempVars.if)
-                    temp._vars_skip := true
-                }
-            }
         }
     }
     return temp
@@ -164,22 +196,13 @@ ParseKeyValueLine(line, vars, delimiter := "@") {
     return true
 }
 
-ResolveCommand(line, vars) {
-    if (ParseKeyValueLine(line, vars))
-        return
-    ; 단일 라인 기본 변수 초기화
-    vars.rep := 1
-    vars.wait := 0
-    vars.delay := vars.HasKey("base_delay") ? vars.base_delay : BASE_DELAY
-
-    cmd := ResolveMarker(line, vars, "", ["if", "force", "end_if"])
-    cmd := ResolveExpr(cmd, vars)
-    cmd := ResolveMarker(cmd, vars, "", ["if", "force", "end_if"])
-    ; 이스케이프 복원 처리
-    
-    ReplaceEscapeChar(cmd)
-
-    return cmd
+ResolveIndexedAccess(str, vars) {
+    while RegExMatch(str, "vars\[\s*([^\]]*?)\s*\]", m) {
+        key := Trim(m1)
+        val := vars.HasKey(key) ? vars[key] : ""
+        str := StrReplace(str, m, val, , 1)
+    }
+    return str
 }
 
 EnsureTargetReady(vars) {
@@ -190,7 +213,37 @@ EnsureTargetReady(vars) {
 }
 
 ExecSingleCommand(command, vars, line := "", index := "") {
-    if RegExMatch(command, "i)^(Click|Drag):([LR])\s*(.+)", m) {
+    if RegExMatch(command, "i)^(SendRaw|Send|Chat):\s*(.*)", m) {
+        if (!EnsureTargetReady(vars))
+            return
+
+        cmdType := StrLower(m1), key := m2
+        if(cmdType = "chat")
+            Chat(key, vars.send_mode, vars.target_hwnd)
+        else if(cmdType = "sendraw")
+            SendKey(key, vars.send_mode . "R", vars.target_hwnd)
+        else
+            SendKey(key, vars.send_mode, vars.target_hwnd)
+        
+        Log("cmdType:" cmdType "  key: " key)
+    }
+    else if RegExMatch(command, "i)^(Sleep|Wait|Delay):\s*(\d*)", m) {
+        vars.delay := m2
+    }
+    else if RegExMatch(command, "^([a-zA-Z0-9_]+)\((.*)\)$", m) {
+        WinActivateWait(vars.target_hwnd)
+        ExecFunc(m1, m2)
+    }
+    else if RegExMatch(command, "i)^Exec:\s*(.*)", m) {
+        ExecMacroFile(m1, vars)
+    }
+    else if RegExMatch(command, "i)^Read:\s*(.*)", m) {
+        ReadVarsFile(m1, vars)
+    }
+    else if RegExMatch(command, "i)^(Run|RunAs):\s*(.*)", m) {
+        Run_(m1, m2)
+    }
+    else if RegExMatch(command, "i)^(Click|Drag):([LR])\s*(.+)", m) {
         if (!EnsureTargetReady(vars))
             return
 
@@ -219,52 +272,28 @@ ExecSingleCommand(command, vars, line := "", index := "") {
             MouseDrag(x1, y1, x2, y2, vars.target_hwnd, btn, vars.send_mode, full_mode)
         else
             SmartClick(x1, y1, vars.target_hwnd, btn, vars.send_mode, full_mode)
+
+        Log("btn:" btn "  x: " x1 ", y: " y1)
     }
 
-    else if RegExMatch(command, "i)^(SendRaw|Send|Chat):\s*(.*)", m) {
-        if (!EnsureTargetReady(vars))
-            return
-
-        cmdType := StrLower(m1), key := m2
-        if(cmdType = "chat")
-            Chat(key, vars.send_mode, vars.target_hwnd)
-        else if(cmdType = "sendraw")
-            SendKey(key, vars.send_mode . "R", vars.target_hwnd)
-        else
-            SendKey(key, vars.send_mode, vars.target_hwnd)
-    }
-    else if RegExMatch(command, "i)^(Sleep|Wait|Delay):\s*(\d*)", m) {
-        vars.delay := m2
-    }
-    else if RegExMatch(command, "^([a-zA-Z0-9_]+)\((.*)\)$", m) {
-        WinActivateWait(vars.target_hwnd)
-        ExecFunc(m1, m2)
-    }
-    else if RegExMatch(command, "i)^Exec:\s*(.*)", m) {
-        ExecMacroFile(m1, vars)
-    }
-    else if RegExMatch(command, "i)^Read:\s*(.*)", m) {
-        ReadVarsFile(m1, vars)
-    }
-    else if RegExMatch(command, "i)^(Run|RunAs):\s*(.*)", m) {
-        Run_(m1, m2)
-    }
     else if (command && line && index) {
         ShowTip("Error Line Num : " index " | Path: " StrReplace(vars.current_path, MACRO_DIR) " | Log:Alt+L"
               . "`nCmd: " command " | Line: " line, 5000, true)
     }
 }
 
-ShouldBreak(vars, timeKey) {
-    if (!CheckAbortAndSleep(vars[timeKey]))
+ShouldStop(vars, timeKey) {
+    Log("timekey: " timekey " : " vars[timeKey])
+    if (vars.HasKey("limit") && !IsNatural(vars.limit) || !CheckAbortAndSleep(vars[timeKey])) {
+        Log("ShouldStop()")
         return true
-
-    if (vars.HasKey("limit") && !IsNatural(vars.limit))
-        return true
-
-    if (vars.HasKey("break"))
-        return true
-
+    }
+    ; timeKey 기준으로 하나만 초기화
+    if (timeKey = "wait") {
+        vars.wait := 0
+    } else if (timeKey = "delay") {
+        vars.delay := vars.HasKey("base_delay") ? vars.base_delay : BASE_DELAY
+    }
     return false
 }
 
@@ -295,7 +324,7 @@ PrepareTargetHwnd(vars) {
     }
 
     ; 내부에 저장해둘 이전 hwnd 추적 변수 활용
-    if (vars.HasKey("w3_ver") && vars.target_hwnd && IsW3(vars.target_hwnd)
+    if (vars.target_hwnd && IsW3(vars.target_hwnd)
                               && vars.target_hwnd != vars._last_w3_ver_hwnd) {
         vars._active_w3_ver := GetW3_Ver(vars.target_hwnd)
         vars._last_w3_ver_hwnd := vars.target_hwnd
@@ -319,7 +348,7 @@ ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
     while (found := RegExMatch(line, "(?<!#)#([^#]+)#", m, pos)) {
         fullMatch := m
         inner := Trim(m1)
-
+        shouldReplace := false
         ; Match key:val or key=val
         if RegExMatch(inner, "^\s*(\w+)\s*(([:=])\s*(.*))?$", m) {
             key := m1, sep := m3, rawVal := Trim(m4)
@@ -328,12 +357,14 @@ ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
             && (!excludedKey || !HasValue(excludedKey, key))) {
                 ; If it's key:value → evaluate expression
                 ; If it's key=value  → assign as literal
+                shouldReplace := true
                 val := (sep = ":") ? EvaluateExpr(rawVal, vars) : rawVal
                 vars[key] := val
             }
         }
-        ; Remove the #...# from command string
-        command := StrReplace(command, fullMatch, "")
+        if (shouldReplace)
+            command := StrReplace(command, fullMatch)
+        
         pos := found + StrLen(fullMatch)
     }
     muteAll := false
@@ -387,8 +418,10 @@ EvaluateExpr(expr, vars) {
     defaultVal := resDef.expr
 
     ; 키 치환이 없었고, 기본값 문법이 있었다면 기본값 사용
-    if (hasDefault && !isReplaced)
+    if (hasDefault && !isReplaced) {
+        Log("default value used expr: " expr  "  defaultVal: " defaultVal)
         expr := defaultVal
+    }
 
     return TryEval(expr, vars.dp_mode)
 }
@@ -422,6 +455,7 @@ ExplodeByKeys(expr, vars) {
 }
 
 EvaluateFunctions(expr, vars) {
+    ; vars[...] 인덱스 문법 처리
     pos := 1
     while (found := RegExMatch(expr, "(\w+)\(([^)]*)\)", m, pos)) {
         full := m, fnName := m1, argStr := m2
@@ -447,6 +481,8 @@ EvaluateFunctions(expr, vars) {
 }
 
 Run_(mode, path) {
+    if(muteAll)
+        return
     try {
         if (StrLower(mode) = "runas") {
             Run *RunAs %path%
@@ -526,7 +562,8 @@ CheckAbortAndSleep(totalDelay) {
             ShowTip("매크로 중단 요청")
             return false
         }
-        Sleep( Min(100, totalDelay))
+        Sleep(Min(100, totalDelay))
+        totalDelay -= 100
     }
     return !macroAbortRequested
 }

@@ -111,80 +111,6 @@ HeroInfoToText(info) {
     return txt
 }
 
-MultiLoad(squadText := "") {
-    if(!squadText)
-        GuiControlGet, squadText, main:, SquadField
-    squadArr := StrSplit(squadText, ",")
-    clientArr := GetClientHwndArray()
-    
-    ; 배열이 비어 있지 않으면 (== 클라이언트가 최소 1개 이상 존재하면)
-    if (!clientArr.Length())
-        clientArr := GetW3Array()
-
-    if (!squadArr.Length() || !clientArr.Length()) {
-        return ShowTip("로드 목록이나 클라이언트가 없습니다." 
-            . "`n로드 목록 수: " . squadArr.Length() 
-            . "`n클라이언트 수: " . clientArr.Length())
-    }
-
-    if (squadArr.Length() != clientArr.Length()) {
-        ShowTip("로드 목록과 클라이언트가 수가 다릅니다." 
-            . "`n로드 목록 수: " . squadArr.Length() 
-            . "`n클라이언트 수: " . clientArr.Length())
-    }
-
-    LoadSquad(squadArr, clientArr)
-    
-    if(squadArr.Length() >= 2) {
-        SwitchW3(1, true, false, true)
-        Sleep(200)
-        SendKey("^s {F3}^3 {F2}^2 {F1}^1 +{F2} +{F3}", "NS") ;IgnoreSpace
-    } else 
-        SendKey("{F1}^1")
-
-    Chat("!dr 10", "R")
-    Chat("-clear", "R")
-    Chat("-apt", "R")
-}
-
-; 반전이 기본값임 클라이언트 3->2->1 순으로
-PrepareChampMode(macroPath := "") {
-    count := GetClientHwndArray().Length()
-    Loop, %count% {
-        idx := count - A_Index + 1
-        SwitchW3(idx, false, false, true)
-        if(idx != 1)
-            ShareUnit()
-        else
-            ChampChat()
-   }
-}
-
-LoadSquad(squadArr, clientArr) {
-    count := squadArr.Length()
-    for idx, client in clientArr {
-        hero := squadArr[idx]
-
-        WinActivateWait(client)
-        if (idx != 1)
-            ShareUnit()
-
-        ; 가장 첫 로드는 약간의 딜레이를 더 준다
-        LoadHero(hero, "", idx = 1 ? 1500 : 1000) 
-        Chat("-qs", "R")
-
-        ; 영웅별 특수 클릭 처리
-        if (hero = "Shadowblade") {
-            ClickA(0.976, 0.879, "R")
-            ClickA(0.906, 0.879, "R")
-        } else if (hero = "Barbarian") {
-            ClickA(0.801, 0.953, "R")
-        } else if (hero = "Chaotic Knight") {
-            ;ClickA(0.797, 0.954, "R")
-            ;Sleep(500)
-        }
-    }
-}
 
 LoadSquadReverse(squadArr, reverse := false) {
     count := squadArr.Length()
@@ -361,5 +287,99 @@ MoveOldSaves() {
     }
     MsgBox, 최신 파일 1개를 제외한 나머지 txt 파일을 old_폴더로 이동했습니다.
 }
+
+
+
+
+MultiLoad(squadText := "") {
+    if(!squadText)
+        GuiControlGet, squadText, main:, SquadField
+    squadArr := StrSplit(squadText, ",")
+    clientArr := GetClientHwndArray()
+    
+    ; 배열이 비어 있지 않으면 (== 클라이언트가 최소 1개 이상 존재하면)
+    if (!clientArr.Length())
+        clientArr := GetW3Array()
+
+    if (!squadArr.Length() || !clientArr.Length()) {
+        return ShowTip("로드 목록이나 클라이언트가 없습니다." 
+            . "`nLoad list num: " . squadArr.Length() 
+            . "`nClient Num 수: " . clientArr.Length())
+    }
+
+    if (squadArr.Length() != clientArr.Length()) {
+        ShowTip("로드 목록과 클라이언트가 수가 다릅니다." 
+            . "`nnLoad list num: " . squadArr.Length() 
+            . "`nClient num: " . clientArr.Length())
+    }
+
+    LoadSquad(squadArr, clientArr)
+    
+    if(squadArr.Length() >= 2) {
+        SwitchW3(1, true, false, true)
+        Sleep(200)
+        SendKey("^s {F3}^3 {F2}^2 {F1}^1 +{F2} +{F3}", "NS") ;IgnoreSpace
+    } else 
+        SendKey("{F1}^1")
+
+    Chat("!dr 10", "R")
+    Chat("-clear", "R")
+    Chat("-apt", "R")
+}
+
+; 반전이 기본값임 클라이언트 3->2->1 순으로
+PrepareChampMode(macroPath := "") {
+    count := GetClientHwndArray().Length()
+    Loop, %count% {
+        idx := count - A_Index + 1
+        SwitchW3(idx, false, false, true)
+        if(idx != 1)
+            ShareUnit()
+        else
+            ChampChat()
+   }
+}
+
+LoadSquad(squadArr, clientArr) {
+    count := squadArr.Length()
+    for idx, client in clientArr {
+        hero := squadArr[idx]
+
+        WinActivateWait(client)
+        if (idx != 1)
+            ShareUnit()
+
+        ; 가장 첫 로드는 약간의 딜레이를 더 준다
+        LoadHero(hero, "", idx = 1 ? 1500 : 1000) 
+        Chat("-qs", "R")
+
+        ; 영웅별 특수 클릭 처리
+        if (hero = "Shadowblade") {
+            ClickA(0.976, 0.879, "R")
+            ClickA(0.906, 0.879, "R")
+        } else if (hero = "Barbarian") {
+            ClickA(0.801, 0.953, "R")
+        } else if (hero = "Chaotic Knight") {
+            ;ClickA(0.797, 0.954, "R")
+            ;Sleep(500)
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

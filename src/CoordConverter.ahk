@@ -184,17 +184,24 @@ ConvertCoords(x, y, fromMode, toMode, panelName) {
     return { x: Round(newX, 3), y: Round(newY, 3) }
 }
 
-ConvertCoordsWithFallback(x, y, fromMode, toMode, panelName) {
-    ; 1차 시도: 원래 패널로 변환
+ConvertCoordsWithFallback(x, y, fromMode, toMode, panelName := "") {
+    if (!panelName)
+        return false  ; 명시 안된 경우 변환하지 않음
+
     result := ConvertCoords(x, y, fromMode, toMode, panelName)
     if (result)
         return result
 
-    ; 2차 시도: items 패널 → cmd 패널로 폴백
-    if (panelName = "items") {
-        return ConvertCoords(x, y, fromMode, toMode, "cmd")
+    ; 특정 패널만 fallback 허용
+    if (panelName = "skill" || panelName = "items" || panelName = "cp_boss") {
+        ; cmd fallback
+        result := ConvertCoords(x, y, fromMode, toMode, "cmd")
+        if (result)
+            return result
+        ; map fallback
+        return ConvertCoords(x, y, fromMode, toMode, "map")
     }
 
-    ; 변환 실패
+    ; field, cmd, map 등은 fallback 없음
     return false
 }
