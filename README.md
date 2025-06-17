@@ -14,7 +14,7 @@ W3 멀티 로더를 통해서 다수의 클라이언트를 실행시키고 클�
    https://www.autohotkey.com
 2. 이 프로젝트를 다운로드한 후 `config.ini` 파일을 열고 경로를 알맞게 수정하세요<br>
 [Settings]<br>
-;이 바로가기는 W3 멀티로더 (Universal kLoader 등) 으로 지정해야 동시 실행이 가능합니다.<br.
+;이 바로가기는 W3 멀티로더 (Universal kLoader 등)로 지정해야 동시 실행이 가능합니다.<br.
 W3_LNK=C:\Warcraft III\kloader_w3.lnk <br>
 
 SAVE_DIR=C:\Warcraft III\TKoK_Save_Files\TKoK_3.5.15<br>
