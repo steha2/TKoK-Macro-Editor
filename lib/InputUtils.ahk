@@ -3,7 +3,7 @@ PhysClick(x, y, btn := "L") {
 }
 
 PhysMouseInput(x, y, btn := "L") {
-    MouseMove, %x%, %y%, 100
+    MouseMove, %x%, %y%, 0
     if(!btn)
         return
 

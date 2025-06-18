@@ -113,7 +113,7 @@ GetW3_Ver(target) {
     if(!IsReforged(hwnd))
         return "classic"
 
-    GetClientRect(hwnd, cx, cy, cw, ch)
+    GetClientSize(hwnd, cw, ch)
 
     ; 16:9 비율 체크 (0.5625 ± 0.02 허용 오차)
     ratio := ch / cw
@@ -142,7 +142,7 @@ ExecW3(roleTitle := "", mini := false) {
     if (W3_LNK = "" || !FileExist(W3_LNK))
         return ShowTip("실행할 W3_LNK 경로를 찾지 못했습니다.`nconfig.ini 에서 경로를 수정하세요.")
     
-    origHwnd := WinExist("A")
+    origHwnd := WinActive("A")
     ;실행 후 hwnd 을 찾을대까지 기다림
     hwnd := RunGetHwnd(W3_LNK, "Warcraft III")
     if (!hwnd)
@@ -165,10 +165,9 @@ ExecW3(roleTitle := "", mini := false) {
     }
 }
 
-;비활성 명령으로 실행
-ExecMultiW3(num := 0, speed := 0, isConfirmClose := false) {
+ExecMultiW3(num := 0, speed := 0, skipIfRunning := true) {
     if WinExist("ahk_id " . GetTargetHwnd(W3_WINTITLE)) {
-        if(isConfirmClose)
+        if(skipIfRunning)
             return false
 
         msg := "[Y] Exit and restart   [N] Exit   [Cancel] Cancel"
@@ -182,7 +181,6 @@ ExecMultiW3(num := 0, speed := 0, isConfirmClose := false) {
         Sleep(3000)
     }
 
-    
     if(!num) {
         numW3 := GetIniValue("Settings","NUM_W3", 3)
         if !isNatural(numW3) {
@@ -191,7 +189,6 @@ ExecMultiW3(num := 0, speed := 0, isConfirmClose := false) {
             num := squadArray0
         }
     }
-
     if(!num)
         return
 
@@ -202,6 +199,7 @@ ExecMultiW3(num := 0, speed := 0, isConfirmClose := false) {
             ExecJoinW3(A_Index)
         }
     }
+
     currHwnd := WinExist("A")
     WinActivate, ahk_id %hostHwnd%
     WinActivate, ahk_id %currhwnd%
@@ -241,11 +239,9 @@ ExecJoinW3(num := "") {
 }
 
 CloseAllW3() {
-    originalList := GetW3Array()
     sortedList := []
-
     ; 정렬: client index가 1인 것은 앞에, 나머지는 뒤에
-    for _, hwnd in originalList {
+    for _, hwnd in GetW3Array() {
         if (WinExist("ahk_id " . hwnd) && IsW3(hwnd)) {
             if (GetClientIndex(hwnd) = 1)
                 sortedList.InsertAt(1, hwnd) ; 맨 앞에 삽입 (AHK 1.1에선 Insert로 가능)
@@ -326,13 +322,19 @@ return
 
 GetW3Array() {
     w3Array := []
-    ; WinGet, w3List1, List, Warcraft III
-    WinGet, w3List2, List, ahk_class Warcraft III
-    WinGet, w3List3, List, ahk_exe Warcraft III.exe
 
-    ; AddUniqueHwnds(w3Array, w3List1)
-    AddUniqueHwnds(w3Array, w3List2)
-    AddUniqueHwnds(w3Array, w3List3)
+    WinGet, w3List, List, ahk_class Warcraft III
+    Loop % w3List {
+        hwnd := w3List%A_Index%
+        if (!IsInArray(w3Array, hwnd))
+            w3Array.Push(hwnd)
+    }
+
+    WinGet, w3List, List, ahk_exe Warcraft III.exe
+    Loop % w3List {
+        hwnd := w3List%A_Index%
+        if (!IsInArray(w3Array, hwnd))
+            w3Array.Push(hwnd)
+    }
     return w3Array
 }
-

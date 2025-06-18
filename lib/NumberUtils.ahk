@@ -57,7 +57,10 @@ IsNatural(n) {
     return RegExMatch(n, "^\d+$") && (n >= 1)
 }
 IsInteger(val) {
-    return val is integer
+    if val is integer
+      return true
+   else
+      return false
 }
 
 TryEval(expr, dp_mode := "") {

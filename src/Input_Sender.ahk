@@ -63,13 +63,8 @@ ClickBackEx(clickCmdArr) {
         Click(clickCmd.x, clickCmd.y, currHwnd, btn)
     }
     ; 마우스 위치 복귀
-    CoordMode, Mouse, Screen
-    MouseMove(origX, origy)
+    MouseMove(origX, origY, "", "", "screen,fixed")
 
-    ; 작업 전 활성화되었던 창 복귀
-    if (WinExist("ahk_id " . origHwnd)) {
-        WinActivate, ahk_id %origHwnd%
-    }
     ; 최소화 상태였던 창들 다시 최소화 처리
     for index, hwnd in minimizedArray {
         if (WinExist("ahk_id " hwnd)) {
@@ -155,8 +150,8 @@ SendA(key, delay := 0) {
     SendKey(key, "", "", delay)
 }
 
-MouseMove(x, y) {
-    MouseEvent({x:x, y:y, hwnd:WinActive("A")})
+MouseMove(x, y, hwnd := "", send_mode := "", coord_mode := "") {
+    MouseEvent({x:x, y:y, hwnd:hwnd, send_mode:send_mode, coord_mode:coord_mode})
 }
 
 ClickDrag(x1, y1, x2, y2, btn := "L", speed := 500) {
@@ -182,9 +177,6 @@ MouseDrag(x1, y1, x2, y2, hwnd := "" , btn := "L", send_mode := "", coord_mode :
 }
 
 MouseEvent(event) {
-    static BtnDownMsg := { "L": 0x201, "R": 0x204 }
-    static BtnUpMsg   := { "L": 0x202, "R": 0x205 }
-
     if (muteAll)   
         return
 

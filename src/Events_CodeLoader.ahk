@@ -13,7 +13,7 @@ MultiLoad:
 return
 
 ExecMultiW3:
-    ExecMultiW3()
+    ExecMultiW3(0, 0, 0)
 return
 
 HeroButtonClick:
@@ -179,7 +179,7 @@ return
 ;Ctrl+Shift
 ^+K::ExecW3()
 ^+A::LoadApt()
-^+W::ExecMultiW3()
+^+W::ExecMultiW3(0, 0, 0)
 ^+H::ExecHostW3()
 ^+C::LastSaveTimes()
 ^+I:: Run, notepad.exe "%CONFIG_FILE%"

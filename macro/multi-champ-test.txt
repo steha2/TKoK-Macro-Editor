@@ -1,13 +1,11 @@
-﻿@macro1=champ\mk\warrior-stats
-@macro2=champ\mk\shaman-stats
+﻿#if:ExecMultiW3(2,2)# #delay=60000#
 
-#if:ExecMultiW3(2,2,1)# #delay=60000#
+SwitchW3(1) #delay=500#
+@boss=mk
+Exec: select-champ-boss
 
-
-
-SwitchW3(1)
-Exec: %macro1%
+Exec: champ\mk\warrior-stats
 
 SwitchW3(2)
-Exec: %macro2%
+Exec: champ\mk\shaman-stats
 

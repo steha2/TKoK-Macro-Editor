@@ -12,7 +12,7 @@ test(a := "", b := "", c := "", d := "", e := "", f := "", isTip := false, write
     if (isTip)
         ShowTip(output, 1500, true)
     else
-        MsgBox, % output
+        MsgBox 4096,test, % output
 }
 
 hwndInfo(hwnd) {

@@ -35,20 +35,23 @@ Note(newText := "", title := "", isAppend := false) {
         GuiControlGet, noteContent, SimpleNote:, NoteEdit
 
         vars := {}
-        for index, line in SplitLine(noteContent)
+        for index, line in SplitLine(noteContent) {
             ResolveMarkerMute(line, vars, "w3_ver")
+            ParseKeyValueLine(line, vars)
 
-        if !(vars.HasKey("w3_ver"))
+            if(vars.HasKey("w3_ver")) {
+                from := vars.w3_ver
+                if !(uiRegions.HasKey(from))
+                    return ShowTip("'" from "'는 UI 영역 정의에 없습니다.", 1500, false)
+                if (from = to)
+                    return ShowTip("w3_ver 이 같습니다.", 1500, false)
+                break
+            }
+        }
+        if !vars.HasKey("w3_ver")
             return ShowTip("noteContent에 'w3_ver' 값이 없습니다.", 1500, false)
-        
-        from := vars.w3_ver
-        if !(uiRegions.HasKey(from))
-            return ShowTip("'" from "'는 UI 영역 정의에 없습니다.", 1500, false)
 
-        if (from = to)
-            return ShowTip("w3_ver 이 같습니다.", 1500, false)
-
-        msg := "`n#w3_ver=" from "# 을 #w3_ver=" to "# 로 바꿉니다.`n"
+        msg := "`nw3_ver=" from " 을 w3_ver=" to " 로 바꿉니다.`n"
              . "Read: 경로 및 대상 #panel# 의 비율 좌표를 변환합니다.`n`n"
              . "Read: c_map\" from "\items`n"
              . "#panel=items# `nClick, 0.100, 0.200`nClick, 0.100, 0.200"
@@ -58,7 +61,7 @@ Note(newText := "", title := "", isAppend := false) {
                 return
         
         ConvertScriptMode(noteContent, from, to)
-        GuiControl, SimpleNote:, NoteEdit, % StrJoin(noteContent, "`n")
+        GuiControl, SimpleNote:, NoteEdit, % noteContent
     return
 
     SimpleNoteGuiClose:
@@ -114,8 +117,6 @@ ToggleOverlay() {
 
     ; 타겟 윈도우
     PrepareTargetHwnd(vars)
-    hwnd := vars.target_hwnd ? vars.target_hwnd : WinExist("A")
-    WinActivateWait(hwnd)
 
     if(ShouldConvertCoords(vars))
         ConvertScriptMode(lines, vars.w3_ver, vars._active_w3_ver)

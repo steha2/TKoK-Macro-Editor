@@ -1,0 +1,10 @@
+﻿Read: c_map\classic\_all
+@hero=barb
+Exec: pick-new-hero
+Exec: setting-chat
+
+%select_shop_npc%
+Exec: champ\karnos\barb-equip
+
+Exec: stat-up #spsi=100# #stat=Q#
+Chat: -tt #delay:300# #panel=skill#

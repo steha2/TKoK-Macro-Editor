@@ -58,7 +58,7 @@ RestoreQuotedStrings(str, map) {
 
 IsInArray(arr, val) {
     for each, item in arr
-        if (item == val)
+        if (item = val)
             return true
     return false
 }
@@ -149,7 +149,7 @@ TryStringLogic(expr, vars) {
         result := (expr != "")
     }
     result := flip ? !result : result
-    Log("expr: " expr " result: " result)
+    Log("TryStringLogic() expr: " expr " result: " result)
     return result
 }
 

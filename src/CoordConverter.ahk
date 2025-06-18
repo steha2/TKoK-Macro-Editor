@@ -76,9 +76,9 @@ ParseCoords2(coords) {
     }
 }
 
-ParseCoords(coords) {
-    coords := StrReplace(coords," ")
-    parts := StrSplit(coords, ",")  ; 쉼표/공백/탭 구분
+ParseCoords(coordStr) {
+    coordStr := StrReplace(coordStr," ")
+    parts := StrSplit(coordStr, ",")  ; 쉼표/공백/탭 구분
 
     if (parts.Length() = 2 || parts.Length() = 4) {
         floats := 0
@@ -104,8 +104,7 @@ ParseCoords(coords) {
     return false
 }
 
-AdjustWindowToClient(win, ByRef x, ByRef y) {
-    WinGet, hwnd, ID, %win%
+AdjustWindowToClient(hwnd, ByRef x, ByRef y) {
     if (!hwnd)
         return false
 
@@ -125,39 +124,32 @@ AdjustWindowToClient(win, ByRef x, ByRef y) {
     return true
 }
 
-ConvertScriptMode(ByRef script, from, to, startIndex := 1) {
+ConvertScriptMode(ByRef script, from, to) {
     vars := {}
 
-    ; 문자열인 경우 배열로 변환
-    if !IsObject(script)
-        script := SplitLine(script)
+    isString := !IsObject(script)
+    if isString
+        script := SplitLine(script)  ; 문자열 → 배열
 
-    Loop % script.Length()
-    {
-        i := A_Index
-        if (i < startIndex)
-            continue
-        script[i] := ConvertLine(script[i], from, to, vars)
+    Loop % script.Length() {
+        line := script[A_index]
+        ResolveMarkerMute(line, vars, "panel")
+        ParseKeyValueLine(line, vars)
+        script[A_index] := ConvertLine(line, from, to, vars.panel)
     }
-    Log("ConvertScriptMode(from  " from "  to " to)
+
+    if isString
+        script := StrJoin(script, "`n")  ; 배열 → 문자열로 다시 덮어쓰기
+
+    Log("ConvertScriptMode(from " from " to " to ")")
 }
 
-ConvertLine(line, from, to, vars) {
-    ResolveMarkerMute(line, vars, "panel")
+
+ConvertLine(line, from, to, panel) {
     line := RegExReplace(line, "#\s*(w3_ver)\s*=\s*" . from . "\s*#", "#$1=" . to . "#")
     line := RegExReplace(line, "i)^(Read:\s*c_map\\)" . from . "(\\[^`\r\n]+)", "$1" . to . "$2")
-    line := ConvertClickLine(line, from, to, vars.panel)
-    return line
-}
-
-ConvertClickLine(line, from, to, panel) {
-    if (panel != "") && RegExMatch(line, "i)^Click:([LR])\s*(\d+(?:\.\d+)?),\s*(\d+(?:\.\d+)?)(.*)$", m) {
-        btn := m1, x := m2+0, y := m3+0, tail := m4
-        coords := ConvertCoordsWithFallback(x, y, from, to, panel)
-
-        if (coords)
-            return "Click:" . btn . " " . coords.x . ", " . coords.y . tail
-    }
+    line := RegExReplace(line, "@\s*(w3_ver)\s*=\s*" . from, "@$1=" . to)
+    line := ConvertClickLine(line, from, to, panel)
     return line
 }
 
@@ -204,4 +196,41 @@ ConvertCoordsWithFallback(x, y, fromMode, toMode, panelName := "") {
 
     ; field, cmd, map 등은 fallback 없음
     return false
+}
+
+ConvertCoordInPlace(ByRef x, ByRef y, fromMode, toMode, panelName) {
+    result := ConvertCoordsWithFallback(x, y, fromMode, toMode, panelName)
+    if (result) {
+        x := result.x
+        y := result.y
+        return true
+    }
+    return false
+}
+
+ConvertClickLine(line, fromMode, toMode, panelName) {
+    if RegExMatch(line, "i)\b(Click|Drag):([LR])\s*([\d\.\,\s]+)", m) {
+        full := m, cmdType := m1, btn := m2, coordStr := m3
+        coords := ParseCoords(coordStr)
+        if !coords
+            return line
+        
+        x1 := coords.x1, y1 := coords.y1
+
+        if !ConvertCoordInPlace(x1, y1, fromMode, toMode, panelName)
+            return line
+
+        replacement := cmdType ":" btn " " x1 ", " y1
+        
+        if (StrLower(cmdType) = "drag") {
+            x2 := coords.x2, y2 := coords.y2
+            if !ConvertCoordInPlace(x2, y2, fromMode, toMode, panelName)
+                return line
+            replacement .= ", " x2 ", " y2
+        }
+
+        
+        return StrReplace(line, full, replacement)
+    }
+    return line
 }

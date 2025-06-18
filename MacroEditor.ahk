@@ -8,4 +8,5 @@
 #Include %A_ScriptDir%\src\CoordConverter.ahk 
 #Include %A_ScriptDir%\src\Gui_Popup.ahk 
 #Include %A_ScriptDir%\src\Input_Logger.ahk 
+#Include %A_ScriptDir%\src\War3Funcs.ahk 
 #Include %A_ScriptDir%\lib\LibIncludes.ahk

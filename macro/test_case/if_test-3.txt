@@ -1,0 +1,42 @@
+﻿note() #force# #if_mode=block# #a:10#
+#b=3# chat: b에 3을 대입 
+
+; inline 스타일 여전히 유효함
+#if:b=3# chat: b는 3입니다 (inline)
+
+chat: ---------- ELSE 테스트 시작 ----------
+
+#c=2#
+
+#if:c=1# chat: c는 1입니다 #else# chat: c는 1아닙니다
+
+#if:c=2#
+Chat: c는 2입니다 %else% (block if)
+#else#
+Chat: c는 2가 아닙니다 %else% (block else)
+#end_if#
+
+#c=2#
+
+#if:c=2#
+Chat: c는 이제 2입니다 %else% (block if, true)
+#else#
+Chat: 이건 안 나와야 함 %else% (block else)
+#end_if#
+
+; ---------- ELSE inline 테스트 ----------
+
+#d:5#
+#if:d=5#
+
+Chat: d %d%는 5입니다 #else# Chat: d %d%는 5가 아닙니다 11
+
+#end_if#
+
+#d:0#
+#if:d=5# Chat: d %d%는 5입니다 #else# Chat: d %d%는 5가 아닙니다 22
+
+Chat: d %d%는 5입니다 #else# Chat: d %d%는 5가 아닙니다 33
+
+#end_if#
+Chat: --- 마무리 ---

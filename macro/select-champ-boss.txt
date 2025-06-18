@@ -1,9 +1,8 @@
-﻿@target=Warcraft III
+﻿@target=Warcraft III 
 Read: c_map\classic\_all
 @panel=cp_boss
-;@boss=hydra
 
-#if:!has[boss]# Log(!haskey boss) #break#
+#if=!has[boss]# Log(!haskey boss) #break#
 
 %diff_champ%
 
@@ -17,4 +16,4 @@ Read: c_map\classic\_all
 
 vars[%selected%]
 
-#if:isPage2# %champ_fin2% else %champ_fin1%
+#if:isPage2# %champ_fin2% #else# %champ_fin1%

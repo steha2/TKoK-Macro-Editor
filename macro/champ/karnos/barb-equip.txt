@@ -1,0 +1,2 @@
+﻿Read: c_map\classic\_all
+Click:L 0.783, 0.808 #delay=400#

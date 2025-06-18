@@ -1,5 +1,4 @@
 ﻿w3_ver = classic 
-target = Warcraft III
 
 Read: c_map\classic\cmd
 Read: c_map\classic\map
@@ -7,6 +6,6 @@ Read: c_map\classic\cp_boss
 Read: c_map\classic\field
 
 ;패널 값 삭제
-panel= 
+panel = 
 
 

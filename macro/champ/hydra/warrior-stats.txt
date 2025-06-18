@@ -1,10 +1,11 @@
-﻿#w3_ver=reforged# #target=Warcraft III#
+﻿@target=Warcraft III
 Read: c_map\reforged\_all
 
 @boss=hydra
-@hero=warrior
-Exec: select-champ-boss 
-Exec: pick-new-hero
+Exec: select-champ-boss
+
+@panel=field
+#if:PickNewHero(warrior)# %move_new_hero%
 
 Exec: setting-chat
 
@@ -13,7 +14,8 @@ Exec: champ\hydra\warrior-equip
 
 Exec: stat-up #spsi=144# #stat=Z#
 
-Chat: -tt #delay:300# #panel=skill#
+@panel=skill
+Chat: -tt #delay:300# 
 Click:L 0.440, 0.392
 Click:L 0.439, 0.201
 Click:L 0.439, 0.291

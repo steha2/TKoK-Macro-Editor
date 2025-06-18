@@ -38,7 +38,7 @@ Exec: stat-up #spsi=100# #stat=Q#
 LoadHero(Warrior) 캐릭터 로드
 LoadApt() Apt 입력
 ExecW3() 워3 실행
-ExecMultiW3(2,2,1) 워3 다중실행 후 LAN 게임 생성
+ExecMultiW3(2,2) 워3 다중실행 후 LAN 게임 생성
 (2개 실행|로드 목록 수, 2:보통 속도|config.ini의 속도,이미 실행 중일때 종료확인 여부)
 
 SwitchW3(1) 1번으로 창 전환

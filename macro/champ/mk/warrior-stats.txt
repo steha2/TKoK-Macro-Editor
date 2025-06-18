@@ -1,4 +1,11 @@
-﻿#w3_ver=classic# #target=Warcraft III#
+﻿Read: c_map\classic\_all
+
+@hero=warrior
+Exec: pick-new-hero
+
+Exec: setting-chat
+
+%select_shop_npc%
 Exec: champ\mk\warrior-equip
 
 Exec: stat-up #spsi=140# #stat=Z#

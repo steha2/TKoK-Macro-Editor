@@ -65,6 +65,7 @@ ExecMacro(scriptText, vars, current_path) {
 }
 
 ResolveCommand(cmd, vars) {
+    line := cmd
     if (ParseKeyValueLine(cmd, vars))
         return
 
@@ -80,49 +81,24 @@ ResolveCommand(cmd, vars) {
     cmd := ResolveIndexedAccess(cmd, vars)
    
     ; 3차 마커 재평가 (변수값 변동 고려)
-    cmd := ResolveMarker(cmd, vars)
-
+    cmd := ResolveMarker(cmd, vars).command
     ; 이스케이프 복원
     ReplaceEscapeChar(cmd)
 
     return cmd
 }
 
-
 PrepareConditionVars(ByRef cmd, vars, index, start_line) {
     temp := Clone(vars)
+    resolved := ResolveMarker(cmd, temp, ["force", "if", "end_if"])
+    cmd := resolved.command
     muteAll := false
-    cmd := ResolveMarker(cmd, temp, ["force", "if", "end_if"])
-    force := temp.HasKey("force")
 
-    ;if 구문 처리
-    if (temp.HasKey("end_if"))
-        vars.Delete("if")
-    else if (temp.HasKey("if") && vars.if_mode = "block")
-        vars.if := temp.if ; vars.if 는 if 문의 조건문 자체를 저장함
-
-    if (temp.HasKey("if")) ; 아래부터 이번 라인에 대한 평가
-        temp.if := IsLogicExpr(temp.if) ? Eval(temp.if) : TryStringLogic(temp.if, temp)
-
-
-    if (StrLower(temp.if) = "false")
-        temp.if := false
-
-    ;else 처리
-    if (InStr(cmd, " else ")) {
-        parts := StrSplit(cmd, " else ", , 2)
-        cmd := (force || !temp.HasKey("if") || temp.if) ? parts[1] : (parts.Length() > 1 ? parts[2] : "")
-    } else {
-        cmd := (force || !temp.HasKey("if") || temp.if) ? cmd : ""
-    }
-
-    cmd := ResolveMarker(cmd, temp, "break")
-
-    if (force) {
+    if(temp.HasKey("force")) {
+        muteAll := false
         temp._vars_skip := false
         temp._command_skip := false
-        temp.if := true
-    }
+    } 
     else if (index < start_line) {
         muteAll := true
         if (InStr(vars.skip_mode, "vars")) { ; 스킵모드가 vars 까지 모두 스킵하는경우
@@ -133,8 +109,52 @@ PrepareConditionVars(ByRef cmd, vars, index, start_line) {
                 temp._command_skip := true ; 명령실행 필요 없음
         }
     }
+    ;if 구문 처리
+    if (temp.HasKey("end_if")) {
+        vars.Delete("if")
+        vars.Delete("else")
+    }
+    ; 이번 라인에 if 문 이있으면 갱신    
+    else if(resolved.markers.if) {
+        temp.if := IsLogicExpr(temp.if) ? Eval(temp.if) : TryStringLogic(temp.if, temp)
+        if (StrLower(temp.if) = "false")
+            temp.if := false
+
+        if (vars.if_mode = "block")
+            vars.if := temp.if ; vars.if 는 if 문의 조건문 자체를 저장함
+        
+        vars.Delete("else")
+    }
+    else if(!vars.HasKey("if")) {
+        temp.if := true
+    }
+
+    ; else 가 있으면 else 앞이나 뒤를 조건을 if 조건에 따라 남긴다
+    if (InStr(cmd, "#else#")) {
+        if(!vars.else)
+            Log("#else# 구문이 중복됨. cmd: " cmd)
+
+        parts := StrSplit(cmd, "#else#", , 2)
+        cmd := temp.if ? parts[1] : (parts.Length() > 1 ? parts[2] : "")
+
+        if(vars.if_mode = "block")
+            vars.else := true
+    } else {
+        if(vars.else)
+            temp.if := !temp.if
+
+        cmd := temp.if ? cmd : ""
+    }
+
+    ; break 파싱은 는 if 처리 후에 해야한다.
+    cmd := ResolveMarkerMute(cmd, temp, "break")
+
+    if(index >= start_line)
+        Log("cmd: " cmd "  if: " temp.if, 4)
+
     return temp
 }
+
 
 ; 공통 key=value 추출 함수
 ParseKeyValueToken(token, vars) {
@@ -176,7 +196,7 @@ ParseVars(content, vars) {
         key := Trim(kv[1])
         val := (kv.Length() = 2) ? Trim(kv[2]) : ""
         if (key != "") {
-            if(val && vars.w3_ver != vars._active_w3_ver)
+            if(val && vars.w3_ver && vars._active_w3_ver && vars.w3_ver != vars._active_w3_ver)
                 val := ConvertClickLine(val, vars.w3_ver, vars._active_w3_ver, vars.panel)
             vars[key] := val
         }
@@ -249,11 +269,7 @@ ExecSingleCommand(command, vars, line := "", index := "") {
 
         isDrag := (StrLower(m1) = "drag")
         btn := SubStr(m2, 1, 1)
-        coordStr := Trim(m3)
-
-        if vars.HasKey(coordStr)
-            coordStr := vars[coordStr]
-        if !(coords := ParseCoords(coordStr))
+        if !(coords := ParseCoords(m3))
             return
 
         x1 := coords.x1, y1 := coords.y1
@@ -261,10 +277,9 @@ ExecSingleCommand(command, vars, line := "", index := "") {
 
         ; 좌표 변환 필요 시
         if (ShouldConvertCoords(vars)) {
-            if (conv := ConvertCoordsWithFallback(x1, y1, vars.w3_ver, vars._active_w3_ver, vars.panel))
-                x1 := conv.x, y1 := conv.y
-            if (isDrag && (conv := ConvertCoordsWithFallback(x2, y2, vars.w3_ver, vars._active_w3_ver, vars.panel)))
-                x2 := conv.x, y2 := conv.y
+            ConvertCoordInPlace(x1, y1, vars.w3_ver, vars._active_w3_ver, vars.panel)
+            if (isDrag)
+                ConvertCoordInPlace(x2, y2, vars.w3_ver, vars._active_w3_ver, vars.panel)
         }
 
         full_mode := vars.coord_mode . coords.type
@@ -283,7 +298,7 @@ ExecSingleCommand(command, vars, line := "", index := "") {
 }
 
 ShouldStop(vars, timeKey) {
-    Log("timekey: " timekey " : " vars[timeKey])
+    ;Log("timekey: " timekey " : " vars[timeKey])
     if (vars.HasKey("limit") && !IsNatural(vars.limit) || !CheckAbortAndSleep(vars[timeKey])) {
         Log("ShouldStop()")
         return true
@@ -298,42 +313,59 @@ ShouldStop(vars, timeKey) {
 }
 
 PrepareTargetHwnd(vars) {
-    ; 타겟이 없고 hwnd 도 없으면
-    if (!vars.HasKey("target") && !vars.target_hwnd) {
-        return
-    }
+    ; target 있으면 가볍게 활성화만 시도
 
-    ; 타겟이 변경되었을 경우 새로 검색
-    if (vars.target != vars._last_target) {
-        vars._last_target := vars.target
-        if (vars.target) {
-            vars.target_hwnd := GetTargetHwnd(vars.target)
-            if (vars.target_hwnd && !InStr(vars.send_mode, "C", true))
-                WinActivateWait(vars.target_hwnd)
-        } else {
-            vars.target_hwnd := ""
-        }
+    if (vars.target && !InStr(vars.send_mode, "C"))
+        WinActivateWait(vars.target), vars.Delete("target")
+    
+    activeHwnd := WinActive("A")
 
-    ; 타겟은 같은데 hwnd 가 없는 경우 → 재검색
-    } else if (!vars.target_hwnd) {
-        vars.target_hwnd := GetTargetHwnd(vars.target)
+    vars.target_hwnd := activeHwnd
 
-    ; 타겟 동일하고 hwnd 있음 → 유효성 검사
-    } else if (!WinExist("ahk_id " . vars.target_hwnd)) {
-        vars.target_hwnd := ""
-    }
-
-    ; 내부에 저장해둘 이전 hwnd 추적 변수 활용
-    if (vars.target_hwnd && IsW3(vars.target_hwnd)
-                              && vars.target_hwnd != vars._last_w3_ver_hwnd) {
-        vars._active_w3_ver := GetW3_Ver(vars.target_hwnd)
-        vars._last_w3_ver_hwnd := vars.target_hwnd
+    ; 현재 활성 창 기준으로만 워3 버전 추적
+    if (IsW3(activeHwnd) && activeHwnd != vars._last_w3_ver_hwnd) {
+        vars._active_w3_ver := GetW3_Ver(activeHwnd)
+        vars._last_w3_ver_hwnd := activeHwnd
     }
 }
 
+; PrepareTargetHwnd(vars) {
+;     ; 타겟이 없고 hwnd 도 없으면
+;     if (!vars.HasKey("target") && !vars.target_hwnd) {
+;         return
+;     }
+
+;     ; 타겟이 변경되었을 경우 새로 검색
+;     if (vars.target != vars._last_target) {
+;         vars._last_target := vars.target
+;         if (vars.target) {
+;             vars.target_hwnd := GetTargetHwnd(vars.target)
+;             if (vars.target_hwnd && !InStr(vars.send_mode, "C", true))
+;                 WinActivateWait(vars.target_hwnd)
+;         } else {
+;             vars.target_hwnd := ""
+;         }
+
+;     ; 타겟은 같은데 hwnd 가 없는 경우 → 재검색
+;     } else if (!vars.target_hwnd) {
+;         vars.target_hwnd := GetTargetHwnd(vars.target)
+
+;     ; 타겟 동일하고 hwnd 있음 → 유효성 검사
+;     } else if (!WinExist("ahk_id " . vars.target_hwnd)) {
+;         vars.target_hwnd := ""
+;     }
+
+;     ; 내부에 저장해둘 이전 hwnd 추적 변수 활용
+;     if (vars.target_hwnd && IsW3(vars.target_hwnd)
+;                               && vars.target_hwnd != vars._last_w3_ver_hwnd) {
+;         vars._active_w3_ver := GetW3_Ver(vars.target_hwnd)
+;         vars._last_w3_ver_hwnd := vars.target_hwnd
+;     }
+; }
+
 ResolveMarkerMute(line, vars, allowedKey := "", excludedKey := "") {
     muteAll := true
-    return ResolveMarker(line, vars, allowedKey, excludedKey)
+    return ResolveMarker(line, vars, allowedKey, excludedKey).command
 }
 
 ResolveExprMute(line, vars) {
@@ -345,30 +377,33 @@ ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
     Log("ResolveMarker(): " line, 4)
     command := line
     pos := 1
+    markers := {}
+
     while (found := RegExMatch(line, "(?<!#)#([^#]+)#", m, pos)) {
         fullMatch := m
         inner := Trim(m1)
         shouldReplace := false
-        ; Match key:val or key=val
+
         if RegExMatch(inner, "^\s*(\w+)\s*(([:=])\s*(.*))?$", m) {
             key := m1, sep := m3, rawVal := Trim(m4)
 
             if ((!allowedKey || HasValue(allowedKey, key))
-            && (!excludedKey || !HasValue(excludedKey, key))) {
-                ; If it's key:value → evaluate expression
-                ; If it's key=value  → assign as literal
+             && (!excludedKey || !HasValue(excludedKey, key))) {
                 shouldReplace := true
                 val := (sep = ":") ? EvaluateExpr(rawVal, vars) : rawVal
                 vars[key] := val
+                markers[key] := true
             }
         }
+
         if (shouldReplace)
             command := StrReplace(command, fullMatch)
-        
+
         pos := found + StrLen(fullMatch)
     }
+
     muteAll := false
-    return Trim(command)
+    return { command: Trim(command), markers: markers }
 }
 
 ResolveExpr(line, vars, maxDepth := 5) {
@@ -431,10 +466,10 @@ ExplodeByKeys(expr, vars) {
     sorted := ToKeyLengthSortedArray(vars)
 
     ; Step 0: 큰따옴표로 감싼 문자열 보호
-    while (found := RegExMatch(expr, """([^""]*)""", m)) {
-        result[found] := m
-        expr := StrReplace(expr, m, Dummy(m, placeHolder), , 1)
-    }
+    ; while (found := RegExMatch(expr, """([^""]*)""", m)) {
+    ;     result[found] := m
+    ;     expr := StrReplace(expr, m, Dummy(m, placeHolder), , 1)
+    ; }
 
     ; Step 1: 키워드(길이 내림차순)를 찾아 dummy로 치환하며 값 저장
     for i, item in sorted {

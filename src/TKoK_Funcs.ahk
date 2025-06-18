@@ -111,97 +111,13 @@ HeroInfoToText(info) {
     return txt
 }
 
-
-LoadSquadReverse(squadArr, reverse := false) {
-    count := squadArr.Length()
-    Loop, %count% {
-        i := A_Index
-        idx := reverse ? count - i + 1 : i
-
-        hero := squadArr[idx]
-
-        SwitchW3(idx, false, false, true)
-
-        if ( (!reverse && idx > 1) || (reverse && i < count) )
-            ShareUnit()
-
-        ; 가장 첫 로드는 약간의 딜레이를 더 준다
-        LoadHero(hero, "", i = 1 ? 1500 : 1000) 
-        Chat("-qs", "R")
-
-        ; 영웅별 특수 클릭 처리
-        if (hero = "Shadowblade") {
-            ClickA(0.976, 0.879, "R")
-            ClickA(0.906, 0.879, "R")
-        } else if (hero = "Barbarian") {
-            ClickA(0.801, 0.953, "R")
-        } else if (hero = "Chaotic Knight") {
-            ;ClickA(0.797, 0.954, "R")
-            ;Sleep(500)
-        }
-    }
-}
-
-;CLIENT_TITLE 이 지정되지 않아도 사용 할 수 있음.
-LoadSquad3(champ := false) {
-    SwitchW3(1)
-
-    IfWinNotActive, %W3_WINTITLE%
-    {
-        MsgBox, 현재 활성화된 창이 Warcraft III가 아닙니다. 실행을 중단합니다.
-        return
-    }
-    GuiControlGet, squadText, main:, SquadField
-    StringSplit, squad, squadText, `,
-
-    WinGet, w3List, List, %W3_WINTITLE%
-    ; squad0 값과 창 수 중 작은 쪽으로 루프 돌리기
-    loopCount := Min(squad0,w3List)
-
-    Loop, %loopCount%
-    {
-        if (A_Index > 1)
-            ShareUnit()
-        if(!champ) {
-            thisHero := squad%A_Index%
-            LoadHero(thisHero)
-            Chat("-qs")
-            Sleep(300)
-            if (thisHero = "Shadowblade") {
-                ClickA(0.976, 0.879, "R")
-                ClickA(0.906, 0.879, "R")
-                Sleep(500)
-            } else if (thisHero = "Barbarian") {
-                ClickA(0.801, 0.953, "R")
-                Sleep(500 )
-            } else if (thisHero = "Chaotic Knight") {
-                ClickA(0.797, 0.954, "R")
-                Sleep(500 )
-            }
-        }
-        
-        if (loopCount >= 2)
-            SwitchNextW3(loopCount = A_Index)
-    }
-    if(squad0 > 1)
-        SendKey("^s {F3} ^3 {F2} ^2 {F1} ^1 +{F2} +{F3}", "NS")
-    else
-        SendKey("^s {F1} ^1", "NS")
-    if(champ)
-        ChampChat() ;!dr -fog -cdist 
-    else
-        Chat("!dr 10")
-    Chat("-apt")
-}
-
-
 LastSaveTimes() {
     GuiControlGet, squad, main:, SquadField ; GUI에서 squad 문자열 얻기
     heroInfo := {} ; 클래스명 => { time: ..., exp: ... }
     ; squad 파싱 (쉼표 구분)
     Loop, Parse, squad, `,
     {
-        heroName := Trim(A_LoopField)
+        heroName := GetFullName(Trim(A_LoopField))
         heroFolder := SAVE_DIR "\" heroName
         if !FileExist(heroFolder)
             continue
@@ -220,7 +136,7 @@ LastSaveTimes() {
     for heroName, info in heroInfo {
         diff := A_Now
         EnvSub, diff, % info.time, Seconds
-        msg := heroName ": " . FormatTimeDiff(diff) . "   Exp: " . info.exp . "   Gold: " . info.gold . "`n" . msg
+        msg .= heroName ": " . FormatTimeDiff(diff) . "   Exp: " . info.exp . "   Gold: " . info.gold . "`n"
     }
 
     ; account 파일 시간 차이

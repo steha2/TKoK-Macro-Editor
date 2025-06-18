@@ -1,0 +1,14 @@
+﻿note()
+#a=1# #b=1#
+#if:a=b#    ; ✅ true  — a, b를 먼저 치환 (1=1) → 논리식으로 평가
+#if=a=b#    ; ❌ false — 문자열 "a=b" 를 논리식으로 평가
+
+#if:a=1# Chat: a는 1 #else# Chat: a는 1이 아님
+
+#if_mode=block# ;설정 시 다중 줄 조건 분기 지원 
+
+#if:b>10#
+Chat: b는 10보다 큼
+#else#
+Chat: b는 10 이하
+#end_if#

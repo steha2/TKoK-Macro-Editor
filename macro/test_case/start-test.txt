@@ -1,5 +1,5 @@
-﻿;Chat: "%a%" 3
-note() #a=1# #force# #skip_mode=vars# #start_line=1#
+﻿;Chat: "%a%" 3 #a=2#
+note() #a=1# #force# #skip_mode=vars#
 #a=3# #b=gg#
 Chat: %%a%% 3   %%b%%
 Chat: %a% 4
