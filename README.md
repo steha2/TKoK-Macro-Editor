@@ -1,7 +1,7 @@
 # TKoK_Code_Loader, Macro Editor
 
 ## CodeLoader.ahk
-TKoK ORPG 코드 관리 및 Warcraft III 창 제어 도구입니다. <br>
+TKoK ORPG 코드 관리 및 Warcraft III 제어 도구입니다. <br>
 W3 멀티 로더를 통해서 다수의 클라이언트를 실행시키고 클릭 한번에 게임 준비를 완료하세요.
 
 ## MacroEditor.ahk
