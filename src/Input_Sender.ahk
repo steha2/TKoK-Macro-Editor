@@ -85,7 +85,7 @@ Chat(text, mode := "", hwnd := "") {
 
     ; 앞 Enter
     if (enterMode = 1 || enterMode = 3)
-        SendKey("{Enter}", RemoveChars(mode, "R") , hwnd, 30)
+        SendKey("{Enter}", RemoveChars(mode, "R") , hwnd, 50)
 
     if (InStr(mode, "R")) {
         SendKey(text, mode, hwnd)
@@ -94,7 +94,7 @@ Chat(text, mode := "", hwnd := "") {
     }
     ; 뒤 Enter
     if (enterMode = 2 || enterMode = 3)
-        SendKey("{Enter}", RemoveChars(mode, "R"), hwnd, -30)
+        SendKey("{Enter}", RemoveChars(mode, "R"), hwnd, -50)
 }
 
 PasteText(text, mode := "", hwnd := "") {
@@ -103,8 +103,9 @@ PasteText(text, mode := "", hwnd := "") {
     ;ClipSaved := ClipboardAll
     Clipboard := text
     ClipWait, 0.5
+    Sleep(50)
     pasteKey := InStr(mode, "C") ? "{Ctrl down}v{Ctrl up}" : "^v"
-    SendKey(pasteKey, RemoveChars(mode, "R"), hwnd, 100)
+    SendKey(pasteKey, RemoveChars(mode, "R"), hwnd, 110)
     ;Clipboard := ClipSaved
 }
 

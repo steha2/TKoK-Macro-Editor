@@ -2,12 +2,13 @@
 ; Chaotic Knight ~= CK, chaotic
 ; Shadow Shaman  ~= SS
 ; Hydromancer    ~= hydro
-; Shadowblade    ~= sb, shadow ; Shadow Shaman 보다 먼저 검색됩니다
+; Shadowblade    ~= sb, shadow ; Shadow Shaman 보다 먼저 매칭
 ; Earthquaker    ~= eq, earth
 ; Chronowarper   ~= chrono, panda
 
 Read: c_map\classic\_all
 
+@hero=ranger
 #if:PickNewHero(hero)# %move_new_hero%
 
 ;chat: -repick #wait:500#

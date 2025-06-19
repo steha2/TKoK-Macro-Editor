@@ -244,3 +244,44 @@ ArrayToObject(arr) {
         obj[item.key] := item.value
     return obj
 }
+
+ShouldProcessKey(key, allowed := "", excluded := "") {
+    if (key = "")
+        return false
+    if (excluded && MatchKey(key, excluded))
+        return false
+    if (allowed && !MatchKey(key, allowed))
+        return false
+    return true
+}
+
+MatchKey(key, matcher) {
+    if !matcher
+        return false
+    if IsFunc(matcher)
+        return matcher.Call(key)
+    if IsObject(matcher) {
+        return matcher.HasKey(key) || HasValue(matcher, key)
+    }
+    if (InStr(matcher, ",")) {
+        Loop, Parse, matcher, `,
+            if (Trim(A_LoopField) = key)
+                return true
+    } else {
+        return key = matcher
+    }
+    return false
+}
+
+
+StrInsert(str, pos, insertStr := "") {
+    return SubStr(str, 1, pos - 1) . insertStr . SubStr(str, pos)
+}
+
+StrReplaceAt(str, pos, len, newStr) {
+    return StrInsert(StrRemove(str, pos, len), pos, newStr)
+}
+
+StrRemove(str, pos, len := 1) {
+    return SubStr(str, 1, pos - 1) . SubStr(str, pos + len)
+}

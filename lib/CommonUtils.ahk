@@ -75,10 +75,16 @@ testj(data) {
 
 Log(msg, level := 3) {
     if (DEBUG_LEVEL >= level) {
-        FormatTime, timeStr,, HH:mm:ss
-        FileAppend, `n[%timeStr%][L%level%] %msg%, %logFilePath%
+        time := A_Hour ":" A_Min ":" A_Sec "." SubStr(A_MSec+1000,2)
+        logBuffer .= "`n[" time "][L" level "] " msg
+        if (StrLen(logBuffer) > 4096)
+        {
+            FileAppend, % logBuffer, %logFilePath%
+            logBuffer := ""
+        }
     }
 }
+
 
 ShowTip(msg, duration := 1500, writeLog := false) {
     if (writeLog)
@@ -151,7 +157,7 @@ ModiKeyWait() {
 }
 
 RunGetHwnd(path, winTitle := "") {
-    Run_("runas", path)
+    Run_(path, true)
     hwndR := WaitGetHwnd(winTitle)
     if (!hwndR)
         return false
@@ -173,6 +179,8 @@ WaitGetHwnd(winTitle, interval := 100, maxLoop := 50) {
 Sleep(delay) {
     if(muteAll)
         return
+
+    Log("Sleep():" delay, 4)
 
     Sleep, %Delay%
 }

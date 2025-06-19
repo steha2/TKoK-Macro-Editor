@@ -132,7 +132,7 @@ ShareUnit(hwnd := "") {
         ClickBack(0.599,0.204, hwnd)
         SendKey("{Enter}", "C", hwnd)
     } else {
-        SendA("{F11}", 300)
+        SendA("{F11}", 350)
         ClickA(0.599,0.204)
         SendA("{Enter}")
     }
@@ -200,9 +200,9 @@ ExecMultiW3(num := 0, speed := 0, skipIfRunning := true) {
         }
     }
 
-    currHwnd := WinExist("A")
-    WinActivate, ahk_id %hostHwnd%
-    WinActivate, ahk_id %currhwnd%
+    ; currHwnd := WinExist("A")
+    ; WinActivate, ahk_id %hostHwnd%
+    ; WinActivate, ahk_id %currhwnd%
     Sleep(numW3 = 1 ? 2500 : 1000)
     SendKey("{alt down}s{alt up}", "C", hostHwnd)
     return TrueTip("ExecMultiW3():Game Start`nClientNum: " num)

@@ -39,7 +39,7 @@ ReloadTreeView(path := "") {
     } else {
         SelectTreeItemByPath(path)
     }
-    Log("ReloadTreeView Done :" path)
+    Log("ReloadTreeView Done :" path, 4)
 }
 
 OnClickTreeItem() {

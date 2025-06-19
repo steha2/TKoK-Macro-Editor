@@ -1,0 +1,4 @@
+﻿note()
+Chat: _LOOP_TEST2_
+#i=1# #if_mode=block#
+Exec: loop-test3 #rep:20#

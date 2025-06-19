@@ -25,13 +25,10 @@ Chat: a는 0입니다 (block)
 #if:b=3# chat: b는 3입니다 (inline)
 
 ; force 테스트
-#if:a=999# chat: 이건 false인데도 나옴 #force#
-Chat: 무조건 실행됨 #force#
-
 
 #if:b = 99#
 Chat: 이건 실행 안 됨 (조건 false)
-Chat: 이건 됨 (force!)  #force#
+
 #end_if#
 
 Chat: --- 마무리 ---

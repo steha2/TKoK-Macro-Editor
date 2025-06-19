@@ -1,6 +1,7 @@
 ﻿@target=Warcraft III 
 Read: c_map\classic\_all
 @panel=cp_boss
+@boss=mk
 
 #if=!has[boss]# Log(!haskey boss) #break#
 

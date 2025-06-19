@@ -1,0 +1,12 @@
+﻿note()
+chat: start..
+@a=%%
+
+
+
+chat: a  는 %a%
+
+
+#b=123#
+
+chat: b  는 %b%

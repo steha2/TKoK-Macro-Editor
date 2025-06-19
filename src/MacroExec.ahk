@@ -8,7 +8,6 @@ ExecMacro(scriptText, vars, current_path) {
 
     UpdateMacroState(+1)
     lines := SplitLine(scriptText)
-    isConverted := false
 
     if !IsObject(vars) {
         ShowTip("Warning! : vars is not an object")
@@ -39,7 +38,7 @@ ExecMacro(scriptText, vars, current_path) {
         Log("tempVars.if:" tempVars.if "  Cmd: " cmd ", Line: " line)
 
         ; 조건 3: start_line 이후만 실행 (강제 실행 아닌 경우)
-         if(tempVars._command_skip) {
+        if(tempVars._command_skip) {
             Log("tempVars._command_skip = true! start_line: " start_line)
             continue
         }
@@ -65,32 +64,37 @@ ExecMacro(scriptText, vars, current_path) {
 }
 
 ResolveCommand(cmd, vars) {
-    line := cmd
+    Log("---ResolveCommand(): ---", 4)
+    
     if (ParseKeyValueLine(cmd, vars))
         return
 
     vars.rep := 1
 
-    ; 1차 marker 처리 (key:value 치환)
-    ResolveMarker(cmd, vars)
+    ; #key:value# #key#
+    cmd := ResolveMarker(cmd, vars, 1).command
 
-    ; 2차 표현식 (%key%)
+    
+    ; %key%
     cmd := ResolveExpr(cmd, vars)
 
-    ; ✅ 먼저 vars[...] 치환
+    ; vars[...]
     cmd := ResolveIndexedAccess(cmd, vars)
    
-    ; 3차 마커 재평가 (변수값 변동 고려)
-    cmd := ResolveMarker(cmd, vars).command
+    ; #key=value#
+    cmd := ResolveMarker(cmd, vars, 2).command
+    
     ; 이스케이프 복원
     ReplaceEscapeChar(cmd)
+
+    Log("---End ResolveCommand(): ---", 4)
 
     return cmd
 }
 
 PrepareConditionVars(ByRef cmd, vars, index, start_line) {
     temp := Clone(vars)
-    resolved := ResolveMarker(cmd, temp, ["force", "if", "end_if"])
+    resolved := ResolveMarker(cmd, temp, 3, ["force", "if", "end_if"])
     cmd := resolved.command
     muteAll := false
 
@@ -131,7 +135,7 @@ PrepareConditionVars(ByRef cmd, vars, index, start_line) {
 
     ; else 가 있으면 else 앞이나 뒤를 조건을 if 조건에 따라 남긴다
     if (InStr(cmd, "#else#")) {
-        if(!vars.else)
+        if(vars.else)
             Log("#else# 구문이 중복됨. cmd: " cmd)
 
         parts := StrSplit(cmd, "#else#", , 2)
@@ -147,7 +151,7 @@ PrepareConditionVars(ByRef cmd, vars, index, start_line) {
     }
 
     ; break 파싱은 는 if 처리 후에 해야한다.
-    cmd := ResolveMarkerMute(cmd, temp, "break")
+    cmd := ResolveMarkerMute(cmd, temp, 3, "break")
 
     if(index >= start_line)
         Log("cmd: " cmd "  if: " temp.if, 4)
@@ -225,18 +229,8 @@ ResolveIndexedAccess(str, vars) {
     return str
 }
 
-EnsureTargetReady(vars) {
-    if (vars.target && !vars.target_hwnd) {
-        return FalseTip("대상 창이 없습니다.`n" vars.target)
-    }
-    return true
-}
-
 ExecSingleCommand(command, vars, line := "", index := "") {
     if RegExMatch(command, "i)^(SendRaw|Send|Chat):\s*(.*)", m) {
-        if (!EnsureTargetReady(vars))
-            return
-
         cmdType := StrLower(m1), key := m2
         if(cmdType = "chat")
             Chat(key, vars.send_mode, vars.target_hwnd)
@@ -261,12 +255,9 @@ ExecSingleCommand(command, vars, line := "", index := "") {
         ReadVarsFile(m1, vars)
     }
     else if RegExMatch(command, "i)^(Run|RunAs):\s*(.*)", m) {
-        Run_(m1, m2)
+        Run_(m2, StrLower(m1) = "runas")
     }
     else if RegExMatch(command, "i)^(Click|Drag):([LR])\s*(.+)", m) {
-        if (!EnsureTargetReady(vars))
-            return
-
         isDrag := (StrLower(m1) = "drag")
         btn := SubStr(m2, 1, 1)
         if !(coords := ParseCoords(m3))
@@ -288,12 +279,11 @@ ExecSingleCommand(command, vars, line := "", index := "") {
         else
             SmartClick(x1, y1, vars.target_hwnd, btn, vars.send_mode, full_mode)
 
-        Log("btn:" btn "  x: " x1 ", y: " y1)
+        Log("btn:" btn "  x: " x1 ", y: " y1, 4)
     }
-
     else if (command && line && index) {
-        ShowTip("Error Line Num : " index " | Path: " StrReplace(vars.current_path, MACRO_DIR) " | Log:Alt+L"
-              . "`nCmd: " command " | Line: " line, 5000, true)
+        FalseTip("Error Line Num : " index " | Path: " StrReplace(vars.current_path, MACRO_DIR) " | Log:Alt+L"
+              . "`nCmd: " command " | Line: " line, 5000)
     }
 }
 
@@ -314,7 +304,6 @@ ShouldStop(vars, timeKey) {
 
 PrepareTargetHwnd(vars) {
     ; target 있으면 가볍게 활성화만 시도
-
     if (vars.target && !InStr(vars.send_mode, "C"))
         WinActivateWait(vars.target), vars.Delete("target")
     
@@ -329,43 +318,9 @@ PrepareTargetHwnd(vars) {
     }
 }
 
-; PrepareTargetHwnd(vars) {
-;     ; 타겟이 없고 hwnd 도 없으면
-;     if (!vars.HasKey("target") && !vars.target_hwnd) {
-;         return
-;     }
-
-;     ; 타겟이 변경되었을 경우 새로 검색
-;     if (vars.target != vars._last_target) {
-;         vars._last_target := vars.target
-;         if (vars.target) {
-;             vars.target_hwnd := GetTargetHwnd(vars.target)
-;             if (vars.target_hwnd && !InStr(vars.send_mode, "C", true))
-;                 WinActivateWait(vars.target_hwnd)
-;         } else {
-;             vars.target_hwnd := ""
-;         }
-
-;     ; 타겟은 같은데 hwnd 가 없는 경우 → 재검색
-;     } else if (!vars.target_hwnd) {
-;         vars.target_hwnd := GetTargetHwnd(vars.target)
-
-;     ; 타겟 동일하고 hwnd 있음 → 유효성 검사
-;     } else if (!WinExist("ahk_id " . vars.target_hwnd)) {
-;         vars.target_hwnd := ""
-;     }
-
-;     ; 내부에 저장해둘 이전 hwnd 추적 변수 활용
-;     if (vars.target_hwnd && IsW3(vars.target_hwnd)
-;                               && vars.target_hwnd != vars._last_w3_ver_hwnd) {
-;         vars._active_w3_ver := GetW3_Ver(vars.target_hwnd)
-;         vars._last_w3_ver_hwnd := vars.target_hwnd
-;     }
-; }
-
-ResolveMarkerMute(line, vars, allowedKey := "", excludedKey := "") {
+ResolveMarkerMute(line, vars, mode := 3, allowedKey := "", excludedKey := "") {
     muteAll := true
-    return ResolveMarker(line, vars, allowedKey, excludedKey).command
+    return ResolveMarker(line, vars, mode, allowedKey, excludedKey).command
 }
 
 ResolveExprMute(line, vars) {
@@ -373,38 +328,42 @@ ResolveExprMute(line, vars) {
     return ResolveExpr(line, vars)
 }
 
-ResolveMarker(line, vars, allowedKey := "", excludedKey := "") {
-    Log("ResolveMarker(): " line, 4)
+ResolveMarker(line, vars, mode := 3, allowedKey := "", excludedKey := "") {
+    Log("ResolveMarker(" mode "): " line, 4)
     command := line
-    pos := 1
     markers := {}
+    pos := 1
 
     while (found := RegExMatch(line, "(?<!#)#([^#]+)#", m, pos)) {
         fullMatch := m
         inner := Trim(m1)
-        shouldReplace := false
+        key := "",  sep := "", rawVal := ""
 
+        ; 구문 분기
         if RegExMatch(inner, "^\s*(\w+)\s*(([:=])\s*(.*))?$", m) {
             key := m1, sep := m3, rawVal := Trim(m4)
+            
+            if ShouldProcessKey(key, allowedKey, excludedKey) {
+                if (mode = 1 && sep = ":")
+                    val := EvaluateExpr(rawVal, vars), replace := true
+                else if (mode = 2 && (sep = "=" || sep = ""))
+                    val := rawVal, replace := true
+                else if (mode = 3)
+                    val := (sep = ":") ? EvaluateExpr(rawVal, vars) : rawVal, replace := true
 
-            if ((!allowedKey || HasValue(allowedKey, key))
-             && (!excludedKey || !HasValue(excludedKey, key))) {
-                shouldReplace := true
-                val := (sep = ":") ? EvaluateExpr(rawVal, vars) : rawVal
-                vars[key] := val
-                markers[key] := true
+                if (replace) {
+                    vars[key] := val
+                    command := StrReplace(command, fullMatch, "", , 1)
+                    markers[key] := true
+                }
             }
         }
-
-        if (shouldReplace)
-            command := StrReplace(command, fullMatch)
-
         pos := found + StrLen(fullMatch)
     }
-
     muteAll := false
     return { command: Trim(command), markers: markers }
 }
+
 
 ResolveExpr(line, vars, maxDepth := 5) {
     depth := 0
@@ -509,17 +468,16 @@ EvaluateFunctions(expr, vars) {
 
         result := ExecFunc(fnName, args)
         expr := StrReplace(expr, full, result)
-        ;test(fnname, args, result ,pos , expr, full)
         pos := found + StrLen(result)
     }
     return expr
 }
 
-Run_(mode, path) {
+Run_(path, isAdmin := false) {
     if(muteAll)
         return
     try {
-        if (StrLower(mode) = "runas") {
+        if (isAdmin) {
             Run *RunAs %path%
         } else {
             Run %path%
@@ -587,6 +545,8 @@ UpdateMacroState(delta) {
         GuiControl, macro:Text, execBtn, ▶ Run
         macroAbortRequested := false
         muteAll := false
+        FileAppend, % logBuffer, %logFilePath%
+        logBuffer := ""
     }
 }
 

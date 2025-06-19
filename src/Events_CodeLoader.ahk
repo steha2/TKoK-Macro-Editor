@@ -195,3 +195,6 @@ F7::ToggleClipMouse()
     SaveMacroEditorSettings()
     reload
 return
+
+!Numpad3::WinSet, AlwaysOnTop, Off, % "ahk_id " . WinActive("A")
+!Numpad4::WinSet, AlwaysOnTop, On, % "ahk_id " . WinActive("A")

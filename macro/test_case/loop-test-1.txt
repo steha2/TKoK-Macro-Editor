@@ -1,8 +1,8 @@
 ﻿Chat: i: %i% a : %a%   if: "%if%"
 
 #if:a>=1000#
-Chat: a>=1000 ?  if:%if%  a 가 1000 보다 크다 "BREAK"
-#break#
+Chat: a>=1000 ?  if:%if%  a 가 1000 보다 크다 "Limit"
+#limit#
 
 #if:a>=200# 
 Chat: a:%a%  a>=200 ? if:%if%  a 가 200 보다 크다
