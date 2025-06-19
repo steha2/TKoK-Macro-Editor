@@ -6,7 +6,12 @@ W3 멀티 로더를 통해서 다수의 클라이언트를 실행시키고 클�
 
 ## MacroEditor.ahk
 범용 매크로 기록/실행기입니다. <br>
-각 영웅별 챔피언모드 빌드를 기록중에 있습니다. <br>
+
+텍스트 기반의 스크립트 매크로를 실행할 수 있는 고급 기능을 제공합니다.
+📜 매크로 실행: .txt 파일에 명령을 작성해 순차 실행
+🔁 조건문 분기: #if:조건#, #else#, #end_if#로 유동적인 흐름 제어 가능
+🧠 변수 및 수식 치환: %x%, %x+1% 등의 표현 가능
+📌 다중 매크로 합성: Exec:| Read: other_macro 로 분리된 매크로 조합 가능
 자세한 사용 방법은 Macro Editor 내 도움말을 참고하세요.
 
 ## 설치 방법
@@ -18,4 +23,3 @@ https://www.autohotkey.com
 W3_LNK=C:\Warcraft III\kloader_w3.lnk <br><br>
 SAVE_DIR=C:\Warcraft III\TKoK_Save_Files\TKoK_3.5.15<br>
 3. `CodeLoader.ahk`를 실행하세요.
-
