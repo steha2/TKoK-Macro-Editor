@@ -1,4 +1,4 @@
-﻿#send_mode:i#
+﻿#send_mode:C#
 #target=Warcraft III#
 
 #x:0.201# #y:0.201#

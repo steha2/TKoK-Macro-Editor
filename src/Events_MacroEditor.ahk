@@ -49,7 +49,7 @@ ClearMacro:
     if (Trim(curText) = "")  ; 이미 비어있으면 무시
         return
 
-    MsgBox, 4|4096, %EDITOR_TITLE%, 내용을 모두 지웁니까?
+    MsgBox, % 4|4096, %EDITOR_TITLE%, 내용을 모두 지웁니까?
     IfMsgBox, No
         return
     
@@ -59,7 +59,7 @@ return
 
 DeleteMacro:
     if (!FileExist(macroPath)) {
-        MsgBox,, %EDITOR_TITLE%, 유효한 매크로 파일 또는 폴더를 선택하세요.
+        MsgBox, 4096, %EDITOR_TITLE%, 유효한 매크로 파일 또는 폴더를 선택하세요.
         return
     }
     SplitPath, macroPath, itemName, outDir
@@ -70,7 +70,7 @@ DeleteMacro:
         ? "정말 이 파일을 삭제하시겠습니까?"
         : "정말 이 폴더를 삭제하시겠습니까?`n(※ 비어있는 폴더만 삭제됩니다.)"
 
-    MsgBox, 4, %EDITOR_TITLE%, % itemName " - " title "`n " confirmMsg
+    MsgBox, 4100, %EDITOR_TITLE%, % itemName " - " title "`n " confirmMsg
     IfMsgBox, No
         return
 
@@ -78,7 +78,7 @@ DeleteMacro:
         failMsg := isFile
             ? "파일을 삭제할 수 없습니다.`n(사용 중이거나 권한 문제일 수 있습니다.)"
             : "폴더를 삭제할 수 없습니다.`n(※ 비어있는 폴더만 삭제 가능합니다.)"
-        MsgBox, 48, %EDITOR_TITLE%, 삭제 실패`n%failMsg%
+        MsgBox, % 4096 | 48, %EDITOR_TITLE%, 삭제 실패`n%failMsg%
     } else {
         origContent := ""
         GuiControl, macro:, EditMacro

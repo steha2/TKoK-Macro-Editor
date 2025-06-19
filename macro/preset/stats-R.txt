@@ -1,9 +1,7 @@
-﻿#w3_ver=reforged# 
-#target=Warcraft III#
-
+﻿@target=Warcraft III
 Read: c_map\reforged\_all
-
 #if:PickNewHero(%part1%)# %%move_new_hero%%
+Exec: set-champ
 
 %%select_shop_npc%%
 Exec: %out_dir%\%part1%-equip
@@ -11,4 +9,4 @@ Exec: %out_dir%\%part1%-equip
 Exec: stat-up #spsi=100# #stat=Q#
 Chat: -tt #delay:300# #panel=skill#
 
-WriteMacroFile(##w3_ver=reforged##`n##panel=items##`nClick:L 0.783`, 0.808 ##delay=400##, %out_dir%\%part1%-equip) #force#
+WriteMacroFile(Read: c_map\reforged\_all`n@panel=items`nClick:L 0.725`, 0.806 ##delay=400##, %out_dir%\%part1%-equip) #force#

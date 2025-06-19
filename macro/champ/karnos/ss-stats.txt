@@ -1,0 +1,11 @@
+﻿@target=Warcraft III
+Read: c_map\classic\_all
+@hero=ss
+#if:PickNewHero(ss)# %move_new_hero%
+Exec: set-champ
+
+%select_shop_npc%
+Exec: champ\karnos\ss-equip
+
+Exec: stat-up #spsi=100# #stat=Q#
+Chat: -tt #delay:300# #panel=skill#

@@ -160,6 +160,15 @@ in(val, list, delim := " ") {
         return contains(val, list) || contains(list, val)
 }
 
+MergeMaps(map1, map2) {
+    result := {}
+    for k, v in map1
+        result[k] := v
+    for k, v in map2
+        result[k] := v
+    return result
+}
+
 inlist(val, list, delim := " ") {
     items := StrSplit(list, delim)
     for _, item in items

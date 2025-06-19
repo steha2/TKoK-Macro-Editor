@@ -1,8 +1,7 @@
 ﻿@target=Warcraft III
 Read: c_map\%part3|classic%\_all
-@hero=%part1%
-Exec: pick-new-hero
-Exec: setting-chat
+#if:PickNewHero(%part1%)# %%move_new_hero%%
+Exec: set-champ
 
 %%select_shop_npc%%
 Exec: %out_dir%\%part1%-equip

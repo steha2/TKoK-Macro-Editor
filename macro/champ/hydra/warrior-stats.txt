@@ -7,7 +7,7 @@ Exec: select-champ-boss
 @panel=field
 #if:PickNewHero(warrior)# %move_new_hero%
 
-Exec: setting-chat
+Exec: set-champ
 
 %select_shop_npc%
 Exec: champ\hydra\warrior-equip

@@ -10,10 +10,8 @@ Chat: ---
 Chat: % a / b % #dp_mode:round2#
 Chat: % a / b % #dp_mode:round10#
 Chat: %a,b% % a / b % #dp_mode:floor#
-#if:a>1# chat a는1보다 크다
-#if:a>5# chat a는5보다 크다
-#if:a>5# chat a는5보다 크다??? #force#
-Chat: if문 적용중.. 실행안됨
-#if#
-Chat: if문 끝 실행
+#if:a>1# chat: a는1보다 크다
+#if:a>5# chat: a는5보다 크다
+#if:a>5# chat: a는5보다 크다???
+
 Chat: -----------end----------

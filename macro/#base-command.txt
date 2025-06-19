@@ -35,11 +35,13 @@ Exec: stat-up #spsi=100# #stat=Q#
 ※변수 값을 공유 합니다.
 
 ---함수 호출---
+FunctionName(arg1,arg2...) 기본 AHK함수와 스크립트에 정의된 함수를 호출 가능합니다.
+
 LoadHero(Warrior) 캐릭터 로드
 LoadApt() Apt 입력
 ExecW3() 워3 실행
 ExecMultiW3(2,2) 워3 다중실행 후 LAN 게임 생성
-(2개 실행|로드 목록 수, 2:보통 속도|config.ini의 속도,이미 실행 중일때 종료확인 여부)
+(2개 실행, 2:보통 속도)
 
 SwitchW3(1) 1번으로 창 전환
 ToggleClipMouse() 마우스 가두기

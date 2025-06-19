@@ -1,10 +1,9 @@
 ﻿@target=Warcraft III
 Read: c_map\classic\_all
 
-@hero=shaman
-Exec: pick-new-hero
+#if:PickNewHero(SS)# %move_new_hero%
 
-Exec: setting-chat
+Exec: set-champ
 
 %select_shop_npc%
 Exec: champ\mk\shaman-equip

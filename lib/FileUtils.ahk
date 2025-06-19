@@ -78,7 +78,7 @@ DeleteItem(path, force := false) {
 }
 
 
-GetContainingFolder(path) {
+GetContainingDir(path) {
     if (FileExist(path) ~= "D")  ; Directory
         return RTrim(path, "\")
     else {

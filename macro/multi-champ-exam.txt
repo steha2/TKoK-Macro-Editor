@@ -1,6 +1,6 @@
-﻿#if:ExecMultiW3(2,2)# #delay=60000#
+﻿#if:ExecMultiW3(2,2,0)# #delay=60000# #else# #limit#
 
-SwitchW3(1) #delay=500#
+SwitchW3(1)
 @boss=mk
 Exec: select-champ-boss
 
@@ -9,3 +9,6 @@ Exec: champ\mk\warrior-stats
 SwitchW3(2)
 Exec: champ\mk\shaman-stats
 
+ShareUnit()
+
+Exec: set-host

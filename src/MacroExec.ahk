@@ -64,39 +64,33 @@ ExecMacro(scriptText, vars, current_path) {
 }
 
 ResolveCommand(cmd, vars) {
-    Log("---ResolveCommand(): ---", 4)
-    
     if (ParseKeyValueLine(cmd, vars))
         return
 
     vars.rep := 1
 
-    ; #key:value# #key#
-    cmd := ResolveMarker(cmd, vars, 1).command
-
-    
-    ; %key%
-    cmd := ResolveExpr(cmd, vars)
-
-    ; vars[...]
-    cmd := ResolveIndexedAccess(cmd, vars)
-   
-    ; #key=value#
-    cmd := ResolveMarker(cmd, vars, 2).command
+    cmd := ResolveMarkers(cmd, vars).command
     
     ; 이스케이프 복원
     ReplaceEscapeChar(cmd)
-
-    Log("---End ResolveCommand(): ---", 4)
-
     return cmd
 }
 
+ResolveMarkers(line, vars, allowed := "", excluded := "") {
+    step1 := ResolveMarker(line, vars, 1, allowed, excluded)
+    step2 := ResolveExpr(step1.command, vars)
+    step3 := ResolveIndexedAccess(step2, vars)
+    step4 := ResolveMarker(step3, vars, 2, allowed, excluded)
+
+    return {command: step4.command, markers: MergeMaps(step1.markers, step4.markers) }
+}
+
 PrepareConditionVars(ByRef cmd, vars, index, start_line) {
-    temp := Clone(vars)
-    resolved := ResolveMarker(cmd, temp, 3, ["force", "if", "end_if"])
-    cmd := resolved.command
     muteAll := false
+    temp := Clone(vars)
+
+    resolved := ResolveMarkers(cmd, temp, ["force", "if", "end_if"])
+    cmd := resolved.command
 
     if(temp.HasKey("force")) {
         muteAll := false
@@ -171,8 +165,6 @@ ParseKeyValueToken(token, vars) {
 
 ReadVarsFile(path, vars) {
     fullPath := ResolveMacroFilePath(path, vars)
-    Log("ReadVarsFile(): path: " path "  actw3ver: " vars._active_w3_ver)
-
     if (!vars.HasKey("__Readed__"))
         vars["__Readed__"] := {}
 
@@ -184,6 +176,7 @@ ReadVarsFile(path, vars) {
     content := ReadFile(fullPath)
 
     ParseVars(content, vars)
+    Log("ReadVarsFile(): path: " path " w3_ver: " vars.w3_ver "  _act_w3_ver: " vars._active_w3_ver)
 }
 
 ParseVars(content, vars) {
@@ -318,9 +311,9 @@ PrepareTargetHwnd(vars) {
     }
 }
 
-ResolveMarkerMute(line, vars, mode := 3, allowedKey := "", excludedKey := "") {
+ResolveMarkerMute(line, vars, mode := 3, allowed := "", excluded := "") {
     muteAll := true
-    return ResolveMarker(line, vars, mode, allowedKey, excludedKey).command
+    return ResolveMarker(line, vars, mode, allowed, excluded).command
 }
 
 ResolveExprMute(line, vars) {
@@ -328,7 +321,7 @@ ResolveExprMute(line, vars) {
     return ResolveExpr(line, vars)
 }
 
-ResolveMarker(line, vars, mode := 3, allowedKey := "", excludedKey := "") {
+ResolveMarker(line, vars, mode := 3, allowed := "", excluded := "") {
     Log("ResolveMarker(" mode "): " line, 4)
     command := line
     markers := {}
@@ -343,7 +336,7 @@ ResolveMarker(line, vars, mode := 3, allowedKey := "", excludedKey := "") {
         if RegExMatch(inner, "^\s*(\w+)\s*(([:=])\s*(.*))?$", m) {
             key := m1, sep := m3, rawVal := Trim(m4)
             
-            if ShouldProcessKey(key, allowedKey, excludedKey) {
+            if ShouldProcessKey(key, allowed, excluded) {
                 if (mode = 1 && sep = ":")
                     val := EvaluateExpr(rawVal, vars), replace := true
                 else if (mode = 2 && (sep = "=" || sep = ""))
@@ -521,19 +514,20 @@ ResolveMacroFilePath(macroFilePath, vars) {
     if (IsAbsolutePath(macroFilePath))
         return macroFilePath
 
-    try1 := GetContainingFolder(vars.current_path) . "\" . macroFilePath
-    if (IsFile(try1))
-        return try1
+    ; 상대 경로 탐색용 폴더 목록
+    searchPaths := [GetContainingDir(vars.current_path), GetContainingDir(vars.base_path), MACRO_DIR, MACRO_DIR . "\common"]
 
-    try2 := GetContainingFolder(vars.base_path) . "\" . macroFilePath
-    if (IsFile(try2))
-        return try2    
+    tried := [] ; 실패한 경로 로그용
 
-    try3 := MACRO_DIR . "\" . macroFilePath
-    if (IsFile(try3))
-        return try3
+    for _, basePath in searchPaths {
+        tryPath := basePath . "\" . macroFilePath
+        if (IsFile(tryPath))
+            return tryPath
 
-    Alert("매크로 파일을 찾을 수 없습니다.`n" . try1 . "`n" . try2 . "`n" . try3, "Error", 0)
+        tried.Push(tryPath)
+    }
+
+    Alert("매크로 파일을 찾을 수 없습니다.`n" . StrJoin(tried, "`n"), "Error", 0)
     return false
 }
 

@@ -32,7 +32,7 @@ Chat: % a / b % #dp_mode:fixed#
 Chat: % a / b % #dp_mode:ceil#
 Chat: % a / b % #dp_mode:floor#
 Chat: % a / b % #dp_mode:round2#
-
+#dp_mode#
 ; 복잡한 수식
 #a:3# #b:4# #c:5#
 Chat: % a + b * c - (b**2) %    ; 3 + 4*5 - 16 = 7

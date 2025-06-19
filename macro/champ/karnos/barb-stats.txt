@@ -1,7 +1,7 @@
 ﻿Read: c_map\classic\_all
 @hero=barb
 Exec: pick-new-hero
-Exec: setting-chat
+Exec: set-champ
 
 %select_shop_npc%
 Exec: champ\karnos\barb-equip

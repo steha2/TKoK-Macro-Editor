@@ -1,23 +1,19 @@
 ﻿; This is an example for execution testing.
 ; [▶ Run] it after TKoK loading is finished
-; To write a macro, refer to the sample in the champ folder.
 
-#w3_ver=reforged# #target=Warcraft III#
-Read: c_map\reforged\_all ; Load fixed coordinates %...% used below
+@target=Warcraft III
+Read: c_map\reforged\_all
 
-%diff_champ%       ; Select difficulty: Champion mode
-%champ_karav%      ; Select Karavnos
-%champ_fin1%       ; Confirm
+@boss=karav
+Exec: select-champ-boss
 
-; Find and choose a medicaster then go to portal
+@panel=field
 #if:PickNewHero(medic)# %move_new_hero%    
 
-Chat: -fog
-Chat: -cdist 2300
-LoadApt()
+Exec: set-champ
 
-%select_shop_npc% ; Select Equipment Vendor
-#panel=items#
+%select_shop_npc%
+@panel=items
 Click:L 0.719, 0.806 #delay=400#
 Click:L 0.493, 0.344 #rep:2#
 Click:L 0.518, 0.243 #rep:2#
@@ -33,11 +29,10 @@ Click:L 0.718, 0.888
 Click:L 0.570, 0.197 #rep:2#
 Click:L 0.492, 0.248 #rep:4#
 
-; Execute stat-up macro, set spsi value and stat hotkey
 Exec: stat-up #spsi=116# #stat=F#
 
+@panel=skill
 Chat: -tt #delay:300#
-#panel=skill#
 Click:L 0.390, 0.201
 Click:L 0.337, 0.207
 Click:L 0.331, 0.307 #rep:3#

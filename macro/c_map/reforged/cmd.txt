@@ -1,5 +1,7 @@
 ﻿; For Reforged, only 16:9 resolution is supported
 ; other resolutions is classified as custom.
+w3_ver = reforged
+panel  = cmd
 
 diff_normal  = Click:L 0.725, 0.806 #delay=1000#
 diff_leg     = Click:L 0.763, 0.807 #delay=1000#

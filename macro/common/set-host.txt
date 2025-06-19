@@ -1,0 +1,6 @@
+﻿SwitchW3(1)
+Send: {Numpad2}
+Send: ^s{F3}^3{F2}^2{F1}^1+{F2}+{F3}
+Chat: !dr 10
+Chat: -clear
+Chat: -apt

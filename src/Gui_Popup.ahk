@@ -122,6 +122,7 @@ ToggleOverlay() {
         ConvertScriptMode(lines, vars.w3_ver, vars._active_w3_ver)
 
     ; 타겟 창 정보
+    hwnd := vars.target_hwnd
     GetClientRect(hwnd, cx, cy, cw, ch)
     dpi := GetWindowDPI(hwnd)
     cw := cw/dpi*100

@@ -1,4 +1,7 @@
-﻿champ_prac   = Click:L 0.498, 0.269 #delay=300#
+﻿w3_ver = reforged
+panel  = cp_boss
+
+champ_prac   = Click:L 0.498, 0.269 #delay=300#
 champ_sg     = Click:L 0.498, 0.342 #delay=300#
 champ_karrix = Click:L 0.496, 0.394 #delay=300#
 champ_avnos  = Click:L 0.497, 0.456 #delay=300#

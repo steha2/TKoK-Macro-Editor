@@ -1,7 +1,7 @@
 ﻿@target=Warcraft III 
-Read: c_map\classic\_all
+;Read: c_map\classic\_all
 @panel=cp_boss
-@boss=mk
+;@boss=mk
 
 #if=!has[boss]# Log(!haskey boss) #break#
 
@@ -13,7 +13,7 @@ Read: c_map\classic\_all
 
 #selected=champ_%boss%#
 
-#if:!has[selected]# FalseTip(not found boss: %selected%) #break#
+#if=!has[%selected%]# FalseTip(not found boss: %selected%) #break#
 
 vars[%selected%]
 

@@ -1,5 +1,7 @@
 ﻿;※field 좌표는 cdist 에 따라 다르게 작동할 수 있음
 ;-cdist 2300 기준
+w3_ver = reforged
+panel  = field
 
 ;챔피언 모드 시작 위치에서 상점 npc 선택
 select_shop_npc = Drag:L 0.458, 0.344, 0.377, 0.223
