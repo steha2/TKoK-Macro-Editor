@@ -1,11 +1,15 @@
 # TKoK_Code_Loader, Macro Editor
 
 ## CodeLoader.ahk
-TKoK ORPG 코드 관리 및 Warcraft III 제어 도구입니다. <br>
+TKoK ORPG 코드 관리 및 Warcraft III 제어 도구입니다.
+
+클래식 워크래프트 III 환경에 최적화된 다양한 내장 함수 포함
+
 W3 멀티 로더를 통해서 다수의 클라이언트를 실행시키고 클릭 한번에 게임 준비를 완료하세요.
 
+
 ## MacroEditor.ahk
-범용 매크로 기록/실행기입니다. <br>
+범용 매크로 기록/실행기입니다.
 
 기본적인 키보드 / 마우스 매크로 기록과
 
