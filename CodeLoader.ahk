@@ -6,6 +6,8 @@ if !pToken := Gdip_Startup() {
 }
 OnExit, Exit
 
+global load_with := ""
+
 ;CaptureImage(100, 100, 200, 200, "c:\capture.png")
 
 #Include %A_ScriptDir%\src\CommonSetting.ahk 

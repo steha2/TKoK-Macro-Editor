@@ -5,6 +5,9 @@ SendCodeToW3(hwnd := "", delay := 1000) {
             Chat(pl1, "C", hwnd)
             Chat(pl2, "C", hwnd)
         } else {
+            if(load_with)
+                Chat("-loadwith " . load_with)
+
             Chat(pl1)
             Chat(pl2)
         }
