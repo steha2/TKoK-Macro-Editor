@@ -27,7 +27,7 @@ Wait: 1000
 해당 명령줄 실행 전 대기시간 1초
 
 #target=notepad#
-매크로 실행시 notepad 창을 활성화 시키고 못찾으면 중단
+notepad 창을 활성화
 
 ---다른 매크로 실행---
 Exec: swap-acc

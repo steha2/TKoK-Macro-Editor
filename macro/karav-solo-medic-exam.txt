@@ -11,8 +11,8 @@ Exec: select-champ-boss
 #if:PickNewHero(medic)# %move_new_hero%    
 
 Exec: set-champ
-
 %select_shop_npc%
+
 @panel=items
 Click:L 0.719, 0.806 #delay=400#
 Click:L 0.493, 0.344 #rep:2#
