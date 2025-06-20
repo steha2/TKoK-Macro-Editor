@@ -1,4 +1,4 @@
-ExecMacro(scriptText, vars, current_path) {
+﻿ExecMacro(scriptText, vars, current_path) {
     if (scriptText = "")
         return
     if (runMacroCount > 10)

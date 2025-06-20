@@ -1,4 +1,4 @@
-BuildTreeView(rootPath, parentID := 0) {
+﻿BuildTreeView(rootPath, parentID := 0) {
     Log("BuildTreeView():dir: " rootPath, 4)
     Loop, Files, % rootPath "\*", D
     {

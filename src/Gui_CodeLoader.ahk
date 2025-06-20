@@ -1,4 +1,4 @@
-global CONFIG_FILE := A_ScriptDir . "\config.ini"
+﻿global CONFIG_FILE := A_ScriptDir . "\config.ini"
 
 ;-----------------------Code Loader Const------------------------------
 global CLIENT_TITLE := "W3_Client_"
@@ -61,7 +61,7 @@ Gui, main:Add, Text, x520 y170 w100 h30 vAptText, APT:`nDEDI:
 Gui, main:Add, Text, x300 y250 w380 h20, Load Hero List:
 Gui, main:Add, Edit, x300 y270 w380 h20 vSquadField, % GetIniValue("Settings", "savedSquad")
 Gui, main:Add, Button, x300 y300 w120 h30 gAddHero, Add to List
-Gui, main:Add, Button, x430 y300 w30 h30 gRemoveHero, ❌
+Gui, main:Add, Button, x430 y300 w30 h30 gRemoveHero, X
 
 Gui, main:Add, Button, x300 y340 w120 h30 gExecMultiW3, W3 Multi-Run
 Gui, main:Add, Button, x430 y340 w120 h30 gMultiLoad, Multi-Load

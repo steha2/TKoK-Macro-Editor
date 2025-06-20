@@ -1,4 +1,4 @@
-
+﻿
 test(a := "", b := "", c := "", d := "", e := "", f := "", isTip := false, writeLog := true) {
     args := [a, b, c, d, e, f]
     output := ""

@@ -1,4 +1,4 @@
-PhysClick(x, y, btn := "L") {
+﻿PhysClick(x, y, btn := "L") {
     PhysMouseInput(x, y, btn)
 }
 

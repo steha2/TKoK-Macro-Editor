@@ -1,4 +1,4 @@
-Note(newText := "", title := "", isAppend := false) {
+﻿Note(newText := "", title := "", isAppend := false) {
     static isCreated := false
     global NoteEdit
 

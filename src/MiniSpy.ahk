@@ -1,4 +1,4 @@
-#NoEnv
+﻿#NoEnv
 #NoTrayIcon
 #SingleInstance Ignore
 SetBatchLines, -1

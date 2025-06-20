@@ -1,4 +1,4 @@
-macroGuiClose:
+﻿macroGuiClose:
     ToggleMacroGui()
 return
 

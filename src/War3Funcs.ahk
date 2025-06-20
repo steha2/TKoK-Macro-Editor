@@ -1,4 +1,4 @@
-SaveW3Pos() {
+﻿SaveW3Pos() {
     WinGetTitle, winTitle, A
     WinGetPos, x, y, w, h, A
     

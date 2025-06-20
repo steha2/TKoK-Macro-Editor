@@ -1,4 +1,4 @@
-#Include lib\JSON.ahk
+﻿#Include lib\JSON.ahk
 #Include lib\InputUtils.ahk
 #Include lib\FileUtils.ahk
 #Include lib\CommonUtils.ahk

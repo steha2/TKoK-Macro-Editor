@@ -1,4 +1,4 @@
-MergeMacro(content) {
+﻿MergeMacro(content) {
     mergedLines := []
     lastLine := ""
     count := 0

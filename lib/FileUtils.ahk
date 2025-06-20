@@ -1,4 +1,4 @@
-
+﻿
 GetIniValue(section, key, default := "") {
     IniRead, val, % CONFIG_FILE, %section%, %key%, %default%
     val := Trim(val)

@@ -1,4 +1,4 @@
-
+﻿
 SendCodeToW3(hwnd := "", delay := 1000) {
     if(pl1 != "" && pl2 != "") {
         if(hwnd) {

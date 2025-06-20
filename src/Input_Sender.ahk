@@ -1,4 +1,4 @@
-
+﻿
 SmartClick(x, y, hwnd := "", btn := "L", send_mode := "", coord_mode := "") {
     event := {x:x, y:y, hwnd:hwnd, btn:btn, send_mode:send_mode, coord_mode:coord_mode}
     MouseEvent(event)

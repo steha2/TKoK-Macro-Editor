@@ -1,4 +1,4 @@
-
+﻿
 global CONFIG_FILE := A_ScriptDir . "\config.ini"
 
 ;---------------------- Macro Editor Const ------------------------------

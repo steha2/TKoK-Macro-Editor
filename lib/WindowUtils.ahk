@@ -1,4 +1,4 @@
-; 윈도우 관련 래핑 함수 모음 (AHK v1)
+﻿; 윈도우 관련 래핑 함수 모음 (AHK v1)
 
 Win_Restore(winTitle := "A") {
     WinRestore, %winTitle%
