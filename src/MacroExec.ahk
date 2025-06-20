@@ -86,7 +86,7 @@ ResolveMarkers(line, vars, allowed := "", excluded := "") {
 }
 
 PrepareConditionVars(ByRef cmd, vars, index, start_line) {
-    muteAll := false
+    muteAll := index < start_line
     temp := Clone(vars)
 
     resolved := ResolveMarkers(cmd, temp, ["force", "if", "end_if"])
@@ -98,7 +98,6 @@ PrepareConditionVars(ByRef cmd, vars, index, start_line) {
         temp._command_skip := false
     } 
     else if (index < start_line) {
-        muteAll := true
         if (InStr(vars.skip_mode, "vars")) { ; 스킵모드가 vars 까지 모두 스킵하는경우
             temp._vars_skip := true
         } else { ; 스킵모드가 vars 는 스킵 안하는 경우

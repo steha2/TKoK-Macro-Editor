@@ -1,0 +1,7 @@
+﻿Click:L 992, 824
+Click:L 895, 852
+Click:L 1297, 988
+Click:L 997, 554
+Click:L 1202, 499
+
+Click:L 1375, 846

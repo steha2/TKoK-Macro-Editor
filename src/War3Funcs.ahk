@@ -64,6 +64,9 @@ SwitchNextW3(isClip := true, minimizePrev := false) {
 }
 
 SwitchW3(clientNum := 1, isClip := false, minimizePrev := false, cursorToCenter := false) {
+    if(muteAll)
+        return
+        
     currHwnd := WinActive("A")
     nextHwnd := WinExist(CLIENT_TITLE . clientNum)
     if(currHwnd = nexthwnd) {
@@ -167,7 +170,7 @@ ExecW3(roleTitle := "", mini := false) {
 
 ExecMultiW3(num := 0, speed := 0, skipIfRunning := true) {
     if WinExist("ahk_id " . GetTargetHwnd(W3_WINTITLE)) {
-        if(skipIfRunning)
+        if(skipIfRunning || muteAll)
             return false
 
         msg := "[Y] Exit and restart   [N] Exit   [Cancel] Cancel"

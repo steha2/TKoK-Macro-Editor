@@ -1,4 +1,4 @@
-﻿#if:ExecMultiW3(2,2,0)# #delay=60000# #else# #limit#
+﻿#if:ExecMultiW3(2,2,0)# #delay=60000#
 
 SwitchW3(1)
 @boss=mk
